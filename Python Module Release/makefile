@@ -55,7 +55,7 @@ clean:
 	-@echo ' '
 
 post-build:
-	-cp hplusbnbmodule.so ../../search/hplusbnbmodule.so
+	-cp hplusbnbmodule.so ../hplusbnbmodule.so
 	-@echo ' '
 
 .PHONY: all clean dependents

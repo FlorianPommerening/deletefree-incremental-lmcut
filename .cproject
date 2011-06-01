@@ -1306,7 +1306,7 @@
 </extensions>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
-<configuration artifactExtension="so" artifactName="hplusbnbmodule" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.sharedLib" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.sharedLib" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.exe.release.256502013.1080408071" name="Python Module Release" parent="cdt.managedbuild.config.gnu.exe.release" postbuildStep="cp hplusbnbmodule.so ../../search/hplusbnbmodule.so">
+<configuration artifactExtension="so" artifactName="hplusbnbmodule" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.sharedLib" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.sharedLib" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.exe.release.256502013.1080408071" name="Python Module Release" parent="cdt.managedbuild.config.gnu.exe.release" postbuildStep="cp hplusbnbmodule.so ../hplusbnbmodule.so">
 <folderInfo id="cdt.managedbuild.config.gnu.exe.release.256502013.1080408071." name="/" resourcePath="">
 <toolChain id="cdt.managedbuild.toolchain.gnu.exe.release.461955554" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.release">
 <targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.release.1432759927" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.release"/>
