@@ -17,4 +17,8 @@ def copyTaskToAdapter(task):
     return aTask
 
 def hmax(task):
-    return  hplusbnb.hmax(copyTaskToAdapter(task))
+    h = hplusbnb.hmax(copyTaskToAdapter(task))
+    # for consistency
+    if h == -1:
+        h = float("inf")
+    return h  

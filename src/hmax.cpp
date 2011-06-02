@@ -1,3 +1,4 @@
+#include <iostream>
 #include "foreach.h"
 #include "hmax.h"
 #include "PriorityQueue.h"
@@ -17,10 +18,9 @@ int hmax(RelaxedTask &task, VariableSet &state) {
 }
 
 int hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts) {
-    // TODO closed list???
     for (unsigned int i = 0; i < task.variables.size(); ++i) {
         task.variables[i].hmax = UNREACHABLE;
-        // TODO initialize closed list to false
+        task.variables[i].closed = false;
     }
     for (unsigned int i = 0; i < task.operators.size(); ++i) {
         task.operators[i].unsatisfiedPreconditions = task.operators[i].preconditions.size();
@@ -36,7 +36,7 @@ int hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts) {
         if (var == NULL) {
             break;
         }
-        // TODO set closed[var] = True
+        var->closed = true;
         foreach(RelaxedOperator *op, var->precondition_of) {
             if (operatorCosts[op] == FORBIDDEN) {
                 continue;
@@ -50,7 +50,9 @@ int hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts) {
                 // (could also iterate over op.preconditions and search for other preconditions)
                 op->preconditionChoice = var;
                 foreach(Variable *effect, op->effects) {
-                    // TODO if closed[effect]: continue
+                    if (effect->closed) {
+                        continue;
+                    }
                     int successorCost = hmax + operatorCosts[op];
                     if (effect->hmax == UNREACHABLE) {
                         queue.push(effect, successorCost, depth+1);

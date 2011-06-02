@@ -2,12 +2,15 @@
 #define PRIORITYQUEUE_H_
 
 #include <queue>
+#include <vector>
 #include <utility>
+#include <functional>
 
 // nodes are stored with the key (hmax, depth) to use depth for tie-breaking
 // this gives better (more) landmarks
 typedef std::pair<int, int> QueueKey;
 typedef std::pair<QueueKey, Variable *> QueueEntry;
+typedef std::greater<QueueEntry> EntryGreater;
 
 class PriorityQueue {
 public:
@@ -16,7 +19,7 @@ public:
     Variable *pop(int &hmax, int &depth);
     void decreaseKey(Variable* value, int hmax, int depth);
 private:
-    std::priority_queue<QueueEntry> queue;
+    std::priority_queue<QueueEntry, std::vector<QueueEntry>, EntryGreater> queue;
 };
 
 inline bool PriorityQueue::empty() {

@@ -16,6 +16,7 @@ public:
     Variable(std::string name);
     std::string name;
     int hmax;
+    bool closed;
     std::vector<RelaxedOperator *> precondition_of;
     std::vector<RelaxedOperator *> effect_of;
 };
