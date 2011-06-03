@@ -10,8 +10,8 @@
 using namespace std;
 
 bool SASTask::deleteRelaxation(RelaxedTask &task) {
-    for (int varId = 0; varId < this->variables.size(); ++varId) {
-        for (int valId = 0; valId < this->variables[varId].values; ++valId) {
+    for (unsigned int varId = 0; varId < this->variables.size(); ++varId) {
+        for (unsigned int valId = 0; valId < this->variables[varId].values.size(); ++valId) {
             string name = this->variables[varId].values[valId];
             if (name == "<none of those>") {
                 name = "None of var" + intToStr(varId);
@@ -59,13 +59,13 @@ bool SASParser::parseVariables(vector<SASVariable> &variables) {
     variables.resize(variableLines.size());
     for (unsigned int varId = 0; varId < variableLines.size(); ++varId) {
         stringstream lineStream(variableLines[varId]);
-        string expectedName = "var" + this->intToStr(varId);
+        string expectedName = "var" + intToStr(varId);
         if (!this->isNextToken(lineStream, expectedName)) return false;
         int range;
         if (!this->nextTokenAsInt(lineStream, range)) return false;
         variables[varId].values.reserve(range);
         for (int i = 0; i < range; ++i) {
-            variables[varId].values.push_back(this->intToStr(i));
+            variables[varId].values.push_back(intToStr(i));
         }
         if (!this->nextTokenAsInt(lineStream, variables[varId].axiomLayer)) return false;
     }
@@ -209,7 +209,7 @@ bool SASParser::nextToken(istream &tokenStream, string& token, const char delimi
 bool SASParser::nextTokenAsInt(istream &tokenStream, int& value, const char delimiter) {
     string token;
     if (!this->nextToken(tokenStream, token, delimiter)) return false;
-    if (!this->tryParseInt(token, value)) {
+    if (!tryParseInt(token, value)) {
         this->error = "Expected integer but got '" + token + "'";
         return false;
     }

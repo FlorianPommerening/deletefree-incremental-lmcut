@@ -1,4 +1,5 @@
-src/hmax.d src/hmax.o: ../src/hmax.cpp ../src/foreach.h \
+src/hmax.d src/hmax.o: ../src/hmax.cpp ../src/hmax.h ../src/RelaxedTask.h \
+ ../src/Variable.h ../src/RelaxedOperator.h ../src/foreach.h \
  C:\Program\ Files\boost/boost/foreach.hpp \
  C:\Program\ Files\boost/boost/config.hpp \
  C:\Program\ Files\boost/boost/config/user.hpp \
@@ -250,9 +251,15 @@ src/hmax.d src/hmax.o: ../src/hmax.cpp ../src/foreach.h \
  C:\Program\ Files\boost/boost/mpl/aux_/preprocessed/gcc/apply.hpp \
  C:\Program\ Files\boost/boost/range/rbegin.hpp \
  C:\Program\ Files\boost/boost/type_traits/is_base_and_derived.hpp \
- C:\Program\ Files\boost/boost/foreach_fwd.hpp ../src/hmax.h \
- ../src/RelaxedTask.h ../src/Variable.h ../src/RelaxedOperator.h \
- ../src/PriorityQueue.h
+ C:\Program\ Files\boost/boost/foreach_fwd.hpp ../src/PriorityQueue.h
+
+../src/hmax.h:
+
+../src/RelaxedTask.h:
+
+../src/Variable.h:
+
+../src/RelaxedOperator.h:
 
 ../src/foreach.h:
 
@@ -759,13 +766,5 @@ C:\Program\ Files\boost/boost/range/rbegin.hpp:
 C:\Program\ Files\boost/boost/type_traits/is_base_and_derived.hpp:
 
 C:\Program\ Files\boost/boost/foreach_fwd.hpp:
-
-../src/hmax.h:
-
-../src/RelaxedTask.h:
-
-../src/Variable.h:
-
-../src/RelaxedOperator.h:
 
 ../src/PriorityQueue.h:

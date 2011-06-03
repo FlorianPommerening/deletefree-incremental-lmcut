@@ -21,7 +21,7 @@ public:
     std::vector<SASOperator> operators;
     std::vector<SASAxiom> axioms;
 
-    RelaxedTask deleteRelaxation();
+    bool deleteRelaxation(RelaxedTask &task);
 };
 
 struct SASVariable {

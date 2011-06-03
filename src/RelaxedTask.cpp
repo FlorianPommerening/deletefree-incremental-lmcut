@@ -29,10 +29,10 @@ void RelaxedTask::parseFile(const char *filename) {
     taskfile.close();
 }
 
-Variable *RelaxedTask::getVariable(const std::string name) {
-    for (unsigned int i = 0; i < this->variables.size(); ++i) {
-        if (this->variables[i].name == name) {
-            return &(this->variables[i]);
+Variable *RelaxedTask::getVariable(const std::string &name) {
+    foreach(Variable &var, this->variables) {
+        if (var.name == name) {
+            return &var;
         }
     }
     throw "Unknown variable '" + name + "'";
@@ -54,7 +54,6 @@ void RelaxedTask::parseTask(ifstream &taskfile) {
     if (!getline(taskfile, line) || line != "Variables") throw "'Variables' expected";
     if (!getline(taskfile, line)) throw "Number of variables expected";
     int nVariables = atoi(line.c_str());
-    this->variables.reserve(nVariables);
     for (int i = 0; i < nVariables; ++i) {
         if (!getline(taskfile, line)) throw "Name of a variable expected";
         this->variables.push_back(Variable(line));

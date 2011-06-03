@@ -1,6 +1,7 @@
 #ifndef RELAXEDTASK_H
 #define RELAXEDTASK_H
 
+#include <list>
 #include <string>
 #include <fstream>
 
@@ -17,11 +18,12 @@ public:
 
     Variable *init;
     Variable *goal;
-    std::vector<Variable> variables;
-    std::vector<RelaxedOperator> operators;
+    // using list here so pointers stay valid even if entries are deleted afterwards
+    std::list<Variable> variables;
+    std::list<RelaxedOperator> operators;
 
     void parseFile(const char *filename);
-    Variable *getVariable(const std::string name);
+    Variable *getVariable(const std::string &name);
     void crossreference();
 
 private:

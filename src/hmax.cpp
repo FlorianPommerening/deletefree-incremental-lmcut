@@ -1,6 +1,8 @@
-#include <iostream>
-#include "foreach.h"
 #include "hmax.h"
+
+#include <iostream>
+
+#include "foreach.h"
 #include "PriorityQueue.h"
 
 int hmax(RelaxedTask &task) {
@@ -18,12 +20,12 @@ int hmax(RelaxedTask &task, VariableSet &state) {
 }
 
 int hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts) {
-    for (unsigned int i = 0; i < task.variables.size(); ++i) {
-        task.variables[i].hmax = UNREACHABLE;
-        task.variables[i].closed = false;
+    foreach(Variable &var, task.variables) {
+        var.hmax = UNREACHABLE;
+        var.closed = false;
     }
-    for (unsigned int i = 0; i < task.operators.size(); ++i) {
-        task.operators[i].unsatisfiedPreconditions = task.operators[i].preconditions.size();
+    foreach(RelaxedOperator &op, task.operators) {
+        op.unsatisfiedPreconditions = op.preconditions.size();
     }
     PriorityQueue queue;
     foreach(Variable *var, state) {
