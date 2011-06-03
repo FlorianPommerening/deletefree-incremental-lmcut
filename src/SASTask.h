@@ -3,7 +3,9 @@
 
 #include <vector>
 #include <string>
-#include <iostream>
+#include <fstream>
+
+#include "RelaxedTask.h"
 
 struct SASVariable;
 struct SASVariableAssignment;
@@ -11,12 +13,15 @@ struct SASEffect;
 struct SASOperator;
 struct SASAxiom;
 
-struct SASTask {
+class SASTask {
+public:
     std::vector<SASVariable> variables;
     std::vector<SASVariableAssignment> init;
     std::vector<SASVariableAssignment> goal;
     std::vector<SASOperator> operators;
     std::vector<SASAxiom> axioms;
+
+    RelaxedTask deleteRelaxation();
 };
 
 struct SASVariable {
@@ -50,28 +55,42 @@ struct SASAxiom {
 
 class SASParser {
 public:
-    bool parseTask(const std::string &taskFilename, const std::string &translationKeyFilename,
-                   SASTask &task);
+    bool parseTask(const char *taskFilename, const char *translationKeyFilename, SASTask &task);
     std::string getLastError() { return this->error; }
 private:
     std::string error;
     std::ifstream taskfile;
     bool parseMetric(int &metric);
     bool parseVariables(std::vector<SASVariable> &variables);
-    bool parseTranslationKey(const std::string &translationKeyFilename,
-                            std::vector<SASVariable> &variables);
     bool parseInitialState(std::vector<SASVariable> &variables,
                           std::vector<SASVariableAssignment> &init);
     bool parseGoal(std::vector<SASVariable> &variables,
                   std::vector<SASVariableAssignment> &goal);
-    bool parseOperators(int metric, std::vector<SASOperator> &operators);
-    bool parseOperator(int metric, SASOperator &op);
-    bool parseAxioms(std::vector<SASAxiom> &axioms);
-    bool parseAxiom(SASAxiom &axiom);
+    bool parseOperators(std::vector<SASVariable> &variables, int metric,
+                        std::vector<SASOperator> &operators);
+    bool parseOperator(std::vector<SASVariable> &variables, int metric,
+                       SASOperator &op);
+    bool parseAxioms(std::vector<SASVariable> &variables,
+                     std::vector<SASAxiom> &axioms);
+    bool parseAxiom(std::vector<SASVariable> &variables,
+                    SASAxiom &axiom);
+    bool parseAssignment(std::istream &aStream, const char delimiter,
+                         std::vector<SASVariable> &variables,
+                         std::vector<SASVariableAssignment> &assignments);
+    bool parseTranslationKey(std::vector<SASVariable> &variables);
+
+    bool nextToken(std::istream &tokenStream, std::string& token, const char delimiter=' ');
+    bool nextTokenAsInt(std::istream &tokenStream, int& value, const char delimiter=' ');
+    bool isNextToken(std::istream &tokenStream, const std::string &text, const char delimiter=' ');
 
     bool nextLine(std::string &line);
     bool nextLineAsInt(int &value);
+    bool nextLinesAsList(std::vector<std::string>& list);
     bool isNextLine(const std::string &text);
 };
+
+
+bool tryParseInt(const std::string &str, int &value);
+std::string intToStr(int value);
 
 #endif /* SASTASK_H_ */

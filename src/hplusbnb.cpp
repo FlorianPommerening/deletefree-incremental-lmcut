@@ -7,6 +7,7 @@
 #include "RelaxedOperator.h"
 #include "RelaxedTask.h"
 #include "hmax.h"
+#include "SASTask.h"
 
 using namespace std;
 
@@ -17,6 +18,14 @@ void intToString(int i, string& res) {
 }
 
 int main() {
+    SASTask sasTask;
+    SASParser parser;
+    bool parseOK = parser.parseTask("../output.sas", "../test.groups", sasTask);
+    if (!parseOK) {
+        cout << parser.getLastError() << endl;
+        return 1;
+    }
+    cout << "parse ok" << endl;
     RelaxedTask parsedTask;
     try {
         parsedTask.parseFile("test.task");
