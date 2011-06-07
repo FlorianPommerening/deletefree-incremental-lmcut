@@ -680,6 +680,10 @@
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.c.linker.exe.release.564394400" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release"/>
 <tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.1731935570" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.release">
+<option id="gnu.cpp.link.option.libs.1195138883" superClass="gnu.cpp.link.option.libs" valueType="libs">
+<listOptionValue builtIn="false" value="boost_system"/>
+<listOptionValue builtIn="false" value="boost_filesystem"/>
+</option>
 <inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1799943309" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 <additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 <additionalInput kind="additionalinput" paths="$(LIBS)"/>
