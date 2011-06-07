@@ -24,6 +24,7 @@ public:
 
     void parseFile(const char *filename);
     Variable *getVariable(const std::string &name);
+    bool removeIrrelevantVariables();
     void crossreference();
 
 private:

@@ -18,6 +18,8 @@ void intToString(int i, string& res) {
 }
 
 int main() {
+    // call python translate.py to translate file. Pass last two arguments to translator
+
     SASTask sasTask;
     SASParser parser;
     bool parseOK = parser.parseTask("../output.sas", "../test.groups", sasTask);
@@ -28,13 +30,17 @@ int main() {
     cout << "parse ok" << endl;
 
     RelaxedTask translatedTask;
-    bool relaxationOK = sasTask.deleteRelaxation(translatedTask);
+    DeleteRelaxer relaxer;
+    bool relaxationOK = relaxer.deleteRelaxation(sasTask, translatedTask);
     if (!relaxationOK) {
-        cout << "Task may not contain axioms or conditional effects" << endl;
+        cout << relaxer.getLastError() << endl;
         return 1;
     }
     cout << "relax ok" << endl;
-    translatedTask.crossreference();
+    if (!translatedTask.removeIrrelevantVariables()) {
+        cout << "Unsolvable task." << endl;
+        return 1;
+    }
     cout << hmax(translatedTask) << endl;
 
 

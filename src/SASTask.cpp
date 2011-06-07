@@ -9,85 +9,6 @@
 
 using namespace std;
 
-bool SASTask::deleteRelaxation(RelaxedTask &task) {
-    if (this->axioms.size() > 0) {
-        // axioms not supported
-        return false;
-    }
-    map<SASVariable*, vector<Variable*> > variableTranslations;
-    for (unsigned int varId = 0; varId < this->variables.size(); ++varId) {
-        SASVariable* sasVar = &(this->variables[varId]);
-        variableTranslations[sasVar].reserve(sasVar->values.size());
-        for (unsigned int valId = 0; valId < sasVar->values.size(); ++valId) {
-            string name = sasVar->values[valId];
-            if (name == "<none of those>") {
-                name = "None of var" + intToStr(varId);
-            };
-            task.variables.push_back(Variable(name));
-            variableTranslations[sasVar].push_back(&(task.variables.back()));
-        }
-    }
-    if (this->init.size() == 1) {
-        SASVariableAssignment sasInit = this->init[0];
-        task.init = variableTranslations[sasInit.variable][sasInit.valueIndex];
-    } else {
-        // canonicalization
-        task.variables.push_back(Variable("@@init"));
-        task.init = &(task.variables.back());
-        RelaxedOperator initOperator;
-        initOperator.name = "@@init-operator";
-        initOperator.cost = 0;
-        initOperator.preconditions.add(task.init);
-        foreach(SASVariableAssignment &assignment, this->init) {
-            Variable *var = variableTranslations[assignment.variable][assignment.valueIndex];
-            initOperator.effects.add(var);
-        }
-        task.operators.push_back(initOperator);
-    }
-    if (this->goal.size() == 1) {
-        SASVariableAssignment sasGoal = this->goal[0];
-        task.goal = variableTranslations[sasGoal.variable][sasGoal.valueIndex];
-    } else {
-        // canonicalization
-        task.variables.push_back(Variable("@@goal"));
-        task.goal = &(task.variables.back());
-        RelaxedOperator goalOperator;
-        goalOperator.name = "@@goal-operator";
-        goalOperator.cost = 0;
-        foreach(SASVariableAssignment &assignment, this->goal) {
-            Variable *var = variableTranslations[assignment.variable][assignment.valueIndex];
-            goalOperator.preconditions.add(var);
-        }
-        goalOperator.effects.add(task.goal);
-        task.operators.push_back(goalOperator);
-    }
-    foreach(SASOperator &sasOp, this->operators) {
-        RelaxedOperator op;
-        op.name = sasOp.name;
-        op.cost = sasOp.cost;
-        foreach(SASVariableAssignment &sasPrevail, sasOp.prevail){
-            Variable *var = variableTranslations[sasPrevail.variable][sasPrevail.valueIndex];
-            op.preconditions.add(var);
-        }
-        foreach(SASEffect &sasEffect, sasOp.effects){
-            if (sasEffect.condition.size() > 0) {
-                // conditional effects not supported
-                return false;
-            }
-            // sasEffect.valueIndexBefore == -1 means "don't care"
-            if (sasEffect.valueIndexBefore != -1) {
-                Variable *var = variableTranslations[sasEffect.variable][sasEffect.valueIndexBefore];
-                op.preconditions.add(var);
-            }
-            Variable *var = variableTranslations[sasEffect.variable][sasEffect.valueIndexAfter];
-            op.effects.add(var);
-        }
-        task.operators.push_back(op);
-    }
-    return true;
-}
-
-
 bool SASParser::parseTask(const char *taskFilename, const char *translationKeyFilename,
                           SASTask &taskOut) {
     this->taskfile.open(taskFilename);
@@ -317,6 +238,83 @@ bool SASParser::nextLinesAsList(vector<string>& list) {
 
 bool SASParser::isNextLine(const string &text) {
     return this->isNextToken(this->taskfile, text, '\n');
+}
+
+
+bool DeleteRelaxer::deleteRelaxation(SASTask &sasTask, RelaxedTask &task) {
+    if (sasTask.axioms.size() > 0) {
+        this->error = "Axioms not supported";
+        return false;
+    }
+    map<SASVariable*, vector<Variable*> > variableTranslations;
+    for (unsigned int varId = 0; varId < sasTask.variables.size(); ++varId) {
+        SASVariable* sasVar = &(sasTask.variables[varId]);
+        variableTranslations[sasVar].reserve(sasVar->values.size());
+        for (unsigned int valId = 0; valId < sasVar->values.size(); ++valId) {
+            string name = sasVar->values[valId];
+            if (name == "<none of those>") {
+                name = "None of var" + intToStr(varId);
+            };
+            task.variables.push_back(Variable(name));
+            variableTranslations[sasVar].push_back(&(task.variables.back()));
+        }
+    }
+    // canonicalization (if @@precond is not needed it will be removed by the relevance analysis)
+    task.variables.push_back(Variable("@@precond"));
+    Variable *dummyPrecondition = &(task.variables.back());
+    task.variables.push_back(Variable("@@init"));
+    task.init = &(task.variables.back());
+    task.variables.push_back(Variable("@@goal"));
+    task.goal = &(task.variables.back());
+
+    RelaxedOperator initOperator;
+    initOperator.name = "@@init-operator";
+    initOperator.cost = 0;
+    initOperator.preconditions.add(task.init);
+    foreach(SASVariableAssignment &assignment, sasTask.init) {
+        Variable *var = variableTranslations[assignment.variable][assignment.valueIndex];
+        initOperator.effects.add(var);
+    }
+    initOperator.effects.add(dummyPrecondition);
+    task.operators.push_back(initOperator);
+
+    RelaxedOperator goalOperator;
+    goalOperator.name = "@@goal-operator";
+    goalOperator.cost = 0;
+    foreach(SASVariableAssignment &assignment, sasTask.goal) {
+        Variable *var = variableTranslations[assignment.variable][assignment.valueIndex];
+        goalOperator.preconditions.add(var);
+    }
+    goalOperator.effects.add(task.goal);
+    task.operators.push_back(goalOperator);
+
+    foreach(SASOperator &sasOp, sasTask.operators) {
+        RelaxedOperator op;
+        op.name = sasOp.name;
+        op.cost = sasOp.cost;
+        foreach(SASVariableAssignment &sasPrevail, sasOp.prevail){
+            Variable *var = variableTranslations[sasPrevail.variable][sasPrevail.valueIndex];
+            op.preconditions.add(var);
+        }
+        foreach(SASEffect &sasEffect, sasOp.effects){
+            if (sasEffect.condition.size() > 0) {
+                this->error = "Conditional effects not supported";
+                return false;
+            }
+            // sasEffect.valueIndexBefore == -1 means "don't care"
+            if (sasEffect.valueIndexBefore != -1) {
+                Variable *var = variableTranslations[sasEffect.variable][sasEffect.valueIndexBefore];
+                op.preconditions.add(var);
+            }
+            Variable *var = variableTranslations[sasEffect.variable][sasEffect.valueIndexAfter];
+            op.effects.add(var);
+        }
+        if (op.preconditions.size() == 0) {
+            op.preconditions.add(dummyPrecondition);
+        }
+        task.operators.push_back(op);
+    }
+    return true;
 }
 
 bool tryParseInt(const string &str, int &value) {

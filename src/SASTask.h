@@ -20,8 +20,6 @@ public:
     std::vector<SASVariableAssignment> goal;
     std::vector<SASOperator> operators;
     std::vector<SASAxiom> axioms;
-
-    bool deleteRelaxation(RelaxedTask &task);
 };
 
 struct SASVariable {
@@ -87,6 +85,14 @@ private:
     bool nextLineAsInt(int &value);
     bool nextLinesAsList(std::vector<std::string>& list);
     bool isNextLine(const std::string &text);
+};
+
+class DeleteRelaxer {
+public:
+    bool deleteRelaxation(SASTask &sasTask, RelaxedTask &task);
+    std::string getLastError() { return this->error; }
+private:
+    std::string error;
 };
 
 

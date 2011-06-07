@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string>
 #include <iostream>
+#include <queue>
 
 #include "RelaxedTask.h"
 #include "foreach.h"
@@ -38,7 +39,67 @@ Variable *RelaxedTask::getVariable(const std::string &name) {
     throw "Unknown variable '" + name + "'";
 }
 
+bool RelaxedTask::removeIrrelevantVariables() {
+    this->crossreference();
+    map<Variable *, bool> relevant;
+    foreach(Variable &var, this->variables) {
+        relevant[&var] = false;
+    }
+    queue<Variable *> relevantVariableQueue;
+    relevantVariableQueue.push(this->goal);
+    while (!relevantVariableQueue.empty()) {
+        Variable *var = relevantVariableQueue.front();
+        relevantVariableQueue.pop();
+        if (relevant[var]) continue;
+        relevant[var] = true;
+        foreach(RelaxedOperator *op, var->effect_of) {
+            foreach(Variable *pre, op->preconditions) {
+                relevantVariableQueue.push(pre);
+            }
+        }
+    }
+    if (!relevant[this->init]){
+        // unsolvable
+        return false;
+    }
+    Variable *dummyPrecondition = this->getVariable("@@precond");
+    if (!dummyPrecondition) {
+        throw "Task is not in canonical form. Use parse function to create a task object.";
+    }
+    list<RelaxedOperator>::iterator itOp = this->operators.begin();
+    while (itOp != this->operators.end()) {
+        itOp->effects.removeIrrelevant(relevant);
+        itOp->preconditions.removeIrrelevant(relevant);
+        if (itOp->effects.size() == 0) {
+            itOp = this->operators.erase(itOp);
+            continue;
+        }
+        if (itOp->preconditions.size() == 0) {
+            itOp->preconditions.add(dummyPrecondition);
+            relevant[dummyPrecondition] = true;
+        }
+        ++itOp;
+    }
+    list<Variable>::iterator itVar = this->variables.begin();
+    while (itVar != this->variables.end()) {
+        if (!relevant[&(*itVar)])
+            itVar = this->variables.erase(itVar);
+        else
+            ++itVar;
+    }
+    // cross reference entries can be invalid, so recreate them
+    this->crossreference();
+    if (this->operators.empty()) {
+        return this->init == this->goal;
+    }
+    return true;
+}
+
 void RelaxedTask::crossreference() {
+    foreach(Variable &var, this->variables) {
+        var.effect_of.clear();
+        var.precondition_of.clear();
+    }
     foreach(RelaxedOperator &op, this->operators) {
         foreach(Variable *effect, op.effects) {
             effect->effect_of.push_back(&op);

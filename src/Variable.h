@@ -4,6 +4,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <map>
 
 enum VariableState {
     UNREACHABLE = -1,
@@ -34,6 +35,7 @@ public:
     bool isDisjointWith(const VariableSet &other) const;
     bool isSubsetOf(const VariableSet &other) const;
     int size() const;
+    void removeIrrelevant(std::map<Variable *, bool> &relevant);
 
     // allow iteration over set
     iterator begin();
