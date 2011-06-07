@@ -53,7 +53,7 @@ struct SASAxiom {
 
 class SASParser {
 public:
-    bool parseTask(const char *taskFilename, const char *translationKeyFilename, SASTask &task);
+    bool parseTask(const std::string &taskFilename, const std::string &translationKeyFilename, SASTask &task);
     std::string getLastError() { return this->error; }
 private:
     std::string error;

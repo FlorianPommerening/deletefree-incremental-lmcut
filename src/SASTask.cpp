@@ -9,9 +9,9 @@
 
 using namespace std;
 
-bool SASParser::parseTask(const char *taskFilename, const char *translationKeyFilename,
+bool SASParser::parseTask(const string &taskFilename, const string &translationKeyFilename,
                           SASTask &taskOut) {
-    this->taskfile.open(taskFilename);
+    this->taskfile.open(taskFilename.c_str());
     int metric;
     bool success = (
             this->parseMetric(metric) &&
@@ -21,10 +21,10 @@ bool SASParser::parseTask(const char *taskFilename, const char *translationKeyFi
             this->parseOperators(taskOut.variables, metric, taskOut.operators) &&
             this->parseAxioms(taskOut.variables, taskOut.axioms));
     this->taskfile.close();
-    if (!success || translationKeyFilename == NULL)
+    if (!success || translationKeyFilename.empty())
         return success;
 
-    this->taskfile.open(translationKeyFilename);
+    this->taskfile.open(translationKeyFilename.c_str());
     success = this->parseTranslationKey(taskOut.variables);
     this->taskfile.close();
     return success;
