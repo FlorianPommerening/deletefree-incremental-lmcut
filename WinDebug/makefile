@@ -44,7 +44,7 @@ all: hplusbnb
 hplusbnb: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ -L"C:\Program Files\boost\lib" -o"hplusbnb" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++  -o"hplusbnb" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

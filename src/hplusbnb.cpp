@@ -26,6 +26,19 @@ int main() {
         return 1;
     }
     cout << "parse ok" << endl;
+
+    RelaxedTask translatedTask;
+    bool relaxationOK = sasTask.deleteRelaxation(translatedTask);
+    if (!relaxationOK) {
+        cout << "Task may not contain axioms or conditional effects" << endl;
+        return 1;
+    }
+    cout << "relax ok" << endl;
+    translatedTask.crossreference();
+    cout << hmax(translatedTask) << endl;
+
+
+
     RelaxedTask parsedTask;
     try {
         parsedTask.parseFile("test.task");
