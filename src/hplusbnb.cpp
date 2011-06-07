@@ -4,6 +4,7 @@
 #include <ostream>
 #include <sstream>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "Variable.h"
 #include "RelaxedOperator.h"
@@ -17,7 +18,7 @@ using namespace std;
 using namespace boost::filesystem;
 
 // needed for boost_foreach
-typedef map<string, float> TimerResults;
+typedef map<string, string> Results;
 
 const string RESULTS_DIR = "../../results/";
 const string TRANSLATIONS_DIR = "../../translations/";
@@ -36,14 +37,18 @@ int main(int argc, char *argv[]) {
     string domainFilename = argv[2];
     string problemName = basename(problemFilename);
     string domainName = path(domainFilename).parent_path().leaf();
-    path translationPath = path(TRANSLATIONS_DIR + domainName + '/' + problemName);
+    path translationPath = path(TRANSLATIONS_DIR) / domainName / problemName;
     path taskTranslationPath = translationPath / "output.sas";
     path translationKeyPath = translationPath / "test.groups";
 
-    TimerResults times;
+    Results results;
     Timer cpuTimer(CPU_TIME);
     Timer wallClockTimer(WALLCLOCK_TIME);
+    cout.setf(ios::fixed, ios::floatfield);
+    cout.setf(ios::showpoint);
+    cout << setprecision(3);
 
+    cout << "Translating problem file ... ";
     // check if cached translations already exist
     if (!exists(taskTranslationPath) || !exists(translationKeyPath)) {
         // call python translate.py to translate file
@@ -53,52 +58,67 @@ int main(int argc, char *argv[]) {
             cout << "Error while translating the problem into SAS." << endl;
             return 1;
         }
-        times["translation"] = wallClockTimer.elapsed();
+        results["translation_time"] = boost::lexical_cast<string>(wallClockTimer.elapsed());
+        cout << "done " << results["translation_time"] << endl;
         if (!exists(taskTranslationPath) || !exists(translationKeyPath)) {
             cout << "Translating the problem into SAS did not produce the expected output files." << endl;
             return 1;
         }
+    } else {
+        cout << "translation already exists" << endl;
     }
 
+    cout << "Parsing translated file ... ";
     SASTask sasTask;
     SASParser parser;
     cpuTimer.restart();
     bool parseOK = parser.parseTask(taskTranslationPath.string(), translationKeyPath.string(), sasTask);
-    times["parse"] = cpuTimer.elapsed();
+    results["parse_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
     if (!parseOK) {
-        cout << parser.getLastError() << endl;
+        cout << endl << parser.getLastError() << endl;
         return 1;
     }
-    cout << "parse ok" << endl;
+    cout << "done " << results["parse_time"] << endl;
 
+    cout << "Relaxing task ... ";
     RelaxedTask translatedTask;
     DeleteRelaxer relaxer;
     cpuTimer.restart();
     bool relaxationOK = relaxer.deleteRelaxation(sasTask, translatedTask);
-    times["relaxation"] = cpuTimer.elapsed();
+    results["relaxation_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
     if (!relaxationOK) {
         cout << relaxer.getLastError() << endl;
         return 1;
     }
-    cout << "relax ok" << endl;
+    cout << "done " << results["relaxation_time"] << endl;
+
+    cout << "Removing irrelevant variables ... ";
     cpuTimer.restart();
     if (!translatedTask.removeIrrelevantVariables()) {
         cout << "Unsolvable task." << endl;
         return 1;
     }
-    times["relevance_analysis"] = cpuTimer.elapsed();
+    results["relevance_analysis_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
+    cout << "done " << results["relevance_analysis_time"] << endl;
 
+    cout << "Calculating h^max ... ";
     cpuTimer.restart();
-    cout << hmax(translatedTask) << endl;
-    times["h_max"] = cpuTimer.elapsed();
+    int hmax_value = hmax(translatedTask);
+    results["h_max_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
+    results["h_max"] = intToStr(hmax_value);
+    cout << "done (" << hmax_value << ") " << results["h_max_time"] << endl;
 
-    cout << endl << "Timing:" << endl;
-    cout.setf(ios::fixed, ios::floatfield);
-    cout.setf(ios::showpoint);
-    cout << setprecision(3);
-    foreach(const TimerResults::value_type &timerPair, times){
-        cout << timerPair.first << "= " << timerPair.second << endl;
+
+    cout << "Writing results ... ";
+    path resultsFilePath = path(RESULTS_DIR) / (domainName + "_" + problemName + ".result");
+    ofstream resultsFile(resultsFilePath.string().c_str());
+    resultsFile << "domain: " << domainName << endl;
+    resultsFile << "problem: " << problemName << endl;
+    foreach(const Results::value_type &resultsPair, results){
+        resultsFile << resultsPair.first << " " << resultsPair.second << endl;
     }
+    resultsFile.close();
+    cout << "done" << endl;
 
     return 0;
 }
