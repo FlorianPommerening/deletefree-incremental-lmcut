@@ -82,6 +82,7 @@ bool SASTask::deleteRelaxation(RelaxedTask &task) {
             Variable *var = variableTranslations[sasEffect.variable][sasEffect.valueIndexAfter];
             op.effects.add(var);
         }
+        task.operators.push_back(op);
     }
     return true;
 }
