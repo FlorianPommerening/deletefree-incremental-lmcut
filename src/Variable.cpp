@@ -52,8 +52,9 @@ void VariableSet::removeIrrelevant(map<Variable *, bool> &relevant) {
     while (it != this->variables.end()) {
         // copy iterator so it can be used for erase without breaking the loop
         set<Variable *>::iterator current = it;
+        // increment iterator before (!!!) erase
+        ++it;
         if (!relevant[*current])
             this->variables.erase(current);
-        ++it;
     }
 }
