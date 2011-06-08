@@ -4,4 +4,4 @@
 
 USER_OBJS :=
 
-LIBS := -lboost_system -lboost_filesystem
+LIBS := -lboost_system -lrt -lboost_filesystem
