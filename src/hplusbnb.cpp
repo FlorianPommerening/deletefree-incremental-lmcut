@@ -94,20 +94,22 @@ int main(int argc, char *argv[]) {
 
     cout << "Removing irrelevant variables ... ";
     cpuTimer.restart();
-    if (!translatedTask.removeIrrelevantVariables()) {
-        cout << "Unsolvable task." << endl;
-        return 1;
-    }
+    bool solvable = translatedTask.removeIrrelevantVariables();
     results["relevance_analysis_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
     cout << "done " << results["relevance_analysis_time"] << endl;
 
-    cout << "Calculating h^max ... ";
-    cpuTimer.restart();
-    int hmax_value = hmax(translatedTask);
-    results["h_max_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
-    results["h_max"] = intToStr(hmax_value);
-    cout << "done (" << hmax_value << ") " << results["h_max_time"] << endl;
-
+    if (solvable) {
+        cout << "Calculating h^max ... ";
+        cpuTimer.restart();
+        int hmax_value = hmax(translatedTask);
+        results["h_max_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
+        results["h_max"] = intToStr(hmax_value);
+        cout << "done (" << hmax_value << ") " << results["h_max_time"] << endl;
+    } else {
+        cout << "Unsolvable task." << endl;
+        results["h_max_time"] = "0";
+        results["h_max"] = "inf";
+    }
 
     cout << "Writing results ... ";
     path resultsFilePath = path(RESULTS_DIR) / (domainName + "_" + problemName + ".result");
