@@ -135,7 +135,7 @@ void RelaxedTask::parseTask(ifstream &taskfile) {
         if (!getline(taskfile, line) || line != "Operator") throw "'Operator' expected";
         if (!getline(taskfile, op.name)) throw "Operator name expected";
         if (!getline(taskfile, line)) throw "Operator cost expected";
-        op.cost = atoi(line.c_str());
+        op.baseCost = atoi(line.c_str());
         parseVariableSet(taskfile, op.preconditions);
         parseVariableSet(taskfile, op.effects);
         this->operators.push_back(op);

@@ -15,7 +15,7 @@ enum OperatorState {
 class RelaxedOperator {
 public:
     std::string name;
-    int cost;
+    int baseCost;
     VariableSet preconditions;
     int unsatisfiedPreconditions;
     Variable *preconditionChoice;
@@ -33,5 +33,6 @@ inline void RelaxedOperator::apply(const VariableSet &state, VariableSet &succes
 }
 
 typedef std::map<RelaxedOperator *, int> OperatorCosts;
+typedef OperatorCosts::value_type OperatorCostEntry;
 
 #endif

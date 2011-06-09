@@ -269,7 +269,7 @@ bool DeleteRelaxer::deleteRelaxation(SASTask &sasTask, RelaxedTask &task) {
 
     RelaxedOperator initOperator;
     initOperator.name = "@@init-operator";
-    initOperator.cost = 0;
+    initOperator.baseCost = 0;
     initOperator.preconditions.add(task.init);
     foreach(SASVariableAssignment &assignment, sasTask.init) {
         Variable *var = variableTranslations[assignment.variable][assignment.valueIndex];
@@ -280,7 +280,7 @@ bool DeleteRelaxer::deleteRelaxation(SASTask &sasTask, RelaxedTask &task) {
 
     RelaxedOperator goalOperator;
     goalOperator.name = "@@goal-operator";
-    goalOperator.cost = 0;
+    goalOperator.baseCost = 0;
     foreach(SASVariableAssignment &assignment, sasTask.goal) {
         Variable *var = variableTranslations[assignment.variable][assignment.valueIndex];
         goalOperator.preconditions.add(var);
@@ -291,7 +291,7 @@ bool DeleteRelaxer::deleteRelaxation(SASTask &sasTask, RelaxedTask &task) {
     foreach(SASOperator &sasOp, sasTask.operators) {
         RelaxedOperator op;
         op.name = sasOp.name;
-        op.cost = sasOp.cost;
+        op.baseCost = sasOp.cost;
         foreach(SASVariableAssignment &sasPrevail, sasOp.prevail){
             Variable *var = variableTranslations[sasPrevail.variable][sasPrevail.valueIndex];
             op.preconditions.add(var);

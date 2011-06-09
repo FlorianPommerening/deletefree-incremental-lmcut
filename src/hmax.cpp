@@ -14,7 +14,7 @@ int hmax(RelaxedTask &task) {
 int hmax(RelaxedTask &task, VariableSet &state) {
     OperatorCosts operatorCosts;
     foreach(RelaxedOperator &op, task.operators) {
-        operatorCosts[&op] = op.cost;
+        operatorCosts[&op] = op.baseCost;
     }
     return hmax(task, state, operatorCosts);
 }
@@ -25,6 +25,7 @@ int hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts) {
         var.closed = false;
     }
     foreach(RelaxedOperator &op, task.operators) {
+        op.preconditionChoice = NULL;
         op.unsatisfiedPreconditions = op.preconditions.size();
     }
     PriorityQueue queue;
@@ -66,5 +67,7 @@ int hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts) {
             }
         }
     }
+    if (task.goal->hmax == UNREACHABLE)
+        return UNSOLVABLE;
     return task.goal->hmax;
 }

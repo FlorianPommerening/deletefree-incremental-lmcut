@@ -24,7 +24,6 @@ public:
 
 class VariableSet {
 public:
-    typedef std::set<Variable*>::const_reference const_reference;
     typedef std::set<Variable*>::iterator iterator;
     typedef std::set<Variable*>::const_iterator const_iterator;
 
