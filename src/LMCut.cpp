@@ -12,7 +12,7 @@ int calculateLMCut(RelaxedTask &task) {
 }
 
 void Landmark::add(RelaxedOperator *op, int opCost) {
-    if (cost > this->cost) {
+    if (opCost > this->cost) {
         this->cost = opCost;
     }
     this->operatorEntries[op] = opCost;
@@ -121,6 +121,7 @@ int LMCutState::lmCut(VariableSet &state) {
             this->operatorToLandmark[op] = &cut;
             this->operatorCost[op] -= landmarkCost;
         }
+        hmax_value = hmax(*(this->task), state, this->operatorCost);
     }
     this->heuristicValue += additionalCost;
     return this->heuristicValue;
