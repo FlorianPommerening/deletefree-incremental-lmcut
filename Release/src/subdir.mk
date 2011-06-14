@@ -4,7 +4,9 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/BranchAndBoundSearch.cpp \
 ../src/LMCut.cpp \
+../src/OperatorSelector.cpp \
 ../src/RelaxedOperator.cpp \
 ../src/RelaxedTask.cpp \
 ../src/SASTask.cpp \
@@ -13,7 +15,9 @@ CPP_SRCS += \
 ../src/hplusbnb.cpp 
 
 OBJS += \
+./src/BranchAndBoundSearch.o \
 ./src/LMCut.o \
+./src/OperatorSelector.o \
 ./src/RelaxedOperator.o \
 ./src/RelaxedTask.o \
 ./src/SASTask.o \
@@ -22,7 +26,9 @@ OBJS += \
 ./src/hplusbnb.o 
 
 CPP_DEPS += \
+./src/BranchAndBoundSearch.d \
 ./src/LMCut.d \
+./src/OperatorSelector.d \
 ./src/RelaxedOperator.d \
 ./src/RelaxedTask.d \
 ./src/SASTask.d \
