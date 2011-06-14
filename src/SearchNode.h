@@ -2,7 +2,7 @@
 #define SEARCHNODE_H_
 
 #include <map>
-#include <vector>
+#include <list>
 
 #include "Landmark.h"
 #include "RelaxedTask.h"
@@ -15,14 +15,12 @@ public:
 
     SearchNode& ApplyOperator(RelaxedOperator *appliedOp);
     SearchNode& ForbidOperator(RelaxedOperator *forbiddenOp);
+    int getCostLowerBound() { return this->heuristicValue + this-> currentCost; };
+
     int heuristicValue;
-
-    // TODO
     int currentCost;
-    int costLowerBound;
     VariableSet currentState;
-    std::vector<RelaxedOperator *> partialPlan;
-
+    std::list<RelaxedOperator *> partialPlan;
 
 private:
     void updateHeuristicValue();

@@ -16,7 +16,7 @@ int BranchAndBoundSearch::run() {
 }
 
 int BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
-    if (this->costUpperBound != INFINITY && searchNode.costLowerBound >= this->costUpperBound) {
+    if (this->costUpperBound != INFINITY && searchNode.getCostLowerBound() >= this->costUpperBound) {
         return UNSOLVABLE;
     }
     // TODO could optimize this by saving goal in every VariableSet and setting a flag as soon as goal is added
@@ -48,7 +48,7 @@ int BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
         int planCost = this->recursiveBranchAndBound(*successor);
         if (planCost != UNSOLVABLE) {
             foundBetterPlan = true;
-            if (searchNode.costLowerBound >= this->costUpperBound)
+            if (searchNode.getCostLowerBound() >= this->costUpperBound)
                 break;
         }
         delete successor; successor = NULL;

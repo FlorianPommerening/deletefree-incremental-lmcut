@@ -20,9 +20,12 @@ SearchNode::SearchNode(RelaxedTask &task):
 
 SearchNode::SearchNode(const SearchNode &other):
                     heuristicValue(other.heuristicValue),
+                    currentCost(other.heuristicValue),
+                    currentState(other.currentState),
+                    partialPlan(other.partialPlan),
                     task(other.task),
                     landmarks(other.landmarks),
-                    operatorCost(other.operatorCost){
+                    operatorCost(other.operatorCost) {
     foreach(Landmark &landmark, this->landmarks) {
         foreach(Landmark::value_type &entry, landmark) {
             RelaxedOperator *op = entry.first;
