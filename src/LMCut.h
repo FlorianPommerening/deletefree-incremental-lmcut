@@ -43,13 +43,22 @@ public:
     LMCutState(const LMCutState &other);
     LMCutState& operator=(const LMCutState &rhs);
 
-    int initialState();
-    int operatorApplied(RelaxedOperator *appliedOp, VariableSet &resultingState);
-    int operatorForbidden(RelaxedOperator *forbiddenOp, VariableSet &resultingState);
+    LMCutState& initialState();
+    LMCutState& ApplyOperator(RelaxedOperator *appliedOp);
+    LMCutState& ForbidOperator(RelaxedOperator *forbiddenOp);
     int heuristicValue;
+
+    // TODO
+    int currentCost;
+    int costLowerBound;
+    VariableSet currentState;
+    std::vector<RelaxedOperator *> partialPlan;
+
+
 private:
-    int lmCut(VariableSet &state);
-    void findCut(VariableSet &state, Landmark &cut);
+    void updateHeuristicValue();
+    int lmCut();
+    void findCut(Landmark &cut);
     RelaxedTask *task;
     // has to be a list so pointers stay valid
     std::list<Landmark> landmarks;
