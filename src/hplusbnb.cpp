@@ -14,6 +14,7 @@
 #include "SASTask.h"
 #include "foreach.h"
 #include "Timer.h"
+#include "BranchAndBoundSearch.h"
 
 using namespace std;
 using namespace boost::filesystem;
@@ -113,6 +114,15 @@ int main(int argc, char *argv[]) {
         results["h_lmcut_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
         results["h_lmcut"] = intToStr(h_lmcut_value);
         cout << "done (" << h_lmcut_value << ") " << results["h_lmcut_time"] << endl;
+
+        cout << "Calculating h^+ ... " << flush;
+        cpuTimer.restart();
+        AchieveLandmarksOperatorSelector opSelector;
+        BranchAndBoundSearch search = BranchAndBoundSearch(translatedTask, opSelector);
+        int h_plus_value = search.run();
+        results["h_plus_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
+        results["h_plus"] = intToStr(h_plus_value);
+        cout << "done (" << h_plus_value << ") " << results["h_plus_time"] << endl;
     } else {
         cout << "Unsolvable task." << endl;
         results["h_max_time"] = "0";

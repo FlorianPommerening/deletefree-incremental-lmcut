@@ -21,13 +21,13 @@ public:
     int currentCost;
     VariableSet currentState;
     std::list<RelaxedOperator *> partialPlan;
-
-private:
-    void updateHeuristicValue();
-    RelaxedTask *task;
     // has to be a list so pointers stay valid
     std::list<Landmark> landmarks;
     OperatorCosts operatorCost;
+    RelaxedTask *task;
+
+private:
+    void updateHeuristicValue();
     std::map<RelaxedOperator *, Landmark *> operatorToLandmark;
 };
 

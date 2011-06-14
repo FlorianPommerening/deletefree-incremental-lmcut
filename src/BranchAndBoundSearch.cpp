@@ -27,7 +27,7 @@ int BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
 
     RelaxedOperator *nextOperator = NULL;
     bool addFirst = true;
-    this->operatorSelector.select(*this, nextOperator, &addFirst);
+    this->operatorSelector.select(searchNode, this->costUpperBound, nextOperator, &addFirst);
     if (nextOperator == NULL) {
         return UNSOLVABLE;
     }
