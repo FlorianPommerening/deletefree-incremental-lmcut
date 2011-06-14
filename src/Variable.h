@@ -29,6 +29,7 @@ public:
 
     VariableSet();
 
+    void clear();
     void add(Variable *element);
     bool contains(Variable *element);
     void inplaceUnion(const VariableSet &other);
