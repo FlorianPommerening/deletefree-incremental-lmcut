@@ -1,7 +1,7 @@
 #include "SearchNode.h"
 #include "foreach.h"
 #include "hmax.h"
-#include "LMCut.h"
+#include "lmcut.h"
 
 #include <stack>
 
@@ -28,7 +28,7 @@ SearchNode::SearchNode(const SearchNode &other):
 }
 
 SearchNode& SearchNode::operator=(const SearchNode &rhs) {
-    throw "Assignment operator should not be used for LMCutState";
+    throw "Assignment operator should not be used for SearchNode";
 }
 
 SearchNode& SearchNode::initialNode() {

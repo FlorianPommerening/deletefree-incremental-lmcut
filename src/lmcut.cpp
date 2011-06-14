@@ -1,4 +1,4 @@
-#include "LMCut.h"
+#include "lmcut.h"
 #include "foreach.h"
 #include "hmax.h"
 #include "SearchNode.h"

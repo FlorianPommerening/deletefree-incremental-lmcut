@@ -5,7 +5,6 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/BranchAndBoundSearch.cpp \
-../src/LMCut.cpp \
 ../src/Landmark.cpp \
 ../src/OperatorSelector.cpp \
 ../src/RelaxedOperator.cpp \
@@ -14,11 +13,11 @@ CPP_SRCS += \
 ../src/SearchNode.cpp \
 ../src/Variable.cpp \
 ../src/hmax.cpp \
-../src/hplusbnb.cpp 
+../src/hplusbnb.cpp \
+../src/lmcut.cpp 
 
 OBJS += \
 ./src/BranchAndBoundSearch.o \
-./src/LMCut.o \
 ./src/Landmark.o \
 ./src/OperatorSelector.o \
 ./src/RelaxedOperator.o \
@@ -27,11 +26,11 @@ OBJS += \
 ./src/SearchNode.o \
 ./src/Variable.o \
 ./src/hmax.o \
-./src/hplusbnb.o 
+./src/hplusbnb.o \
+./src/lmcut.o 
 
 CPP_DEPS += \
 ./src/BranchAndBoundSearch.d \
-./src/LMCut.d \
 ./src/Landmark.d \
 ./src/OperatorSelector.d \
 ./src/RelaxedOperator.d \
@@ -40,7 +39,8 @@ CPP_DEPS += \
 ./src/SearchNode.d \
 ./src/Variable.d \
 ./src/hmax.d \
-./src/hplusbnb.d 
+./src/hplusbnb.d \
+./src/lmcut.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

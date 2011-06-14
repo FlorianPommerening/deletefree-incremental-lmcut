@@ -10,7 +10,7 @@
 #include "RelaxedOperator.h"
 #include "RelaxedTask.h"
 #include "hmax.h"
-#include "LMCut.h"
+#include "lmcut.h"
 #include "SASTask.h"
 #include "foreach.h"
 #include "Timer.h"
