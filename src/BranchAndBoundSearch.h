@@ -2,7 +2,7 @@
 #define BRANCHANDBOUNDSEARCH_H_
 
 #include "RelaxedTask.h"
-#include "LMCut.h"
+#include "SearchNode.h"
 #include "OperatorSelector.h"
 
 enum UpperBoundSpecialCases {
@@ -17,7 +17,7 @@ private:
     RelaxedTask &task;
     OperatorSelector &operatorSelector;
     int costUpperBound;
-    int recursiveBranchAndBound(LMCutState &lmcutState);
+    int recursiveBranchAndBound(SearchNode &searchNode);
 };
 
 #endif /* BRANCHANDBOUNDSEARCH_H_ */

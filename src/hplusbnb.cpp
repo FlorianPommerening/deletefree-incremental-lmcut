@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
 
         cout << "Calculating h^lmcut ... " << flush;
         cpuTimer.restart();
-        int h_lmcut_value = calculateLMCut(translatedTask);
+        int h_lmcut_value = lmCut(translatedTask);
         results["h_lmcut_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
         results["h_lmcut"] = intToStr(h_lmcut_value);
         cout << "done (" << h_lmcut_value << ") " << results["h_lmcut_time"] << endl;

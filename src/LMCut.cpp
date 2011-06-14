@@ -1,147 +1,43 @@
 #include "LMCut.h"
 #include "foreach.h"
 #include "hmax.h"
+#include "SearchNode.h"
 
 #include <stack>
 
 using namespace std;
 
-int calculateLMCut(RelaxedTask &task) {
-    LMCutState lmcut = LMCutState(task);
-    return lmcut.initialState().heuristicValue;
+int lmCut(RelaxedTask &task) {
+    SearchNode initialNode = SearchNode(task).initialNode();
+    return initialNode.heuristicValue;
 }
 
-void Landmark::add(RelaxedOperator *op, int opCost) {
-    if (opCost > this->cost) {
-        this->cost = opCost;
-    }
-    this->operatorEntries[op] = opCost;
-}
-
-void Landmark::remove(RelaxedOperator *op) {
-    map<RelaxedOperator *, int>::iterator it = this->operatorEntries.find(op);
-    if (it != this->operatorEntries.end() && this->operatorEntries[op] == this->cost) {
-        foreach(Landmark::value_type &entry, this->operatorEntries) {
-            int opCost = entry.second;
-            if (this->cost < opCost) {
-                this->cost = opCost;
-            }
-        }
-    }
-    this->remove(op);
-}
-
-LMCutState::LMCutState(RelaxedTask &task): heuristicValue(0),
-                                           task(&task) {
-    foreach(RelaxedOperator &op, task.operators) {
-        this->operatorCost[&op] = op.baseCost;
-    }
-}
-
-LMCutState::LMCutState(const LMCutState &other):
-                    heuristicValue(other.heuristicValue),
-                    task(other.task),
-                    landmarks(other.landmarks),
-                    operatorCost(other.operatorCost){
-    foreach(Landmark &landmark, this->landmarks) {
-        foreach(Landmark::value_type &entry, landmark) {
-            RelaxedOperator *op = entry.first;
-            this->operatorToLandmark[op] = &landmark;
-        }
-    }
-}
-
-LMCutState& LMCutState::operator=(const LMCutState &rhs) {
-    throw "Assignment operator should not be used for LMCutState";
-}
-
-LMCutState& LMCutState::initialState() {
-    this->currentState.clear();
-    this->currentState.add(task->init);
-    this->updateHeuristicValue();
-    return *this;
-}
-
-LMCutState& LMCutState::ApplyOperator(RelaxedOperator *appliedOp) {
-    appliedOp->apply(this->currentState);
-    partialPlan.push_back(appliedOp);
-    this->currentCost += appliedOp->baseCost;
-    this->operatorCost[appliedOp] = FORBIDDEN;
-    map<RelaxedOperator *, Landmark *>::iterator it = this->operatorToLandmark.find(appliedOp);
-    if (it != this->operatorToLandmark.end()) {
-        Landmark *containingLM = this->operatorToLandmark[appliedOp];
-        // "undo" this landmark: decrease heuristic value and
-        // increase all contained operator's costs by the LM's cost
-        int landmarkCost = containingLM->cost;
-        this->heuristicValue -= landmarkCost;
-        foreach(Landmark::value_type &entry, *containingLM) {
-            RelaxedOperator *op = entry.first;
-            if (op != appliedOp) {
-                this->operatorCost[op] -= landmarkCost;
-            }
-        }
-        this->landmarks.remove(*containingLM);
-        this->operatorToLandmark.erase(it);
-    }
-    // search for additional landmarks
-    this->updateHeuristicValue();
-    return *this;
-}
-
-LMCutState& LMCutState::ForbidOperator(RelaxedOperator *forbiddenOp) {
-    this->operatorCost[forbiddenOp] = FORBIDDEN;
-    map<RelaxedOperator *, Landmark *>::iterator it = this->operatorToLandmark.find(forbiddenOp);
-    if (it != this->operatorToLandmark.end()) {
-        Landmark *containingLM = this->operatorToLandmark[forbiddenOp];
-        // remove operator from landmark. If it was the only one,
-        // the problem becomes unsolvable
-        int oldLandmarkCost = containingLM->cost;
-        containingLM->remove(forbiddenOp);
-        int newLandmarkCost = containingLM->cost;
-        if (containingLM->size() == 0) {
-            this->heuristicValue = UNSOLVABLE;
-            return *this;
-        }
-        this->heuristicValue -= (oldLandmarkCost - newLandmarkCost);
-    }
-    // search for additional landmarks
-    this->updateHeuristicValue();
-    return *this;
-}
-
-void LMCutState::updateHeuristicValue() {
-    int lmCutValue = this->lmCut();
-    if (lmCutValue == UNSOLVABLE)
-        this->heuristicValue = UNSOLVABLE;
-    else
-        this->heuristicValue += lmCutValue;
-}
-
-int LMCutState::lmCut() {
-    int hmax_value = hmax(*(this->task), this->currentState, this->operatorCost);
+int lmCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts,
+          list<Landmark> &landmarks, map<RelaxedOperator *, Landmark *> &operatorToLandmark) {
+    int hmax_value = hmax(task, state, operatorCosts);
     if (hmax_value == UNSOLVABLE) {
         return UNSOLVABLE;
     }
     int lmcutValue = 0;
     while (hmax_value != 0) {
-        this->landmarks.push_back(Landmark());
-        Landmark &cut = this->landmarks.back();
-        this->findCut(cut);
+        landmarks.push_back(Landmark());
+        Landmark &cut = landmarks.back();
+        findCut(task, state, operatorCosts, cut);
         int landmarkCost = cut.cost;
         lmcutValue += landmarkCost;
         foreach(Landmark::value_type &entry, cut) {
             RelaxedOperator *op = entry.first;
-            this->operatorToLandmark[op] = &cut;
-            this->operatorCost[op] -= landmarkCost;
+            operatorToLandmark[op] = &cut;
+            operatorCosts[op] -= landmarkCost;
         }
-        hmax_value = hmax(*(this->task), this->currentState, this->operatorCost);
+        hmax_value = hmax(task, state, operatorCosts);
     }
     return lmcutValue;
 }
 
-void LMCutState::findCut(Landmark &cut) {
+void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts, Landmark &cut) {
     map<Variable *, list<RelaxedOperator *> > effectToZeroCostOp;
-    foreach(OperatorCostEntry &entry, this->operatorCost) {
+    foreach(OperatorCostEntry &entry, operatorCosts) {
         RelaxedOperator *op = entry.first;
         int cost = entry.second;
         if (cost == 0) {
@@ -152,7 +48,7 @@ void LMCutState::findCut(Landmark &cut) {
     }
     set<Variable *> goalZone;
     stack<Variable *> goalStack;
-    goalStack.push(this->task->goal);
+    goalStack.push(task.goal);
     while (!goalStack.empty()) {
         Variable *var = goalStack.top();
         goalStack.pop();
@@ -164,20 +60,20 @@ void LMCutState::findCut(Landmark &cut) {
         if (it == effectToZeroCostOp.end())
             continue;
         foreach(RelaxedOperator *op, it->second) {
-            if (this->operatorCost[op] == FORBIDDEN || op->preconditionChoice == NULL)
+            if (operatorCosts[op] == FORBIDDEN || op->preconditionChoice == NULL)
                 continue;
             goalStack.push(op->preconditionChoice);
         }
     }
-    foreach(RelaxedOperator &op, this->task->operators) {
+    foreach(RelaxedOperator &op, task.operators) {
         op.unsatisfiedPreconditions = op.preconditions.size();
     }
-    foreach(Variable &var, this->task->variables) {
+    foreach(Variable &var, task.variables) {
         var.closed = false;
     }
 
     stack<Variable *> reachedStack;
-    foreach(Variable *var, this->currentState) {
+    foreach(Variable *var, state) {
         reachedStack.push(var);
     }
     while (!reachedStack.empty()) {
@@ -187,7 +83,7 @@ void LMCutState::findCut(Landmark &cut) {
             continue;
         var->closed = true;
         foreach(RelaxedOperator *op, var->precondition_of) {
-            int opCost = this->operatorCost[op];
+            int opCost = operatorCosts[op];
             if (opCost == FORBIDDEN)
                 continue;
             op->unsatisfiedPreconditions--;
