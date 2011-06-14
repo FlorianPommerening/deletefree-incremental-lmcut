@@ -117,6 +117,10 @@ int main(int argc, char *argv[]) {
         cout << "Unsolvable task." << endl;
         results["h_max_time"] = "0";
         results["h_max"] = "inf";
+        results["h_lmcut_time"] = "0";
+        results["h_lmcut"] = "inf";
+        results["h_plus_time"] = "0";
+        results["h_plus"] = "inf";
     }
 
     cout << "Writing results ... " << flush;
