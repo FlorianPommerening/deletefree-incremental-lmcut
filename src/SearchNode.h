@@ -13,7 +13,6 @@ public:
     SearchNode(const SearchNode &other);
     SearchNode& operator=(const SearchNode &rhs);
 
-    SearchNode& initialNode();
     SearchNode& ApplyOperator(RelaxedOperator *appliedOp);
     SearchNode& ForbidOperator(RelaxedOperator *forbiddenOp);
     int heuristicValue;

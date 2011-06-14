@@ -7,11 +7,15 @@
 
 using namespace std;
 
-SearchNode::SearchNode(RelaxedTask &task): heuristicValue(0),
-                                           task(&task) {
+SearchNode::SearchNode(RelaxedTask &task):
+        heuristicValue(0),
+        currentCost(0),
+        task(&task) {
+    this->currentState.add(task.init);
     foreach(RelaxedOperator &op, task.operators) {
         this->operatorCost[&op] = op.baseCost;
     }
+    this->updateHeuristicValue();
 }
 
 SearchNode::SearchNode(const SearchNode &other):
@@ -29,13 +33,6 @@ SearchNode::SearchNode(const SearchNode &other):
 
 SearchNode& SearchNode::operator=(const SearchNode &rhs) {
     throw "Assignment operator should not be used for SearchNode";
-}
-
-SearchNode& SearchNode::initialNode() {
-    this->currentState.clear();
-    this->currentState.add(task->init);
-    this->updateHeuristicValue();
-    return *this;
 }
 
 SearchNode& SearchNode::ApplyOperator(RelaxedOperator *appliedOp) {

@@ -8,7 +8,7 @@ BranchAndBoundSearch::BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &
 
 int BranchAndBoundSearch::run() {
     this->costUpperBound = INFINITY;
-    SearchNode initialNode = SearchNode(this->task).initialNode();
+    SearchNode initialNode = SearchNode(this->task);
     if (initialNode.heuristicValue == UNSOLVABLE) {
         return UNSOLVABLE;
     }

@@ -8,7 +8,7 @@
 using namespace std;
 
 int lmCut(RelaxedTask &task) {
-    SearchNode initialNode = SearchNode(task).initialNode();
+    SearchNode initialNode = SearchNode(task);
     return initialNode.heuristicValue;
 }
 
