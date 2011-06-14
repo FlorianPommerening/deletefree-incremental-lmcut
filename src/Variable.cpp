@@ -15,11 +15,14 @@ void VariableSet::add(Variable *element) {
     this->variables.insert(element);
 }
 
-void VariableSet::setToUnion(const VariableSet &set1, const VariableSet &set2) {
-    this->variables.clear();
-    set_union(set1.variables.begin(), set1.variables.end(),
-              set2.variables.begin(), set2.variables.end(),
-              inserter(this->variables, this->variables.begin()));
+bool VariableSet::contains(Variable *element) {
+    return (this->variables.find(element) != this->variables.end());
+}
+
+void VariableSet::inplaceUnion(const VariableSet &other) {
+    int mid = this->size();
+    set_difference(other.begin(), other.end(), back_inserter(*this));
+    inplace_merge(this->begin(), this->begin() + mid, this->end());
 }
 
 bool VariableSet::isDisjointWith(const VariableSet &other) const {

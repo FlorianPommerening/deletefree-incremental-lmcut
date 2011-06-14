@@ -30,7 +30,8 @@ public:
     VariableSet();
 
     void add(Variable *element);
-    void setToUnion(const VariableSet &set1, const VariableSet &set2);
+    bool contains(Variable *element);
+    void inplaceUnion(const VariableSet &other);
     bool isDisjointWith(const VariableSet &other) const;
     bool isSubsetOf(const VariableSet &other) const;
     int size() const;

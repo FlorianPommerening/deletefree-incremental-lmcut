@@ -21,15 +21,15 @@ public:
     Variable *preconditionChoice;
     VariableSet effects;
     bool isApplicable(const VariableSet &state) const;
-    void apply(const VariableSet &state, VariableSet &successorState) const;
+    void apply(VariableSet &state) const;
 };
 
 inline bool RelaxedOperator::isApplicable(const VariableSet &state) const {
     return this->preconditions.isSubsetOf(state);
 }
 
-inline void RelaxedOperator::apply(const VariableSet &state, VariableSet &successorState) const {
-    successorState.setToUnion(state, this->effects);
+inline void RelaxedOperator::apply(VariableSet &state) const {
+    state.inplaceUnion(this->effects);
 }
 
 typedef std::map<RelaxedOperator *, int> OperatorCosts;
