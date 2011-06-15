@@ -88,7 +88,6 @@ void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
                 // operator cost == infinity --> operator forbidden
                 continue;
             }
-            cout << operatorCost << endl;
             op->unsatisfiedPreconditions--;
             if (op->unsatisfiedPreconditions == 0) {
                 bool addedToCut = false;

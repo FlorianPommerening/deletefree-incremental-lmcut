@@ -17,28 +17,8 @@ UIntEx BranchAndBoundSearch::run() {
 }
 
 UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
-    std::cout << std::endl;
-    std::cout << "BEGIN NODE (" << searchNode.currentCost << " + " << searchNode.heuristicValue << " = " << searchNode.getCostLowerBound() << " <= X <= " << this->costUpperBound << ")" << std::endl;
-    std::cout << "Plan" << std::endl;
-    foreach(RelaxedOperator *op, searchNode.partialPlan) {
-        std::cout << op->name << ", ";
-    }
-    std::cout << std::endl;
-    std::cout << "Forbidden" << std::endl;
-    foreach(RelaxedOperator &op, searchNode.task->operators) {
-        if (searchNode.operatorCost[&op] == INFINITY)
-            std::cout << op.name << ", ";
-    }
-    std::cout << std::endl;
-    std::cout << "Landmarks" << std::endl;
-    foreach(Landmark &landmark, searchNode.landmarks) {
-        foreach(Landmark::value_type &entry, landmark) {
-            RelaxedOperator *op = entry.first;
-            std::cout << op->name << ", ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << "END NODE" << std::endl;
+    // very heavy on the output, use only for bug tracing
+    // printNode(searchNode, this->costUpperBound);
 
     if (searchNode.getCostLowerBound() >= this->costUpperBound) {
         return INFINITY;
@@ -82,4 +62,29 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
         return this->costUpperBound;
     // else
     return INFINITY;
+}
+
+void printNode(SearchNode &searchNode, UIntEx &upperBound) {
+    std::cout << std::endl;
+    std::cout << "BEGIN NODE (" << searchNode.currentCost << " + " << searchNode.heuristicValue << " = " << searchNode.getCostLowerBound() << " <= X <= " << upperBound << ")" << std::endl;
+    std::cout << "Plan" << std::endl;
+    foreach(RelaxedOperator *op, searchNode.partialPlan) {
+        std::cout << op->name << ", ";
+    }
+    std::cout << std::endl;
+    std::cout << "Forbidden" << std::endl;
+    foreach(RelaxedOperator &op, searchNode.task->operators) {
+        if (searchNode.operatorCost[&op] == INFINITY)
+            std::cout << op.name << ", ";
+    }
+    std::cout << std::endl;
+    std::cout << "Landmarks" << std::endl;
+    foreach(Landmark &landmark, searchNode.landmarks) {
+        foreach(Landmark::value_type &entry, landmark) {
+            RelaxedOperator *op = entry.first;
+            std::cout << op->name << ", ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "END NODE" << std::endl;
 }

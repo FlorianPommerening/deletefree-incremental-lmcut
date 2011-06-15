@@ -11,6 +11,7 @@ CPP_SRCS += \
 ../src/RelaxedTask.cpp \
 ../src/SASTask.cpp \
 ../src/SearchNode.cpp \
+../src/UIntEx.cpp \
 ../src/Variable.cpp \
 ../src/hmax.cpp \
 ../src/hplusbnb.cpp \
@@ -24,6 +25,7 @@ OBJS += \
 ./src/RelaxedTask.o \
 ./src/SASTask.o \
 ./src/SearchNode.o \
+./src/UIntEx.o \
 ./src/Variable.o \
 ./src/hmax.o \
 ./src/hplusbnb.o \
@@ -37,6 +39,7 @@ CPP_DEPS += \
 ./src/RelaxedTask.d \
 ./src/SASTask.d \
 ./src/SearchNode.d \
+./src/UIntEx.d \
 ./src/Variable.d \
 ./src/hmax.d \
 ./src/hplusbnb.d \

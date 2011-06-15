@@ -101,6 +101,7 @@ int main(int argc, char *argv[]) {
     cout << "done " << results["relevance_analysis_time"] << endl;
 
     if (solvable) {
+/*
         cout << "Calculating h^max ... " << flush;
         cpuTimer.restart();
         UIntEx hmax_value = hmax(translatedTask);
@@ -114,7 +115,7 @@ int main(int argc, char *argv[]) {
         results["h_lmcut_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
         results["h_lmcut"] = h_lmcut_value.toString();
         cout << "done (" << h_lmcut_value << ") " << results["h_lmcut_time"] << endl;
-
+*/
         cout << "Calculating h^+ ... " << flush;
         cpuTimer.restart();
         AchieveLandmarksOperatorSelector opSelector;

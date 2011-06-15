@@ -1,7 +1,5 @@
 #include "hmax.h"
 
-#include <iostream>
-
 #include "foreach.h"
 #include "PriorityQueue.h"
 

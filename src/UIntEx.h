@@ -22,6 +22,8 @@ public:
     UIntEx(int value, bool isFinite) : isFinite(isFinite),       value(value) { }
     UIntEx(const UIntEx &other)      : isFinite(other.isFinite), value(other.value) { }
 
+    // TODO consider writing operators for int/unsigned int to avoid unnecessary conversions (profile first)
+
     UIntEx& operator=(const UIntEx &other);
     UIntEx& operator+=(const UIntEx &other);
     UIntEx& operator-=(const UIntEx &other);
