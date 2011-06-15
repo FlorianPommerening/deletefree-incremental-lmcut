@@ -83,15 +83,18 @@ void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
             continue;
         var->closed = true;
         foreach(RelaxedOperator *op, var->precondition_of) {
-            if (operatorCosts[op] == INFINITY)
+            unsigned int operatorCost;
+            if (!operatorCosts[op].hasFiniteValue(operatorCost)) {
+                // operator cost == infinity --> operator forbidden
                 continue;
-            int opCost = operatorCosts[op].integerValue();
+            }
+            cout << operatorCost << endl;
             op->unsatisfiedPreconditions--;
             if (op->unsatisfiedPreconditions == 0) {
                 bool addedToCut = false;
                 foreach(Variable *effect, op->effects) {
                     if (goalZone.find(effect) != goalZone.end()){
-                        cut.add(op, opCost);
+                        cut.add(op, operatorCost);
                         addedToCut = true;
                         break;
                     }

@@ -41,11 +41,11 @@ UIntEx hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts)
         }
         var->closed = true;
         foreach(RelaxedOperator *op, var->precondition_of) {
-
-            if (operatorCosts[op] == INFINITY) {
+            unsigned int operatorCost;
+            if (!operatorCosts[op].hasFiniteValue(operatorCost)) {
+                // operator cost == infinity --> operator forbidden
                 continue;
             }
-            int operatorCost = operatorCosts[op].integerValue();
             op->unsatisfiedPreconditions--;
             if (op->unsatisfiedPreconditions == 0) {
                 // We discovered all preconditions of this action.

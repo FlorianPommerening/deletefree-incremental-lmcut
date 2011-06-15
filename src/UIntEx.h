@@ -2,25 +2,25 @@
 #define UINTEX_H_
 
 #include <iostream>
-
-typedef enum {
-    VT_INTEGER,
-    VT_INFINITY,
-    VT_NEG_INFINITY,
-    VT_NAN
-} ValueType;
+#include <stdexcept>
 
 /*
  * Represents unsigned integers or infinity. just like in unsigned int the
- * integer values in this class can still under- or overflow (i.e 0 - 1 == max(unsigned int))
- * but comparisons with infinity and NaN are possible and yield the expected result (3 < inf, NaN != NaN, etc.)
+ * integer values in this class can still under- or overflow (i.e. 0 - 1 == max(unsigned int))
+ * but comparisons with infinity are possible and yield the expected result (i.e. 3 < inf)
+ * Operations leading to invalid values (2 - inf, inf - inf) throw a SubtractedInfinity exception.
  */
 class UIntEx {
 public:
-    UIntEx()                          : type(VT_INTEGER), value(0) { }
-    UIntEx(int value)                 : type(VT_INTEGER), value(value) { }
-    UIntEx(int value, ValueType type) : type(type),       value(value) { }
-    UIntEx(const UIntEx &other)       : type(other.type), value(other.value) { }
+    class SubtractedInfinity: public std::underflow_error {
+    public:
+        SubtractedInfinity(const std::string& what_arg) : std::underflow_error(what_arg) {}
+    };
+
+    UIntEx()                         : isFinite(true),           value(0) { }
+    UIntEx(int value)                : isFinite(true),           value(value) { }
+    UIntEx(int value, bool isFinite) : isFinite(isFinite),       value(value) { }
+    UIntEx(const UIntEx &other)      : isFinite(other.isFinite), value(other.value) { }
 
     UIntEx& operator=(const UIntEx &other);
     UIntEx& operator+=(const UIntEx &other);
@@ -37,18 +37,14 @@ public:
     bool operator <=(const UIntEx& other) const;
     bool operator >=(const UIntEx& other) const;
 
-    unsigned int integerValue() const;
+    bool hasFiniteValue(unsigned int &value) const;
     std::string toString() const;
 private:
-    ValueType addValueTypes(const ValueType &t1, const ValueType &t2) const;
-    ValueType subtractValueTypes(const ValueType &t1, const ValueType &t2) const;
-    ValueType type;
+    bool isFinite;
     unsigned int value;
 };
 
-const UIntEx INFINITY = UIntEx(0, VT_INFINITY);
-const UIntEx NEG_INFINITY = UIntEx(0, VT_NEG_INFINITY);
-const UIntEx NAN = UIntEx(0, VT_NAN);
+const UIntEx INFINITY = UIntEx(0, false);
 
 std::ostream &operator<<(std::ostream &stream, const UIntEx n);
 
