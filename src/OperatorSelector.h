@@ -8,12 +8,12 @@ class BranchAndBoundSearch;
 
 class OperatorSelector {
 public:
-    virtual void select(SearchNode &searchNode, int costUpperBound, RelaxedOperator *nextOperator, bool *addFirst) =0;
+    virtual void select(SearchNode &searchNode, int costUpperBound, RelaxedOperator **nextOperator, bool *addFirst) =0;
 };
 
 class AchieveLandmarksOperatorSelector: public OperatorSelector {
 public:
-    void select(SearchNode &searchNode, int costUpperBound, RelaxedOperator *nextOperator, bool *addFirst);
+    void select(SearchNode &searchNode, int costUpperBound, RelaxedOperator **nextOperator, bool *addFirst);
 };
 
 #endif /* OPERATORSELECTOR_H_ */

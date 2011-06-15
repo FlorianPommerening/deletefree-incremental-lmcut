@@ -20,7 +20,7 @@ SearchNode::SearchNode(RelaxedTask &task):
 
 SearchNode::SearchNode(const SearchNode &other):
                     heuristicValue(other.heuristicValue),
-                    currentCost(other.heuristicValue),
+                    currentCost(other.currentCost),
                     currentState(other.currentState),
                     partialPlan(other.partialPlan),
                     landmarks(other.landmarks),

@@ -15,7 +15,11 @@ public:
 
     SearchNode& ApplyOperator(RelaxedOperator *appliedOp);
     SearchNode& ForbidOperator(RelaxedOperator *forbiddenOp);
-    int getCostLowerBound() { return this->heuristicValue + this-> currentCost; };
+    int getCostLowerBound() {
+        if (this->heuristicValue == UNSOLVABLE)
+            return UNSOLVABLE;
+        return this->heuristicValue + this-> currentCost;
+    };
 
     int heuristicValue;
     int currentCost;

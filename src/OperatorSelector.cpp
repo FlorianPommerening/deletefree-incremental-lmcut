@@ -5,28 +5,28 @@
 
 #include "limits.h"
 
-void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, int costUpperBound, RelaxedOperator *nextOperator, bool *addFirst) {
+void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, int costUpperBound, RelaxedOperator **nextOperator, bool *addFirst) {
     *addFirst = true;
-    nextOperator = NULL;
+    *nextOperator = NULL;
     int best = INT_MAX;
     VariableSet &currentState = searchNode.currentState;
     foreach(Landmark &landmark, searchNode.landmarks) {
-        if (nextOperator != NULL && landmark.size() >= best)
+        if (*nextOperator != NULL && landmark.size() >= best)
             continue;
         foreach(Landmark::value_type &entry, landmark) {
             RelaxedOperator *op = entry.first;
-            if (op->isApplicable(currentState)) {
-                nextOperator = op;
+            if (searchNode.operatorCost[op] != FORBIDDEN && op->isApplicable(currentState)) {
+                *nextOperator = op;
                 best = landmark.size();
             }
         }
     }
-    if (nextOperator != NULL)
+    if (*nextOperator != NULL)
         return;
     // pick first applicable
     foreach(RelaxedOperator &op, searchNode.task->operators) {
-        if (op.isApplicable(currentState)) {
-            nextOperator = &op;
+        if (searchNode.operatorCost[&op] != FORBIDDEN && op.isApplicable(currentState)) {
+            *nextOperator = &op;
             return;
         }
     }

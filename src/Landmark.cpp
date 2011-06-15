@@ -12,13 +12,18 @@ void Landmark::add(RelaxedOperator *op, int opCost) {
 
 void Landmark::remove(RelaxedOperator *op) {
     map<RelaxedOperator *, int>::iterator it = this->operatorEntries.find(op);
-    if (it != this->operatorEntries.end() && this->operatorEntries[op] == this->cost) {
-        foreach(Landmark::value_type &entry, this->operatorEntries) {
-            int opCost = entry.second;
-            if (this->cost < opCost) {
-                this->cost = opCost;
+    if (it != this->operatorEntries.end()) {
+        int removedOpCost = it->second;
+        this->operatorEntries.erase(it);
+        //recalculate cost if necessary
+        if (this->cost == removedOpCost) {
+            this->cost = 0;
+            foreach(Landmark::value_type &entry, this->operatorEntries) {
+                int opCost = entry.second;
+                if (this->cost < opCost) {
+                    this->cost = opCost;
+                }
             }
         }
     }
-    this->remove(op);
 }
