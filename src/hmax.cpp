@@ -5,13 +5,13 @@
 #include "foreach.h"
 #include "PriorityQueue.h"
 
-int hmax(RelaxedTask &task) {
+UIntEx hmax(RelaxedTask &task) {
     VariableSet initialState;
     initialState.add(task.init);
     return hmax(task, initialState);
 }
 
-int hmax(RelaxedTask &task, VariableSet &state) {
+UIntEx hmax(RelaxedTask &task, VariableSet &state) {
     OperatorCosts operatorCosts;
     foreach(RelaxedOperator &op, task.operators) {
         operatorCosts[&op] = op.baseCost;
@@ -19,9 +19,9 @@ int hmax(RelaxedTask &task, VariableSet &state) {
     return hmax(task, state, operatorCosts);
 }
 
-int hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts) {
+UIntEx hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts) {
     foreach(Variable &var, task.variables) {
-        var.hmax = UNREACHABLE;
+        var.hmax = INFINITY;
         var.closed = false;
     }
     foreach(RelaxedOperator &op, task.operators) {
@@ -41,9 +41,11 @@ int hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts) {
         }
         var->closed = true;
         foreach(RelaxedOperator *op, var->precondition_of) {
-            if (operatorCosts[op] == FORBIDDEN) {
+
+            if (operatorCosts[op] == INFINITY) {
                 continue;
             }
+            int operatorCost = operatorCosts[op].integerValue();
             op->unsatisfiedPreconditions--;
             if (op->unsatisfiedPreconditions == 0) {
                 // We discovered all preconditions of this action.
@@ -56,18 +58,16 @@ int hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts) {
                     if (effect->closed) {
                         continue;
                     }
-                    int successorCost = hmax + operatorCosts[op];
-                    if (effect->hmax == UNREACHABLE) {
+                    int successorCost = hmax + operatorCost;
+                    if (effect->hmax == INFINITY) {
                         queue.push(effect, successorCost, depth+1);
                     }
-                    else if (successorCost < effect->hmax) {
+                    else if (effect->hmax > successorCost) {
                         queue.decreaseKey(effect, successorCost, depth+1);
                     }
                 }
             }
         }
     }
-    if (task.goal->hmax == UNREACHABLE)
-        return UNSOLVABLE;
     return task.goal->hmax;
 }

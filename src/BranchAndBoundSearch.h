@@ -4,20 +4,17 @@
 #include "RelaxedTask.h"
 #include "SearchNode.h"
 #include "OperatorSelector.h"
-
-enum UpperBoundSpecialCases {
-    INFINITY = -1,
-};
+#include "UIntEx.h"
 
 class BranchAndBoundSearch  {
 public:
     BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &operatorSelector);
-    int run();
+    UIntEx run();
 private:
     RelaxedTask &task;
     OperatorSelector &operatorSelector;
-    int costUpperBound;
-    int recursiveBranchAndBound(SearchNode &searchNode);
+    UIntEx costUpperBound;
+    UIntEx recursiveBranchAndBound(SearchNode &searchNode);
 };
 
 #endif /* BRANCHANDBOUNDSEARCH_H_ */

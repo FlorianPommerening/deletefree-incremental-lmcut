@@ -8,10 +8,6 @@
 #include "Variable.h"
 #include "RelaxedOperator.h"
 
-enum SolutionLength {
-    UNSOLVABLE = -1,
-};
-
 /// A relaxed planning task in canonical form
 /// (only one goal literal, only one literal in initial state and at least one precondition in each operator)
 class RelaxedTask {

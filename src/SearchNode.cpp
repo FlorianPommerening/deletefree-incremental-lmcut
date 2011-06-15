@@ -42,7 +42,7 @@ SearchNode& SearchNode::ApplyOperator(RelaxedOperator *appliedOp) {
     appliedOp->apply(this->currentState);
     partialPlan.push_back(appliedOp);
     this->currentCost += appliedOp->baseCost;
-    this->operatorCost[appliedOp] = FORBIDDEN;
+    this->operatorCost[appliedOp] = INFINITY;
     map<RelaxedOperator *, Landmark *>::iterator it = this->operatorToLandmark.find(appliedOp);
     if (it != this->operatorToLandmark.end()) {
         Landmark *containingLM = this->operatorToLandmark[appliedOp];
@@ -65,7 +65,7 @@ SearchNode& SearchNode::ApplyOperator(RelaxedOperator *appliedOp) {
 }
 
 SearchNode& SearchNode::ForbidOperator(RelaxedOperator *forbiddenOp) {
-    this->operatorCost[forbiddenOp] = FORBIDDEN;
+    this->operatorCost[forbiddenOp] = INFINITY;
     map<RelaxedOperator *, Landmark *>::iterator it = this->operatorToLandmark.find(forbiddenOp);
     if (it != this->operatorToLandmark.end()) {
         Landmark *containingLM = this->operatorToLandmark[forbiddenOp];
@@ -75,7 +75,7 @@ SearchNode& SearchNode::ForbidOperator(RelaxedOperator *forbiddenOp) {
         containingLM->remove(forbiddenOp);
         int newLandmarkCost = containingLM->cost;
         if (containingLM->size() == 0) {
-            this->heuristicValue = UNSOLVABLE;
+            this->heuristicValue = INFINITY;
             return *this;
         }
         this->heuristicValue -= (oldLandmarkCost - newLandmarkCost);
@@ -86,10 +86,7 @@ SearchNode& SearchNode::ForbidOperator(RelaxedOperator *forbiddenOp) {
 }
 
 void SearchNode::updateHeuristicValue() {
-    int lmCutValue = lmCut(*(this->task), this->currentState, this->operatorCost,
-                           this->landmarks, this->operatorToLandmark);
-    if (lmCutValue == UNSOLVABLE)
-        this->heuristicValue = UNSOLVABLE;
-    else
-        this->heuristicValue += lmCutValue;
+    UIntEx lmCutValue = lmCut(*(this->task), this->currentState, this->operatorCost,
+                              this->landmarks, this->operatorToLandmark);
+    this->heuristicValue += lmCutValue;
 }

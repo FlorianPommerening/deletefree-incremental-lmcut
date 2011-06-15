@@ -3,9 +3,10 @@
 
 #include "Landmark.h"
 #include "RelaxedTask.h"
+#include "UIntEx.h"
 
-int lmCut(RelaxedTask &task);
-int lmCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts,
+UIntEx lmCut(RelaxedTask &task);
+UIntEx lmCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts,
           std::list<Landmark> &landmarks, std::map<RelaxedOperator *, Landmark *> &operatorToLandmark);
 void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts, Landmark &cut);
 

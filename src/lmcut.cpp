@@ -7,16 +7,16 @@
 
 using namespace std;
 
-int lmCut(RelaxedTask &task) {
+UIntEx lmCut(RelaxedTask &task) {
     SearchNode initialNode = SearchNode(task);
     return initialNode.heuristicValue;
 }
 
-int lmCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts,
+UIntEx lmCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts,
           list<Landmark> &landmarks, map<RelaxedOperator *, Landmark *> &operatorToLandmark) {
-    int hmax_value = hmax(task, state, operatorCosts);
-    if (hmax_value == UNSOLVABLE) {
-        return UNSOLVABLE;
+    UIntEx hmax_value = hmax(task, state, operatorCosts);
+    if (hmax_value == INFINITY) {
+        return INFINITY;
     }
     int lmcutValue = 0;
     while (hmax_value != 0) {
@@ -39,7 +39,7 @@ void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
     map<Variable *, list<RelaxedOperator *> > effectToZeroCostOp;
     foreach(OperatorCostEntry &entry, operatorCosts) {
         RelaxedOperator *op = entry.first;
-        int cost = entry.second;
+        UIntEx &cost = entry.second;
         if (cost == 0) {
             foreach(Variable *effect, op->effects) {
                 effectToZeroCostOp[effect].push_back(op);
@@ -60,7 +60,7 @@ void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
         if (it == effectToZeroCostOp.end())
             continue;
         foreach(RelaxedOperator *op, it->second) {
-            if (operatorCosts[op] == FORBIDDEN || op->preconditionChoice == NULL)
+            if (operatorCosts[op] == INFINITY || op->preconditionChoice == NULL)
                 continue;
             goalStack.push(op->preconditionChoice);
         }
@@ -83,9 +83,9 @@ void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
             continue;
         var->closed = true;
         foreach(RelaxedOperator *op, var->precondition_of) {
-            int opCost = operatorCosts[op];
-            if (opCost == FORBIDDEN)
+            if (operatorCosts[op] == INFINITY)
                 continue;
+            int opCost = operatorCosts[op].integerValue();
             op->unsatisfiedPreconditions--;
             if (op->unsatisfiedPreconditions == 0) {
                 bool addedToCut = false;

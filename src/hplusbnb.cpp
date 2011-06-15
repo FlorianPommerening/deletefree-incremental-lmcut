@@ -103,25 +103,25 @@ int main(int argc, char *argv[]) {
     if (solvable) {
         cout << "Calculating h^max ... " << flush;
         cpuTimer.restart();
-        int hmax_value = hmax(translatedTask);
+        UIntEx hmax_value = hmax(translatedTask);
         results["h_max_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
-        results["h_max"] = intToStr(hmax_value);
+        results["h_max"] = hmax_value.toString();
         cout << "done (" << hmax_value << ") " << results["h_max_time"] << endl;
 
         cout << "Calculating h^lmcut ... " << flush;
         cpuTimer.restart();
-        int h_lmcut_value = lmCut(translatedTask);
+        UIntEx h_lmcut_value = lmCut(translatedTask);
         results["h_lmcut_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
-        results["h_lmcut"] = intToStr(h_lmcut_value);
+        results["h_lmcut"] = h_lmcut_value.toString();
         cout << "done (" << h_lmcut_value << ") " << results["h_lmcut_time"] << endl;
 
         cout << "Calculating h^+ ... " << flush;
         cpuTimer.restart();
         AchieveLandmarksOperatorSelector opSelector;
         BranchAndBoundSearch search = BranchAndBoundSearch(translatedTask, opSelector);
-        int h_plus_value = search.run();
+        UIntEx h_plus_value = search.run();
         results["h_plus_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
-        results["h_plus"] = intToStr(h_plus_value);
+        results["h_plus"] = h_plus_value.toString();
         cout << "done (" << h_plus_value << ") " << results["h_plus_time"] << endl;
     } else {
         cout << "Unsolvable task." << endl;

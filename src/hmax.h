@@ -3,9 +3,10 @@
 
 #include "RelaxedTask.h"
 #include "Variable.h"
+#include "UIntEx.h"
 
-int hmax(RelaxedTask &task);
-int hmax(RelaxedTask &task, VariableSet &state);
-int hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts);
+UIntEx hmax(RelaxedTask &task);
+UIntEx hmax(RelaxedTask &task, VariableSet &state);
+UIntEx hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts);
 
 #endif

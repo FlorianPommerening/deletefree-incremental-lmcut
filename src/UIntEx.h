@@ -37,6 +37,7 @@ public:
     bool operator <=(const UIntEx& other) const;
     bool operator >=(const UIntEx& other) const;
 
+    unsigned int integerValue() const;
     std::string toString() const;
 private:
     ValueType addValueTypes(const ValueType &t1, const ValueType &t2) const;

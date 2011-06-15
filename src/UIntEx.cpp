@@ -8,13 +8,13 @@ UIntEx& UIntEx::operator=(const UIntEx &other) {
 }
 
 UIntEx& UIntEx::operator+=(const UIntEx &other) {
-    this->value += value;
+    this->value += other.value;
     this->type = addValueTypes(this->type, other.type);
     return *this;
 }
 
 UIntEx& UIntEx::operator-=(const UIntEx &other) {
-    this->value -= value;
+    this->value -= other.value;
     this->type = subtractValueTypes(this->type, other.type);
     return *this;
 }
@@ -88,6 +88,12 @@ bool UIntEx::operator <=(const UIntEx& other) const {
 
 bool UIntEx::operator >=(const UIntEx& other) const {
     return (other <= *this);
+}
+
+unsigned int UIntEx::integerValue() const {
+    if (this->type != VT_INTEGER)
+        return 0;
+    return this->value;
 }
 
 std::string UIntEx::toString() const {

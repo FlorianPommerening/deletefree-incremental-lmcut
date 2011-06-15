@@ -5,7 +5,7 @@
 
 #include "limits.h"
 
-void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, int costUpperBound, RelaxedOperator **nextOperator, bool *addFirst) {
+void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, UIntEx &costUpperBound, RelaxedOperator **nextOperator, bool *addFirst) {
     *addFirst = true;
     *nextOperator = NULL;
     int best = INT_MAX;
@@ -15,7 +15,7 @@ void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, int costUp
             continue;
         foreach(Landmark::value_type &entry, landmark) {
             RelaxedOperator *op = entry.first;
-            if (searchNode.operatorCost[op] != FORBIDDEN && op->isApplicable(currentState)) {
+            if (searchNode.operatorCost[op] != INFINITY && op->isApplicable(currentState)) {
                 *nextOperator = op;
                 best = landmark.size();
             }
@@ -25,7 +25,7 @@ void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, int costUp
         return;
     // pick first applicable
     foreach(RelaxedOperator &op, searchNode.task->operators) {
-        if (searchNode.operatorCost[&op] != FORBIDDEN && op.isApplicable(currentState)) {
+        if (searchNode.operatorCost[&op] != INFINITY && op.isApplicable(currentState)) {
             *nextOperator = &op;
             return;
         }

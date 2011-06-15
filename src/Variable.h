@@ -6,9 +6,7 @@
 #include <vector>
 #include <map>
 
-enum VariableState {
-    UNREACHABLE = -1,
-};
+#include "UIntEx.h"
 
 class RelaxedOperator;
 
@@ -16,7 +14,7 @@ struct Variable {
 public:
     Variable(std::string name);
     std::string name;
-    int hmax;
+    UIntEx hmax;
     bool closed;
     std::vector<RelaxedOperator *> precondition_of;
     std::vector<RelaxedOperator *> effect_of;

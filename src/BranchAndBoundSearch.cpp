@@ -10,16 +10,13 @@ BranchAndBoundSearch::BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &
     costUpperBound(INFINITY) {
 }
 
-int BranchAndBoundSearch::run() {
+UIntEx BranchAndBoundSearch::run() {
     this->costUpperBound = INFINITY;
     SearchNode initialNode = SearchNode(this->task);
-    if (initialNode.heuristicValue == UNSOLVABLE) {
-        return UNSOLVABLE;
-    }
     return this->recursiveBranchAndBound(initialNode);
 }
 
-int BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
+UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
     std::cout << std::endl;
     std::cout << "BEGIN NODE (" << searchNode.currentCost << " + " << searchNode.heuristicValue << " = " << searchNode.getCostLowerBound() << " <= X <= " << this->costUpperBound << ")" << std::endl;
     std::cout << "Plan" << std::endl;
@@ -29,7 +26,7 @@ int BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
     std::cout << std::endl;
     std::cout << "Forbidden" << std::endl;
     foreach(RelaxedOperator &op, searchNode.task->operators) {
-        if (searchNode.operatorCost[&op] == FORBIDDEN)
+        if (searchNode.operatorCost[&op] == INFINITY)
             std::cout << op.name << ", ";
     }
     std::cout << std::endl;
@@ -43,9 +40,8 @@ int BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
     }
     std::cout << "END NODE" << std::endl;
 
-    int lowerBound = searchNode.getCostLowerBound();
-    if (lowerBound == UNSOLVABLE || (this->costUpperBound != INFINITY && lowerBound >= this->costUpperBound)) {
-        return UNSOLVABLE;
+    if (searchNode.getCostLowerBound() >= this->costUpperBound) {
+        return INFINITY;
     }
     // TODO could optimize this by saving goal in every VariableSet and setting a flag as soon as goal is added
     if (searchNode.currentState.contains(this->task.goal)) {
@@ -57,7 +53,7 @@ int BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
     bool addFirst = true;
     this->operatorSelector.select(searchNode, this->costUpperBound, &nextOperator, &addFirst);
     if (nextOperator == NULL) {
-        return UNSOLVABLE;
+        return INFINITY;
     }
     // TODO remove redundant operators???
     bool foundBetterPlan = false;
@@ -73,8 +69,8 @@ int BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
             successor = new SearchNode(searchNode);
             successor->ApplyOperator(nextOperator);
         }
-        int planCost = this->recursiveBranchAndBound(*successor);
-        if (planCost != UNSOLVABLE) {
+        UIntEx planCost = this->recursiveBranchAndBound(*successor);
+        if (planCost != INFINITY) {
             foundBetterPlan = true;
             if (searchNode.getCostLowerBound() >= this->costUpperBound)
                 break;
@@ -85,5 +81,5 @@ int BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
     if (foundBetterPlan)
         return this->costUpperBound;
     // else
-    return UNSOLVABLE;
+    return INFINITY;
 }

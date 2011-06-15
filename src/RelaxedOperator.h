@@ -7,10 +7,7 @@
 #include <map>
 
 #include "Variable.h"
-
-enum OperatorState {
-    FORBIDDEN = -1,
-};
+#include "UIntEx.h"
 
 class RelaxedOperator {
 public:
@@ -32,7 +29,7 @@ inline void RelaxedOperator::apply(VariableSet &state) const {
     state.inplaceUnion(this->effects);
 }
 
-typedef std::map<RelaxedOperator *, int> OperatorCosts;
+typedef std::map<RelaxedOperator *, UIntEx> OperatorCosts;
 typedef OperatorCosts::value_type OperatorCostEntry;
 
 #endif
