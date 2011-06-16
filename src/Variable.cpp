@@ -11,6 +11,15 @@ Variable::Variable(string name): name(name) {
 VariableSet::VariableSet() {
 }
 
+VariableSet::VariableSet(const VariableSet &other): variables(other.variables) {
+}
+
+VariableSet& VariableSet::operator =(const VariableSet &other) {
+    this->variables.clear();
+    this->variables.insert(other.begin(), other.end());
+    return *this;
+}
+
 void VariableSet::add(Variable *element) {
     this->variables.insert(element);
 }

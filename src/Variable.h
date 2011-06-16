@@ -26,6 +26,8 @@ public:
     typedef std::set<Variable*>::const_iterator const_iterator;
 
     VariableSet();
+    VariableSet(const VariableSet &other);
+    VariableSet& operator =(const VariableSet &other);
 
     void clear();
     void add(Variable *element);

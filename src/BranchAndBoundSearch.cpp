@@ -53,6 +53,7 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
         if (planCost != INFINITY) {
             foundBetterPlan = true;
             if (searchNode.getCostLowerBound() >= this->costUpperBound)
+                delete successor; successor = NULL;
                 break;
         }
         delete successor; successor = NULL;
