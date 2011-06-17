@@ -10,6 +10,7 @@ class BranchAndBoundSearch  {
 public:
     BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &operatorSelector);
     UIntEx run();
+    std::list<RelaxedOperator *> plan;
 private:
     RelaxedTask &task;
     OperatorSelector &operatorSelector;

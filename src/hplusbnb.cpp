@@ -123,7 +123,13 @@ int main(int argc, char *argv[]) {
         UIntEx h_plus_value = search.run();
         results["h_plus_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
         results["h_plus"] = h_plus_value.toString();
+        ostringstream planstring;
+        foreach(RelaxedOperator *op, search.plan) {
+            planstring << op->name << ", ";
+        }
+        results["plan"] = planstring.str();
         cout << "done (" << h_plus_value << ") " << results["h_plus_time"] << endl;
+        cout << "    With plan: " << results["plan"] << endl;
     } else {
         cout << "Unsolvable task." << endl;
         results["h_max_time"] = "0";
