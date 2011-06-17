@@ -4,28 +4,46 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/BranchAndBoundSearch.cpp \
+../src/Landmark.cpp \
+../src/OperatorSelector.cpp \
 ../src/RelaxedOperator.cpp \
 ../src/RelaxedTask.cpp \
 ../src/SASTask.cpp \
+../src/SearchNode.cpp \
+../src/UIntEx.cpp \
 ../src/Variable.cpp \
 ../src/hmax.cpp \
-../src/hplusbnbmodule.cpp 
+../src/hplusbnbmodule.cpp \
+../src/lmcut.cpp 
 
 OBJS += \
+./src/BranchAndBoundSearch.o \
+./src/Landmark.o \
+./src/OperatorSelector.o \
 ./src/RelaxedOperator.o \
 ./src/RelaxedTask.o \
 ./src/SASTask.o \
+./src/SearchNode.o \
+./src/UIntEx.o \
 ./src/Variable.o \
 ./src/hmax.o \
-./src/hplusbnbmodule.o 
+./src/hplusbnbmodule.o \
+./src/lmcut.o 
 
 CPP_DEPS += \
+./src/BranchAndBoundSearch.d \
+./src/Landmark.d \
+./src/OperatorSelector.d \
 ./src/RelaxedOperator.d \
 ./src/RelaxedTask.d \
 ./src/SASTask.d \
+./src/SearchNode.d \
+./src/UIntEx.d \
 ./src/Variable.d \
 ./src/hmax.d \
-./src/hplusbnbmodule.d 
+./src/hplusbnbmodule.d \
+./src/lmcut.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
