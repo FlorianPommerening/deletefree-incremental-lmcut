@@ -53,7 +53,7 @@ SearchNode& SearchNode::ApplyOperator(RelaxedOperator *appliedOp) {
         foreach(Landmark::value_type &entry, *containingLM) {
             RelaxedOperator *op = entry.first;
             if (op != appliedOp) {
-                this->operatorCost[op] -= landmarkCost;
+                this->operatorCost[op] += landmarkCost;
             }
         }
         this->landmarks.remove(*containingLM);
