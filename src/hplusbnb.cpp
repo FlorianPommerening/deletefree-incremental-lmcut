@@ -42,6 +42,7 @@ int main(int argc, char *argv[]) {
     path translationPath = path(TRANSLATIONS_DIR) / domainName / problemName;
     path taskTranslationPath = translationPath / "output.sas";
     path translationKeyPath = translationPath / "test.groups";
+    path resultsFilePath = path(RESULTS_DIR) / (domainName + "_" + problemName + ".result");
 
     Results results;
     Timer cpuTimer(CPU_TIME);
@@ -50,98 +51,109 @@ int main(int argc, char *argv[]) {
     cout.setf(ios::showpoint);
     cout << setprecision(3);
 
-    cout << "Translating problem file ... " << flush;
-    // check if cached translations already exist
-    if (!exists(taskTranslationPath) || !exists(translationKeyPath)) {
-        // call python translate.py to translate file
-        string command = TRANSLATE_CMD + " " + problemFilename + " " + domainFilename + " " + translationPath.string();
-        wallClockTimer.restart();
-        if (system(command.c_str()) != 0) {
-            cout << "Error while translating the problem into SAS." << endl;
-            return 1;
-        }
-        results["translation_time"] = boost::lexical_cast<string>(wallClockTimer.elapsed());
-        cout << "done " << results["translation_time"] << endl;
+    try {
+        cout << "Translating problem file ... " << flush;
+        // check if cached translations already exist
         if (!exists(taskTranslationPath) || !exists(translationKeyPath)) {
-            cout << "Translating the problem into SAS did not produce the expected output files." << endl;
+            // call python translate.py to translate file
+            string command = TRANSLATE_CMD + " " + problemFilename + " " + domainFilename + " " + translationPath.string();
+            wallClockTimer.restart();
+            if (system(command.c_str()) != 0) {
+                cout << "Error while translating the problem into SAS." << endl;
+                return 1;
+            }
+            results["translation_time"] = boost::lexical_cast<string>(wallClockTimer.elapsed());
+            cout << "done " << results["translation_time"] << endl;
+            if (!exists(taskTranslationPath) || !exists(translationKeyPath)) {
+                cout << "Translating the problem into SAS did not produce the expected output files." << endl;
+                return 1;
+            }
+        } else {
+            cout << "translation already exists" << endl;
+        }
+
+        cout << "Parsing translated file ... " << flush;
+        SASTask sasTask;
+        SASParser parser;
+        cpuTimer.restart();
+        bool parseOK = parser.parseTask(taskTranslationPath.string(), translationKeyPath.string(), sasTask);
+        results["parse_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
+        if (!parseOK) {
+            cout << endl << parser.getLastError() << endl;
             return 1;
         }
-    } else {
-        cout << "translation already exists" << endl;
-    }
+        cout << "done " << results["parse_time"] << endl;
 
-    cout << "Parsing translated file ... " << flush;
-    SASTask sasTask;
-    SASParser parser;
-    cpuTimer.restart();
-    bool parseOK = parser.parseTask(taskTranslationPath.string(), translationKeyPath.string(), sasTask);
-    results["parse_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
-    if (!parseOK) {
-        cout << endl << parser.getLastError() << endl;
-        return 1;
-    }
-    cout << "done " << results["parse_time"] << endl;
-
-    cout << "Relaxing task ... " << flush;
-    RelaxedTask translatedTask;
-    DeleteRelaxer relaxer;
-    cpuTimer.restart();
-    bool relaxationOK = relaxer.deleteRelaxation(sasTask, translatedTask);
-    results["relaxation_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
-    if (!relaxationOK) {
-        cout << relaxer.getLastError() << endl;
-        return 1;
-    }
-    cout << "done " << results["relaxation_time"] << endl;
-
-    cout << "Removing irrelevant variables ... " << flush;
-    cpuTimer.restart();
-    bool solvable = translatedTask.removeIrrelevantVariables();
-    results["relevance_analysis_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
-    cout << "done " << results["relevance_analysis_time"] << endl;
-
-    if (solvable) {
-/*
-        cout << "Calculating h^max ... " << flush;
+        cout << "Relaxing task ... " << flush;
+        RelaxedTask translatedTask;
+        DeleteRelaxer relaxer;
         cpuTimer.restart();
-        UIntEx hmax_value = hmax(translatedTask);
-        results["h_max_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
-        results["h_max"] = hmax_value.toString();
-        cout << "done (" << hmax_value << ") " << results["h_max_time"] << endl;
-
-        cout << "Calculating h^lmcut ... " << flush;
-        cpuTimer.restart();
-        UIntEx h_lmcut_value = lmCut(translatedTask);
-        results["h_lmcut_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
-        results["h_lmcut"] = h_lmcut_value.toString();
-        cout << "done (" << h_lmcut_value << ") " << results["h_lmcut_time"] << endl;
-*/
-        cout << "Calculating h^+ ... " << flush;
-        cpuTimer.restart();
-        AchieveLandmarksOperatorSelector opSelector;
-        BranchAndBoundSearch search = BranchAndBoundSearch(translatedTask, opSelector);
-        UIntEx h_plus_value = search.run();
-        results["h_plus_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
-        results["h_plus"] = h_plus_value.toString();
-        ostringstream planstring;
-        foreach(RelaxedOperator *op, search.plan) {
-            planstring << op->name << ", ";
+        bool relaxationOK = relaxer.deleteRelaxation(sasTask, translatedTask);
+        results["relaxation_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
+        if (!relaxationOK) {
+            cout << relaxer.getLastError() << endl;
+            return 1;
         }
-        results["plan"] = planstring.str();
-        cout << "done (" << h_plus_value << ") " << results["h_plus_time"] << endl;
-        cout << "    With plan: " << results["plan"] << endl;
-    } else {
-        cout << "Unsolvable task." << endl;
-        results["h_max_time"] = "0";
-        results["h_max"] = "inf";
-        results["h_lmcut_time"] = "0";
-        results["h_lmcut"] = "inf";
-        results["h_plus_time"] = "0";
-        results["h_plus"] = "inf";
+        cout << "done " << results["relaxation_time"] << endl;
+
+        cout << "Removing irrelevant variables ... " << flush;
+        cpuTimer.restart();
+        bool solvable = translatedTask.removeIrrelevantVariables();
+        results["relevance_analysis_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
+        cout << "done " << results["relevance_analysis_time"] << endl;
+
+        if (solvable) {
+    /*
+            cout << "Calculating h^max ... " << flush;
+            cpuTimer.restart();
+            UIntEx hmax_value = hmax(translatedTask);
+            results["h_max_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
+            results["h_max"] = hmax_value.toString();
+            cout << "done (" << hmax_value << ") " << results["h_max_time"] << endl;
+
+            cout << "Calculating h^lmcut ... " << flush;
+            cpuTimer.restart();
+            UIntEx h_lmcut_value = lmCut(translatedTask);
+            results["h_lmcut_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
+            results["h_lmcut"] = h_lmcut_value.toString();
+            cout << "done (" << h_lmcut_value << ") " << results["h_lmcut_time"] << endl;
+    */
+            cout << "Calculating h^+ ... " << flush;
+            cpuTimer.restart();
+            AchieveLandmarksOperatorSelector opSelector;
+            BranchAndBoundSearch search = BranchAndBoundSearch(translatedTask, opSelector);
+            UIntEx h_plus_value = search.run();
+            results["h_plus_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
+            results["h_plus"] = h_plus_value.toString();
+            ostringstream planstring;
+            foreach(RelaxedOperator *op, search.plan) {
+                planstring << op->name << ", ";
+            }
+            results["plan"] = planstring.str();
+            cout << "done (" << h_plus_value << ") " << results["h_plus_time"] << endl;
+            cout << "    With plan: " << results["plan"] << endl;
+        } else {
+            cout << "Unsolvable task." << endl;
+            results["h_max_time"] = "0";
+            results["h_max"] = "inf";
+            results["h_lmcut_time"] = "0";
+            results["h_lmcut"] = "inf";
+            results["h_plus_time"] = "0";
+            results["h_plus"] = "inf";
+        }
+    } catch (bad_alloc &ex) {
+        cout << "Out of memory" << endl;
+        results["error"] = "Out of memory";
+        // do not return: write out results to get OutOfMemory in result file
+    } catch (exception &ex) {
+        cout << "Caught exception: " << ex.what();
+        return 1;
+    } catch (...) {
+        cout << "Caught unknown exception";
+        return 1;
     }
 
     cout << "Writing results ... " << flush;
-    path resultsFilePath = path(RESULTS_DIR) / (domainName + "_" + problemName + ".result");
     ofstream resultsFile(resultsFilePath.string().c_str());
     resultsFile << "domain: " << domainName << endl;
     resultsFile << "problem: " << problemName << endl;
