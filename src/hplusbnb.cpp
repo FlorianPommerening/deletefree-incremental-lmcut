@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
     */
             cout << "Calculating h^+ ... " << flush;
             cpuTimer.restart();
-            AchieveLandmarksOperatorSelector opSelector;
+            AchieveLandmarksTryGoalOperatorSelector opSelector;
             BranchAndBoundSearch search = BranchAndBoundSearch(translatedTask, opSelector);
             UIntEx h_plus_value = search.run();
             results["h_plus_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());

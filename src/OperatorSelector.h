@@ -17,4 +17,12 @@ public:
     void select(SearchNode &searchNode, UIntEx &costUpperBound, RelaxedOperator **nextOperator, bool *addFirst);
 };
 
+class AchieveLandmarksTryGoalOperatorSelector: public AchieveLandmarksOperatorSelector {
+public:
+    AchieveLandmarksTryGoalOperatorSelector();
+    void select(SearchNode &searchNode, UIntEx &costUpperBound, RelaxedOperator **nextOperator, bool *addFirst);
+private:
+    RelaxedOperator *goalOperator;
+};
+
 #endif /* OPERATORSELECTOR_H_ */
