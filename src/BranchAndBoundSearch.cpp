@@ -31,6 +31,7 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
 #endif
         return INFINITY;
     }
+
     // TODO could optimize this by saving goal in every VariableSet and setting a flag as soon as goal is added
     if (searchNode.currentState.contains(this->task.goal)) {
         this->costUpperBound = searchNode.currentCost;
@@ -63,13 +64,13 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
             cout << endl << "Forbidding operator " << nextOperator->name << endl;
 #endif
             successor = new SearchNode(searchNode);
-            successor->ForbidOperator(nextOperator);
+            successor->forbidOperator(nextOperator);
         } else {
 #ifdef FULL_DEBUG
             cout << endl << "Applying operator " << nextOperator->name << endl;
 #endif
             successor = new SearchNode(searchNode);
-            successor->ApplyOperator(nextOperator);
+            successor->applyOperator(nextOperator);
         }
         UIntEx planCost = this->recursiveBranchAndBound(*successor);
         if (planCost != INFINITY) {

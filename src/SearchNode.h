@@ -13,8 +13,8 @@ public:
     SearchNode(const SearchNode &other);
     SearchNode& operator=(const SearchNode &rhs);
 
-    SearchNode& ApplyOperator(RelaxedOperator *appliedOp);
-    SearchNode& ForbidOperator(RelaxedOperator *forbiddenOp);
+    SearchNode& applyOperator(RelaxedOperator *appliedOp);
+    SearchNode& forbidOperator(RelaxedOperator *forbiddenOp);
     UIntEx getCostLowerBound() {
         return this->heuristicValue + this->currentCost;
     };
@@ -29,8 +29,11 @@ public:
     RelaxedTask *task;
 
 private:
+    void applyOperatorWithoutUpdate(RelaxedOperator *appliedOp);
     void updateHeuristicValue();
+    void unitPropagation();
     std::map<RelaxedOperator *, Landmark *> operatorToLandmark;
+    std::list<Landmark *> singleOperatorLandmarks;
 };
 
 #endif /* SEARCHNODE_H_ */
