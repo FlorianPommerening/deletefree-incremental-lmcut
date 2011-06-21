@@ -12,7 +12,10 @@ UIntEx lmCut(RelaxedTask &task) {
     return initialNode.heuristicValue;
 }
 
-UIntEx lmCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts, list<Landmark> &landmarks) {
+UIntEx lmCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts, list<Landmark> &landmarks, list<Landmark>::iterator *firstAdded) {
+    bool isFirst = true;
+    // in case no landmarks are added
+    *firstAdded = landmarks.end();
     UIntEx hmax_value = hmax(task, state, operatorCosts);
     if (hmax_value == INFINITY) {
         return INFINITY;
@@ -20,6 +23,10 @@ UIntEx lmCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
     int lmcutValue = 0;
     while (hmax_value != 0) {
         landmarks.push_back(Landmark());
+        if (isFirst && (firstAdded != NULL)) {
+            *firstAdded = --landmarks.end();
+            isFirst = false;
+        }
         Landmark &cut = landmarks.back();
         findCut(task, state, operatorCosts, cut);
         int landmarkCost = cut.cost;

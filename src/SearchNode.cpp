@@ -94,33 +94,18 @@ void SearchNode::applyOperatorWithoutUpdate(RelaxedOperator *appliedOp) {
 }
 
 void SearchNode::updateHeuristicValue() {
-    // HACK find a better way to do this
-    bool hadPreviousLandmarks = !this->landmarks.empty();
-    list<Landmark>::iterator it;
-    if (hadPreviousLandmarks) {
-        // remember last landmark, to update only new landmarks
-        it = --this->landmarks.end();
-    }
-    UIntEx lmCutValue = lmCut(*(this->task), this->currentState, this->operatorCost, this->landmarks);
-    if (hadPreviousLandmarks) {
-        // move iterator to first new landmark;
-        it++;
-    } else {
-        it = this->landmarks.begin();
-    }
-    for (;it != this->landmarks.end(); ++it) {
+    list<Landmark>::iterator firstAdded;
+    UIntEx lmCutValue = lmCut(*(this->task), this->currentState, this->operatorCost, this->landmarks, &firstAdded);
+    for (list<Landmark>::iterator it = firstAdded; it != this->landmarks.end(); ++it) {
         Landmark &landmark = *it;
         foreach(Landmark::value_type &entry, landmark) {
             RelaxedOperator *op = entry.first;
             this->operatorToLandmark[op] = &landmark;
-            if (landmark.size() == 1) {
-                this->singleOperatorLandmarks.push_back(&landmark);
-            }
+        }
+        if (landmark.size() == 1) {
+            this->singleOperatorLandmarks.push_back(&landmark);
         }
     }
-    //TODO use 'it' to update operatorToLandmark and singleOperatorLandmarks instead of doing it in lmCut
-    // use 'it' as reference parameter and make it point to the first inserted landmark
-
     this->heuristicValue += lmCutValue;
 }
 
