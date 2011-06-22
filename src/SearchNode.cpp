@@ -11,6 +11,7 @@ SearchNode::SearchNode(RelaxedTask &task, OptimizationOptions &options):
         heuristicValue(0),
         currentCost(0),
         task(task),
+        unitPropagationCount(0),
         options(options) {
     this->currentState.add(task.init);
     foreach(RelaxedOperator &op, task.operators) {
@@ -27,6 +28,7 @@ SearchNode::SearchNode(const SearchNode &other):
                     landmarks(other.landmarks),
                     operatorCost(other.operatorCost),
                     task(other.task),
+                    unitPropagationCount(0),
                     options(other.options) {
     foreach(Landmark &landmark, this->landmarks) {
         foreach(Landmark::value_type &entry, landmark) {
@@ -137,6 +139,7 @@ void SearchNode::unitPropagation() {
                 this->applyOperatorWithoutUpdate(op);
                 stateChanged = true;
                 this->singleOperatorLandmarks.erase(current);
+                this->unitPropagationCount++;
             }
         }
     }

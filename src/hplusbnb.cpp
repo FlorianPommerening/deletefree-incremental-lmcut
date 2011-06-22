@@ -131,12 +131,13 @@ int main(int argc, char *argv[]) {
             results["h_plus_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
             results["h_plus"] = h_plus_value.toString();
             results["bnb_expansions"] = boost::lexical_cast<string>(search.expansionCount);
+            results["bnb_unit_propagations"] = boost::lexical_cast<string>(search.unitPropagationCount);
             ostringstream planstring;
             foreach(RelaxedOperator *op, search.plan) {
                 planstring << op->name << ", ";
             }
             results["plan"] = planstring.str();
-            cout << "done (" << h_plus_value << ") " << results["bnb_expansions"] << " expansions " << results["h_plus_time"] << endl;
+            cout << "done (" << h_plus_value << ") " << results["bnb_expansions"] << " expansions " << results["bnb_unit_propagations"] << " unit propagations " << results["h_plus_time"] << endl;
             cout << "    With plan: " << results["plan"] << endl;
         } else {
             cout << "Unsolvable task." << endl;

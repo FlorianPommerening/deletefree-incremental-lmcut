@@ -16,6 +16,7 @@ BranchAndBoundSearch::BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &
 UIntEx BranchAndBoundSearch::run() {
     this->costUpperBound = INFINITY;
     this->expansionCount = 0;
+    this->unitPropagationCount = 0;
     SearchNode initialNode = SearchNode(this->task, this->options);
     return this->recursiveBranchAndBound(initialNode);
 }
@@ -72,6 +73,7 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
             successor->applyOperator(nextOperator);
         }
         this->expansionCount++;
+        this->unitPropagationCount += successor->unitPropagationCount;
         UIntEx planCost = this->recursiveBranchAndBound(*successor);
         if (planCost != INFINITY) {
             foundBetterPlan = true;

@@ -28,6 +28,7 @@ public:
     std::list<Landmark> landmarks;
     OperatorCosts operatorCost;
     RelaxedTask &task;
+    int unitPropagationCount;
 
 private:
     void applyOperatorWithoutUpdate(RelaxedOperator *appliedOp);

@@ -13,6 +13,7 @@ public:
     UIntEx run();
     std::list<RelaxedOperator *> plan;
     int expansionCount;
+    int unitPropagationCount;
 private:
     RelaxedTask &task;
     OperatorSelector &operatorSelector;
