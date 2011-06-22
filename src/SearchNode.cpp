@@ -99,6 +99,11 @@ void SearchNode::applyOperatorWithoutUpdate(RelaxedOperator *appliedOp) {
                 this->operatorCost[op] += landmarkCost;
             }
         }
+        if (containingLM->size() == 1) {
+            // TODO remove could be replaced by erase if operator to iterator mapping is saved
+            this->singleOperatorLandmarks.remove(containingLM);
+        }
+        // TODO remove could be replaced by erase if operator to iterator mapping is saved
         this->landmarks.remove(*containingLM);
         this->operatorToLandmark.erase(it);
     }
@@ -126,6 +131,7 @@ void SearchNode::unitPropagation() {
         stateChanged = false;
         list<Landmark *>::iterator it = this->singleOperatorLandmarks.begin();
         while (it != this->singleOperatorLandmarks.end()) {
+            // applyOperatorWithoutUpdate() will delete the entry in singleOperatorLandmarks
             // copy iterator so it can be used for erase without breaking the loop
             list<Landmark *>::iterator current = it;
             // increment iterator before (!!!) erase
@@ -138,11 +144,9 @@ void SearchNode::unitPropagation() {
 #endif
                 this->applyOperatorWithoutUpdate(op);
                 stateChanged = true;
-                this->singleOperatorLandmarks.erase(current);
                 this->unitPropagationCount++;
             }
         }
     }
-    this->updateHeuristicValue();
 }
 
