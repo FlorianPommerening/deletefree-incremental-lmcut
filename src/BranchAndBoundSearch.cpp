@@ -4,20 +4,19 @@
 #include <iostream>
 using namespace std;
 
-// very heavy on the output, use only for bug tracing
-// #define FULL_DEBUG
-
 void printNode(SearchNode &searchNode, UIntEx &upperBound);
 
-BranchAndBoundSearch::BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &operatorSelector) :
+BranchAndBoundSearch::BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &operatorSelector, OptimizationOptions &options) :
     task(task),
     operatorSelector(operatorSelector),
+    options(options),
     costUpperBound(INFINITY) {
 }
 
 UIntEx BranchAndBoundSearch::run() {
     this->costUpperBound = INFINITY;
-    SearchNode initialNode = SearchNode(this->task);
+    this->expansionCount = 0;
+    SearchNode initialNode = SearchNode(this->task, this->options);
     return this->recursiveBranchAndBound(initialNode);
 }
 
@@ -72,10 +71,11 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
             successor = new SearchNode(searchNode);
             successor->applyOperator(nextOperator);
         }
+        this->expansionCount++;
         UIntEx planCost = this->recursiveBranchAndBound(*successor);
         if (planCost != INFINITY) {
             foundBetterPlan = true;
-            if (searchNode.getCostLowerBound() >= this->costUpperBound) {
+            if (this->options.avoidExpandingSecondSuccessor && searchNode.getCostLowerBound() >= this->costUpperBound) {
 #ifdef FULL_DEBUG
                 cout << endl << "Found perfect solution for this subtree, ignoring second successor" << endl;
 #endif
@@ -107,7 +107,7 @@ void printNode(SearchNode &searchNode, UIntEx &upperBound) {
     }
     std::cout << std::endl;
     std::cout << "Forbidden" << std::endl;
-    foreach(RelaxedOperator &op, searchNode.task->operators) {
+    foreach(RelaxedOperator &op, searchNode.task.operators) {
         if (searchNode.operatorCost[&op] == INFINITY)
             std::cout << op.name << ", ";
     }

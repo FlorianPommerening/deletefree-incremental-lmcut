@@ -7,10 +7,11 @@
 
 using namespace std;
 
-SearchNode::SearchNode(RelaxedTask &task):
+SearchNode::SearchNode(RelaxedTask &task, OptimizationOptions &options):
         heuristicValue(0),
         currentCost(0),
-        task(&task) {
+        task(task),
+        options(options) {
     this->currentState.add(task.init);
     foreach(RelaxedOperator &op, task.operators) {
         this->operatorCost[&op] = op.baseCost;
@@ -25,11 +26,15 @@ SearchNode::SearchNode(const SearchNode &other):
                     partialPlan(other.partialPlan),
                     landmarks(other.landmarks),
                     operatorCost(other.operatorCost),
-                    task(other.task) {
+                    task(other.task),
+                    options(other.options) {
     foreach(Landmark &landmark, this->landmarks) {
         foreach(Landmark::value_type &entry, landmark) {
             RelaxedOperator *op = entry.first;
             this->operatorToLandmark[op] = &landmark;
+        }
+        if (landmark.size() == 1) {
+            this->singleOperatorLandmarks.push_back(&landmark);
         }
     }
 }
@@ -40,7 +45,9 @@ SearchNode& SearchNode::operator=(const SearchNode &rhs) {
 
 SearchNode& SearchNode::applyOperator(RelaxedOperator *appliedOp) {
     this->applyOperatorWithoutUpdate(appliedOp);
-    this->unitPropagation();
+    if (this->options.useUnitPropagation) {
+        this->unitPropagation();
+    }
     this->updateHeuristicValue();
     return *this;
 }
@@ -64,7 +71,9 @@ SearchNode& SearchNode::forbidOperator(RelaxedOperator *forbiddenOp) {
         this->heuristicValue -= (oldLandmarkCost - newLandmarkCost);
     }
     // search for additional landmarks
-    this->unitPropagation();
+    if (this->options.useUnitPropagation) {
+        this->unitPropagation();
+    }
     this->updateHeuristicValue();
     return *this;
 }
@@ -95,7 +104,7 @@ void SearchNode::applyOperatorWithoutUpdate(RelaxedOperator *appliedOp) {
 
 void SearchNode::updateHeuristicValue() {
     list<Landmark>::iterator firstAdded;
-    UIntEx lmCutValue = lmCut(*(this->task), this->currentState, this->operatorCost, this->landmarks, &firstAdded);
+    UIntEx lmCutValue = lmCut(this->task, this->currentState, this->operatorCost, this->landmarks, &firstAdded);
     for (list<Landmark>::iterator it = firstAdded; it != this->landmarks.end(); ++it) {
         Landmark &landmark = *it;
         foreach(Landmark::value_type &entry, landmark) {
@@ -122,10 +131,13 @@ void SearchNode::unitPropagation() {
             Landmark *unitClause = *current;
             RelaxedOperator *op = unitClause->begin()->first;
             if (op->isApplicable(this->currentState)) {
+#ifdef FULL_DEBUG
+                cout << endl << "Operator applied in unit propagation: " << op->name << endl;
+#endif
                 this->applyOperatorWithoutUpdate(op);
                 stateChanged = true;
+                this->singleOperatorLandmarks.erase(current);
             }
-            this->singleOperatorLandmarks.erase(current);
         }
     }
     this->updateHeuristicValue();

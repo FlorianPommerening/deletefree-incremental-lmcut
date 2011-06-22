@@ -1,6 +1,7 @@
 #ifndef BRANCHANDBOUNDSEARCH_H_
 #define BRANCHANDBOUNDSEARCH_H_
 
+#include "Options.h"
 #include "RelaxedTask.h"
 #include "SearchNode.h"
 #include "OperatorSelector.h"
@@ -8,12 +9,14 @@
 
 class BranchAndBoundSearch  {
 public:
-    BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &operatorSelector);
+    BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &operatorSelector, OptimizationOptions &options);
     UIntEx run();
     std::list<RelaxedOperator *> plan;
+    int expansionCount;
 private:
     RelaxedTask &task;
     OperatorSelector &operatorSelector;
+    OptimizationOptions &options;
     UIntEx costUpperBound;
     UIntEx recursiveBranchAndBound(SearchNode &searchNode);
 };

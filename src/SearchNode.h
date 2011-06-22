@@ -4,12 +4,13 @@
 #include <map>
 #include <list>
 
+#include "Options.h"
 #include "Landmark.h"
 #include "RelaxedTask.h"
 
 class SearchNode {
 public:
-    SearchNode(RelaxedTask &task);
+    SearchNode(RelaxedTask &task, OptimizationOptions &options);
     SearchNode(const SearchNode &other);
     SearchNode& operator=(const SearchNode &rhs);
 
@@ -26,7 +27,7 @@ public:
     // has to be a list so pointers stay valid
     std::list<Landmark> landmarks;
     OperatorCosts operatorCost;
-    RelaxedTask *task;
+    RelaxedTask &task;
 
 private:
     void applyOperatorWithoutUpdate(RelaxedOperator *appliedOp);
@@ -34,6 +35,7 @@ private:
     void unitPropagation();
     std::map<RelaxedOperator *, Landmark *> operatorToLandmark;
     std::list<Landmark *> singleOperatorLandmarks;
+    OptimizationOptions &options;
 };
 
 #endif /* SEARCHNODE_H_ */

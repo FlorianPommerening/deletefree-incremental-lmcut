@@ -1,3 +1,4 @@
+#include "Options.h"
 #include "lmcut.h"
 #include "foreach.h"
 #include "hmax.h"
@@ -8,7 +9,8 @@
 using namespace std;
 
 UIntEx lmCut(RelaxedTask &task) {
-    SearchNode initialNode = SearchNode(task);
+    OptimizationOptions options;
+    SearchNode initialNode = SearchNode(task, options);
     return initialNode.heuristicValue;
 }
 

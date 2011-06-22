@@ -6,6 +6,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include "Options.h"
 #include "Variable.h"
 #include "RelaxedOperator.h"
 #include "RelaxedTask.h"
@@ -43,6 +44,10 @@ int main(int argc, char *argv[]) {
     path taskTranslationPath = translationPath / "output.sas";
     path translationKeyPath = translationPath / "test.groups";
     path resultsFilePath = path(RESULTS_DIR) / (domainName + "_" + problemName + ".result");
+
+    // TODO use command line options to set this
+    // right now: set defaults in class definition to keep all configuration in one place
+    OptimizationOptions options;
 
     Results results;
     Timer cpuTimer(CPU_TIME);
@@ -120,17 +125,18 @@ int main(int argc, char *argv[]) {
     */
             cout << "Calculating h^+ ... " << flush;
             cpuTimer.restart();
-            AchieveLandmarksTryGoalOperatorSelector opSelector;
-            BranchAndBoundSearch search = BranchAndBoundSearch(translatedTask, opSelector);
+            AchieveLandmarksTryGoalOperatorSelector opSelector(options);
+            BranchAndBoundSearch search = BranchAndBoundSearch(translatedTask, opSelector, options);
             UIntEx h_plus_value = search.run();
             results["h_plus_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
             results["h_plus"] = h_plus_value.toString();
+            results["bnb_expansions"] = boost::lexical_cast<string>(search.expansionCount);
             ostringstream planstring;
             foreach(RelaxedOperator *op, search.plan) {
                 planstring << op->name << ", ";
             }
             results["plan"] = planstring.str();
-            cout << "done (" << h_plus_value << ") " << results["h_plus_time"] << endl;
+            cout << "done (" << h_plus_value << ") " << results["bnb_expansions"] << " expansions " << results["h_plus_time"] << endl;
             cout << "    With plan: " << results["plan"] << endl;
         } else {
             cout << "Unsolvable task." << endl;
