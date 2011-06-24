@@ -24,7 +24,7 @@ void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, UIntEx &co
                 continue;
             foreach(Landmark::value_type &entry, landmark) {
                 RelaxedOperator *op = entry.first;
-                if (searchNode.operatorCost[op] != INFINITY && op->isApplicable(currentState)) {
+                if (searchNode.operatorCost[op] != UIntEx::INF && op->isApplicable(currentState)) {
                     *nextOperator = op;
                     best = landmark.size();
                 }
@@ -35,7 +35,7 @@ void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, UIntEx &co
     }
     // pick first applicable
     foreach(RelaxedOperator &op, searchNode.task.operators) {
-        if (searchNode.operatorCost[&op] != INFINITY && op.isApplicable(currentState)) {
+        if (searchNode.operatorCost[&op] != UIntEx::INF && op.isApplicable(currentState)) {
             *nextOperator = &op;
             return;
         }
