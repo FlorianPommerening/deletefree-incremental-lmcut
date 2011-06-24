@@ -4,10 +4,10 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <map>
 
 #include "Variable.h"
 #include "UIntEx.h"
+#include "PointerMap.h"
 
 class RelaxedOperator {
 public:
@@ -29,7 +29,7 @@ inline void RelaxedOperator::apply(VariableSet &state) const {
     state.inplaceUnion(this->effects);
 }
 
-typedef std::map<RelaxedOperator *, UIntEx> OperatorCosts;
+typedef PointerMap<RelaxedOperator, UIntEx> OperatorCosts;
 typedef OperatorCosts::value_type OperatorCostEntry;
 
 #endif

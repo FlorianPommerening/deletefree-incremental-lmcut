@@ -1,15 +1,16 @@
 #ifndef LANDMARK_H_
 #define LANDMARK_H_
 
-#include <map>
+#include "PointerMap.h"
 
 #include "RelaxedOperator.h"
 
 class Landmark {
 public:
-    typedef std::map<RelaxedOperator *, int>::value_type value_type;
-    typedef std::map<RelaxedOperator *, int>::iterator iterator;
-    typedef std::map<RelaxedOperator *, int>::const_iterator const_iterator;
+    // TODO introduce iterator over operators only (python "map.keys()")
+    typedef PointerMap<RelaxedOperator, int>::value_type value_type;
+    typedef PointerMap<RelaxedOperator, int>::iterator iterator;
+    typedef PointerMap<RelaxedOperator, int>::const_iterator const_iterator;
     int cost;
     void add(RelaxedOperator *op, int opCost);
     void remove(RelaxedOperator *op);
@@ -31,7 +32,7 @@ private:
     // but has a nicer interface (remove needs to know the cost of all operators in the LM)
     // if there are problems with running out of memory, change this to
     // vector<RelaxedOperator *>
-    std::map<RelaxedOperator *, int> operatorEntries;
+    PointerMap<RelaxedOperator, int> operatorEntries;
 };
 
 #endif /* LANDMARK_H_ */

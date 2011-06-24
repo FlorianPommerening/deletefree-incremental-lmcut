@@ -7,6 +7,7 @@
 #include "Options.h"
 #include "Landmark.h"
 #include "RelaxedTask.h"
+#include "PointerMap.h"
 
 class SearchNode {
 public:
@@ -34,7 +35,7 @@ private:
     void applyOperatorWithoutUpdate(RelaxedOperator *appliedOp);
     void updateHeuristicValue();
     void unitPropagation();
-    std::map<RelaxedOperator *, Landmark *> operatorToLandmark;
+    PointerMap<RelaxedOperator, Landmark *> operatorToLandmark;
     std::list<Landmark *> singleOperatorLandmarks;
     OptimizationOptions &options;
 };

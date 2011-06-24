@@ -11,7 +11,7 @@ void Landmark::add(RelaxedOperator *op, int opCost) {
 }
 
 void Landmark::remove(RelaxedOperator *op) {
-    map<RelaxedOperator *, int>::iterator it = this->operatorEntries.find(op);
+    iterator it = this->operatorEntries.find(op);
     if (it != this->operatorEntries.end()) {
         int removedOpCost = it->second;
         this->operatorEntries.erase(it);

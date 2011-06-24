@@ -55,17 +55,17 @@ SearchNode& SearchNode::applyOperator(RelaxedOperator *appliedOp) {
 }
 
 SearchNode& SearchNode::forbidOperator(RelaxedOperator *forbiddenOp) {
-    this->operatorCost[forbiddenOp] = INFINITY;
-    map<RelaxedOperator *, Landmark *>::iterator it = this->operatorToLandmark.find(forbiddenOp);
+    this->operatorCost[forbiddenOp] = UIntEx::INF;
+    PointerMap<RelaxedOperator, Landmark *>::iterator it = this->operatorToLandmark.find(forbiddenOp);
     if (it != this->operatorToLandmark.end()) {
-        Landmark *containingLM = this->operatorToLandmark[forbiddenOp];
+        Landmark *containingLM = it->second;
         // remove operator from landmark. If it was the only one,
         // the problem becomes unsolvable
         int oldLandmarkCost = containingLM->cost;
         containingLM->remove(forbiddenOp);
         int newLandmarkCost = containingLM->cost;
         if (containingLM->size() == 0) {
-            this->heuristicValue = INFINITY;
+            this->heuristicValue = UIntEx::INF;
             return *this;
         } else if (containingLM->size() == 1) {
             this->singleOperatorLandmarks.push_back(containingLM);
@@ -85,10 +85,10 @@ void SearchNode::applyOperatorWithoutUpdate(RelaxedOperator *appliedOp) {
     appliedOp->apply(this->currentState);
     partialPlan.push_back(appliedOp);
     this->currentCost += appliedOp->baseCost;
-    this->operatorCost[appliedOp] = INFINITY;
-    map<RelaxedOperator *, Landmark *>::iterator it = this->operatorToLandmark.find(appliedOp);
+    this->operatorCost[appliedOp] = UIntEx::INF;
+    PointerMap<RelaxedOperator, Landmark *>::iterator it = this->operatorToLandmark.find(appliedOp);
     if (it != this->operatorToLandmark.end()) {
-        Landmark *containingLM = this->operatorToLandmark[appliedOp];
+        Landmark *containingLM = it->second;
         // "undo" this landmark: decrease heuristic value and
         // increase all contained operator's costs by the LM's cost
         int landmarkCost = containingLM->cost;
