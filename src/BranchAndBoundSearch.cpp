@@ -2,6 +2,7 @@
 
 #include "foreach.h"
 #include <iostream>
+
 using namespace std;
 
 void printNode(SearchNode &searchNode, UIntEx &upperBound);
@@ -10,11 +11,11 @@ BranchAndBoundSearch::BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &
     task(task),
     operatorSelector(operatorSelector),
     options(options),
-    costUpperBound(INFINITY) {
+    costUpperBound(UIntEx::INF) {
 }
 
 UIntEx BranchAndBoundSearch::run() {
-    this->costUpperBound = INFINITY;
+    this->costUpperBound = UIntEx::INF;
     this->expansionCount = 0;
     this->unitPropagationCount = 0;
     SearchNode initialNode = SearchNode(this->task, this->options);
@@ -29,7 +30,7 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
 #ifdef FULL_DEBUG
         cout << endl << "Exceeded bound (" << searchNode.getCostLowerBound() << " >= " << this->costUpperBound << ")" << endl << endl;
 #endif
-        return INFINITY;
+        return UIntEx::INF;
     }
 
     // TODO could optimize this by saving goal in every VariableSet and setting a flag as soon as goal is added
@@ -50,7 +51,7 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
 #ifdef FULL_DEBUG
         cout << endl << "No more applicable operators. Backtracking" << endl << endl;
 #endif
-        return INFINITY;
+        return UIntEx::INF;
     }
     // TODO remove redundant operators???
     bool foundBetterPlan = false;
@@ -75,7 +76,7 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
         this->expansionCount++;
         this->unitPropagationCount += successor->unitPropagationCount;
         UIntEx planCost = this->recursiveBranchAndBound(*successor);
-        if (planCost != INFINITY) {
+        if (planCost != UIntEx::INF) {
             foundBetterPlan = true;
             if (this->options.avoidExpandingSecondSuccessor && searchNode.getCostLowerBound() >= this->costUpperBound) {
 #ifdef FULL_DEBUG
@@ -97,7 +98,7 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
 #ifdef FULL_DEBUG
     cout << endl << "Backtracking without better plan" << endl;
 #endif
-    return INFINITY;
+    return UIntEx::INF;
 }
 
 void printNode(SearchNode &searchNode, UIntEx &upperBound) {
@@ -110,7 +111,7 @@ void printNode(SearchNode &searchNode, UIntEx &upperBound) {
     std::cout << std::endl;
     std::cout << "Forbidden" << std::endl;
     foreach(RelaxedOperator &op, searchNode.task.operators) {
-        if (searchNode.operatorCost[&op] == INFINITY)
+        if (searchNode.operatorCost[&op] == UIntEx::INF)
             std::cout << op.name << ", ";
     }
     std::cout << std::endl;

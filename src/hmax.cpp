@@ -19,7 +19,7 @@ UIntEx hmax(RelaxedTask &task, VariableSet &state) {
 
 UIntEx hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts) {
     foreach(Variable &var, task.variables) {
-        var.hmax = INFINITY;
+        var.hmax = UIntEx::INF;
         var.closed = false;
     }
     foreach(RelaxedOperator &op, task.operators) {
@@ -57,7 +57,7 @@ UIntEx hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts)
                         continue;
                     }
                     int successorCost = hmax + operatorCost;
-                    if (effect->hmax == INFINITY) {
+                    if (effect->hmax == UIntEx::INF) {
                         queue.push(effect, successorCost, depth+1);
                     }
                     else if (effect->hmax > successorCost) {

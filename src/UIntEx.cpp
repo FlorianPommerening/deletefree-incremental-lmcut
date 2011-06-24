@@ -1,6 +1,8 @@
 #include "UIntEx.h"
 #include <sstream>
 
+const UIntEx UIntEx::INF = UIntEx(0, false);
+
 UIntEx& UIntEx::operator=(const UIntEx &other) {
     this->isFinite = other.isFinite;
     this->value = other.value;

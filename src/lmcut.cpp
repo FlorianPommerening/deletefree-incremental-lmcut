@@ -19,8 +19,8 @@ UIntEx lmCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
     // in case no landmarks are added
     *firstAdded = landmarks.end();
     UIntEx hmax_value = hmax(task, state, operatorCosts);
-    if (hmax_value == INFINITY) {
-        return INFINITY;
+    if (hmax_value == UIntEx::INF) {
+        return UIntEx::INF;
     }
     int lmcutValue = 0;
     while (hmax_value != 0) {
@@ -67,7 +67,7 @@ void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
         if (it == effectToZeroCostOp.end())
             continue;
         foreach(RelaxedOperator *op, it->second) {
-            if (operatorCosts[op] == INFINITY || op->preconditionChoice == NULL)
+            if (operatorCosts[op] == UIntEx::INF || op->preconditionChoice == NULL)
                 continue;
             goalStack.push(op->preconditionChoice);
         }
