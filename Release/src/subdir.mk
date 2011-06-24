@@ -7,7 +7,6 @@ CPP_SRCS += \
 ../src/BranchAndBoundSearch.cpp \
 ../src/Landmark.cpp \
 ../src/OperatorSelector.cpp \
-../src/RelaxedOperator.cpp \
 ../src/RelaxedTask.cpp \
 ../src/SASTask.cpp \
 ../src/SearchNode.cpp \
@@ -21,7 +20,6 @@ OBJS += \
 ./src/BranchAndBoundSearch.o \
 ./src/Landmark.o \
 ./src/OperatorSelector.o \
-./src/RelaxedOperator.o \
 ./src/RelaxedTask.o \
 ./src/SASTask.o \
 ./src/SearchNode.o \
@@ -35,7 +33,6 @@ CPP_DEPS += \
 ./src/BranchAndBoundSearch.d \
 ./src/Landmark.d \
 ./src/OperatorSelector.d \
-./src/RelaxedOperator.d \
 ./src/RelaxedTask.d \
 ./src/SASTask.d \
 ./src/SearchNode.d \
