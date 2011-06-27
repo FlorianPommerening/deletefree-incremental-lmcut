@@ -5,14 +5,15 @@
 #include <boost/functional/hash.hpp>
 #include <string>
 #include <vector>
-#include <map>
 
 #include "UIntEx.h"
+#include "PointerMap.h"
 
 class RelaxedOperator;
 
 struct Variable {
 public:
+    Variable();
     Variable(std::string name);
     std::string name;
     UIntEx hmax;
@@ -37,7 +38,7 @@ public:
     bool isDisjointWith(const VariableSet &other) const;
     bool isSubsetOf(const VariableSet &other) const;
     int size() const;
-    void removeIrrelevant(std::map<Variable *, bool> &relevant);
+    void removeIrrelevant(PointerMap<Variable, bool> &relevant);
 
     // allow iteration over set
     iterator begin();

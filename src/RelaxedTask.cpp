@@ -5,6 +5,7 @@
 
 #include "RelaxedTask.h"
 #include "foreach.h"
+#include "PointerMap.h"
 
 using namespace std;
 
@@ -41,7 +42,7 @@ Variable *RelaxedTask::getVariable(const std::string &name) {
 
 bool RelaxedTask::removeIrrelevantVariables() {
     this->crossreference();
-    map<Variable *, bool> relevant;
+    PointerMap<Variable, bool> relevant;
     foreach(Variable &var, this->variables) {
         relevant[&var] = false;
     }

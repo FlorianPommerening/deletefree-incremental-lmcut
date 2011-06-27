@@ -3,6 +3,7 @@
 #include <vector>
 #include <ostream>
 #include <sstream>
+#include <map>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 

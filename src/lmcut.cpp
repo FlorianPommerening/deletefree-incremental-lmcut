@@ -43,7 +43,7 @@ UIntEx lmCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
 }
 
 void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts, Landmark &cut) {
-    map<Variable *, list<RelaxedOperator *> > effectToZeroCostOp;
+    PointerMap<Variable, list<RelaxedOperator *> > effectToZeroCostOp;
     foreach(OperatorCostEntry &entry, operatorCosts) {
         RelaxedOperator *op = entry.first;
         UIntEx &cost = entry.second;
@@ -62,7 +62,7 @@ void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
         if (goalZone.contains(var))
             continue;
         goalZone.add(var);
-        map<Variable *, list<RelaxedOperator *> >::iterator it =
+        PointerMap<Variable, list<RelaxedOperator *> >::iterator it =
                 effectToZeroCostOp.find(var);
         if (it == effectToZeroCostOp.end())
             continue;

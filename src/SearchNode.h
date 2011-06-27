@@ -1,7 +1,6 @@
 #ifndef SEARCHNODE_H_
 #define SEARCHNODE_H_
 
-#include <map>
 #include <list>
 
 #include "Options.h"

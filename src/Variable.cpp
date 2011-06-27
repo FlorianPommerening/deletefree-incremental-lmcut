@@ -8,6 +8,8 @@ using namespace std;
 Variable::Variable(string name): name(name) {
 }
 
+Variable::Variable(): name("@@DUMMY") {
+}
 
 Variable VariableSet::EmptyKey = Variable("@@EMPTY_KEY");
 Variable VariableSet::DeletedKey = Variable("@@DELETED_KEY");
@@ -75,7 +77,7 @@ bool VariableSet::isSubsetOf(const VariableSet &other) const {
     return true;
 }
 
-void VariableSet::removeIrrelevant(map<Variable *, bool> &relevant) {
+void VariableSet::removeIrrelevant(PointerMap<Variable, bool> &relevant) {
     // iterator in dense_hash_set stay valid during erase, so no need to copy it before
     for (iterator it = this->variables.begin(); it != this->variables.end(); ++it) {
         if (!relevant[*it])

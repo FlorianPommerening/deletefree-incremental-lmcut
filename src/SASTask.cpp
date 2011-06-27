@@ -6,6 +6,7 @@
 
 #include "SASTask.h"
 #include "foreach.h"
+#include "PointerMap.h"
 
 using namespace std;
 
@@ -246,7 +247,7 @@ bool DeleteRelaxer::deleteRelaxation(SASTask &sasTask, RelaxedTask &task) {
         this->error = "Axioms not supported";
         return false;
     }
-    map<SASVariable*, vector<Variable*> > variableTranslations;
+    PointerMap<SASVariable, vector<Variable*> > variableTranslations;
     for (unsigned int varId = 0; varId < sasTask.variables.size(); ++varId) {
         SASVariable* sasVar = &(sasTask.variables[varId]);
         variableTranslations[sasVar].reserve(sasVar->values.size());
