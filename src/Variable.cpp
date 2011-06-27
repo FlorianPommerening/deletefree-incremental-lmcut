@@ -8,15 +8,20 @@ using namespace std;
 Variable::Variable(string name): name(name) {
 }
 
+
+Variable VariableSet::EmptyKey = Variable("@@EMPTY_KEY");
+Variable VariableSet::DeletedKey = Variable("@@DELETED_KEY");
+
 VariableSet::VariableSet() {
+    this->variables.set_empty_key(&(VariableSet::EmptyKey));
+    this->variables.set_deleted_key(&(VariableSet::DeletedKey));
 }
 
 VariableSet::VariableSet(const VariableSet &other): variables(other.variables) {
 }
 
 VariableSet& VariableSet::operator =(const VariableSet &other) {
-    this->variables.clear();
-    this->variables.insert(other.begin(), other.end());
+    this->variables = other.variables;
     return *this;
 }
 
@@ -28,7 +33,7 @@ void VariableSet::clear() {
     this->variables.clear();
 }
 
-bool VariableSet::contains(Variable *element) {
+bool VariableSet::contains(Variable *element) const {
     return (this->variables.find(element) != this->variables.end());
 }
 
@@ -40,35 +45,40 @@ bool VariableSet::isDisjointWith(const VariableSet &other) const {
     if (this->variables.empty() || other.variables.empty()) {
         return true;
     }
-    set<Variable *>::iterator it1 = this->variables.begin();
-    set<Variable *>::iterator last1 = this->variables.end();
-    set<Variable *>::iterator it2 = other.variables.begin();
-    set<Variable *>::iterator last2 = other.variables.end();
-    if (*it1 > *(other.variables.rbegin()) || *it2 > *(this->variables.rbegin())) {
-        return true;
+    const_iterator it, last;
+    const VariableSet *largerSet;
+    if (this->size() < other.size()) {
+        it = this->variables.begin();
+        last = this->variables.end();
+        largerSet = &other;
+    } else {
+        it = other.variables.begin();
+        last = other.variables.end();
+        largerSet = this;
     }
-    while (it1!=last1 && it2!=last2)
-    {
-      if (*it1 == *it2) return false;
-      else if (*it1 < *it2) ++it1;
-      else ++it2;
+    for (; it != last; ++it) {
+        if (largerSet->contains(*it))
+            return false;
     }
     return true;
 }
 
 bool VariableSet::isSubsetOf(const VariableSet &other) const {
-    return includes(other.variables.begin(), other.variables.end(),
-                    this->variables.begin(), this->variables.end());
+    // could do more checks with empty() but this will almost never happen,
+    // so the additional test would probably make it slower instead of faster
+    if (this->variables.size() > other.variables.size())
+        return false;
+    for (const_iterator it = this->variables.begin(); it != this->variables.end(); ++it) {
+        if (!other.contains(*it))
+            return false;
+    }
+    return true;
 }
 
 void VariableSet::removeIrrelevant(map<Variable *, bool> &relevant) {
-    set<Variable *>::iterator it = this->variables.begin();
-    while (it != this->variables.end()) {
-        // copy iterator so it can be used for erase without breaking the loop
-        set<Variable *>::iterator current = it;
-        // increment iterator before (!!!) erase
-        ++it;
-        if (!relevant[*current])
-            this->variables.erase(current);
+    // iterator in dense_hash_set stay valid during erase, so no need to copy it before
+    for (iterator it = this->variables.begin(); it != this->variables.end(); ++it) {
+        if (!relevant[*it])
+            this->variables.erase(it);
     }
 }

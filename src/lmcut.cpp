@@ -53,15 +53,15 @@ void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
             }
         }
     }
-    set<Variable *> goalZone;
+    VariableSet goalZone;
     stack<Variable *> goalStack;
     goalStack.push(task.goal);
     while (!goalStack.empty()) {
         Variable *var = goalStack.top();
         goalStack.pop();
-        if (goalZone.find(var) != goalZone.end())
+        if (goalZone.contains(var))
             continue;
-        goalZone.insert(var);
+        goalZone.add(var);
         map<Variable *, list<RelaxedOperator *> >::iterator it =
                 effectToZeroCostOp.find(var);
         if (it == effectToZeroCostOp.end())
@@ -99,7 +99,7 @@ void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
             if (op->unsatisfiedPreconditions == 0) {
                 bool addedToCut = false;
                 foreach(Variable *effect, op->effects) {
-                    if (goalZone.find(effect) != goalZone.end()){
+                    if (goalZone.contains(effect)){
                         cut.add(op, operatorCost);
                         addedToCut = true;
                         break;

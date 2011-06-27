@@ -1,7 +1,8 @@
 #ifndef VARIABLE_H
 #define VARIABLE_H
 
-#include <set>
+#include <google/dense_hash_set>
+#include <boost/functional/hash.hpp>
 #include <string>
 #include <vector>
 #include <map>
@@ -22,8 +23,8 @@ public:
 
 class VariableSet {
 public:
-    typedef std::set<Variable*>::iterator iterator;
-    typedef std::set<Variable*>::const_iterator const_iterator;
+    typedef google::dense_hash_set<Variable*, boost::hash<Variable*> >::iterator iterator;
+    typedef google::dense_hash_set<Variable*, boost::hash<Variable*> >::const_iterator const_iterator;
 
     VariableSet();
     VariableSet(const VariableSet &other);
@@ -31,7 +32,7 @@ public:
 
     void clear();
     void add(Variable *element);
-    bool contains(Variable *element);
+    bool contains(Variable *element) const;
     void inplaceUnion(const VariableSet &other);
     bool isDisjointWith(const VariableSet &other) const;
     bool isSubsetOf(const VariableSet &other) const;
@@ -44,7 +45,11 @@ public:
     const_iterator begin() const;
     const_iterator end() const;
 private:
-    std::set<Variable*> variables;
+    google::dense_hash_set<Variable*, boost::hash<Variable*> > variables;
+    // special value symbolizing an entry in the map that was deleted
+    static Variable DeletedKey;
+    // special value symbolizing an entry in the map that is not assigned yet
+    static Variable EmptyKey;
 };
 
 inline int VariableSet::size() const {
