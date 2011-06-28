@@ -36,14 +36,54 @@ public:
     UIntEx& operator ++();
     UIntEx& operator --();
 
-    bool operator ==(const UIntEx& other) const;
-    bool operator !=(const UIntEx& other) const;
-    bool operator <(const UIntEx& other) const;
-    bool operator >(const UIntEx& other) const;
-    bool operator <=(const UIntEx& other) const;
-    bool operator >=(const UIntEx& other) const;
+    bool operator ==(const UIntEx& other) const {
+        return ((this->isFinite == other.isFinite) && (this->value == other.value || !this->isFinite));
+    }
 
-    bool hasFiniteValue(unsigned int &value) const;
+    bool operator !=(const UIntEx& other) const {
+        return !(*this == other);
+    }
+
+    bool operator <(const UIntEx& other) const {
+        /*
+              <  | inf   int
+            ------------------
+             inf | false false
+             int | true  <
+        */
+        if (!this->isFinite)
+            return false;
+        if (!other.isFinite)
+            return true;
+        return (this->value < other.value);
+    }
+
+    bool operator >(const UIntEx& other) const {
+        return (other < *this);
+    }
+
+    bool operator <=(const UIntEx& other) const {
+        /*
+              <= | inf   int
+            ------------------
+             inf | true  false
+             int | true  <=
+        */
+        if (!other.isFinite)
+            return true;
+        if (!this->isFinite)
+            return false;
+        return (this->value <= other.value);
+    }
+
+    bool operator >=(const UIntEx& other) const {
+        return (other <= *this);
+    }
+
+    bool hasFiniteValue(unsigned int &value) const{
+        value = this->value;
+        return this->isFinite;
+    }
     std::string toString() const;
 private:
     bool isFinite;

@@ -35,7 +35,6 @@
 <tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1195004825" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
 <option id="gnu.cpp.link.option.libs.1162696418" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 <listOptionValue builtIn="false" value="boost_system"/>
-<listOptionValue builtIn="false" value="profiler"/>
 <listOptionValue builtIn="false" value="boost_filesystem"/>
 </option>
 <inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1689589108" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
