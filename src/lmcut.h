@@ -6,6 +6,7 @@
 #include "UIntEx.h"
 
 UIntEx lmCut(RelaxedTask &task);
+UIntEx lmCut(RelaxedTask &task, VariableSet &state);
 UIntEx lmCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts,
              std::list<Landmark> &landmarks, std::list<Landmark>::iterator *firstAdded=NULL);
 void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts, Landmark &cut);

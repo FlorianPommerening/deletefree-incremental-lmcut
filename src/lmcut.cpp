@@ -14,6 +14,16 @@ UIntEx lmCut(RelaxedTask &task) {
     return initialNode.heuristicValue;
 }
 
+UIntEx lmCut(RelaxedTask &task, VariableSet &state) {
+    OperatorCosts operatorCosts;
+    foreach(RelaxedOperator &op, task.operators) {
+        operatorCosts[&op] = op.baseCost;
+    }
+    list<Landmark> landmarks;
+    list<Landmark>::iterator *firstAdded = NULL;
+    return lmCut(task, state, operatorCosts, landmarks, firstAdded);
+}
+
 UIntEx lmCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts, list<Landmark> &landmarks, list<Landmark>::iterator *firstAdded) {
     bool isFirst = true;
     // in case no landmarks are added

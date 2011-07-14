@@ -12,11 +12,11 @@ using namespace std;
 RelaxedTask::RelaxedTask() {
 }
 
-RelaxedTask::RelaxedTask(const RelaxedTask &other) {
+RelaxedTask::RelaxedTask(const RelaxedTask& /* other */) {
     throw "Copying the task will break it. Too lazy to change it";
 }
 
-RelaxedTask& RelaxedTask::operator=(const RelaxedTask &rhs) {
+RelaxedTask& RelaxedTask::operator=(const RelaxedTask& /* rhs */) {
     throw "Copying the task will break it. Too lazy to change it";
 }
 

@@ -41,7 +41,7 @@ SearchNode::SearchNode(const SearchNode &other):
     }
 }
 
-SearchNode& SearchNode::operator=(const SearchNode &rhs) {
+SearchNode& SearchNode::operator=(const SearchNode& /* rhs */) {
     throw "Assignment operator should not be used for SearchNode";
 }
 
