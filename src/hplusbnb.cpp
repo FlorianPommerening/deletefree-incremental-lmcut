@@ -26,7 +26,7 @@ typedef map<string, string> Results;
 
 const string RESULTS_DIR = "../../results/";
 const string TRANSLATIONS_DIR = "../../translations/";
-const string TRANSLATE_CMD = "../translate/translate.py";
+const string TRANSLATE_CMD = "../translate/translate-relaxed.py";
 
 int main(int argc, char *argv[]) {
     if (argc > 3) {
