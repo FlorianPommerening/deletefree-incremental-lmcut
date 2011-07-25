@@ -121,8 +121,9 @@ void LandmarkCutFloHeuristic::initialize() {
                 }
             }
 
-            if (pre_post[i].pre != -1)
+            if (pre_post[i].pre != -1) {
                 relaxedOp.preconditions.add(propositions[pre_post[i].var][pre_post[i].pre]);
+            }
             relaxedOp.effects.add(propositions[pre_post[i].var][pre_post[i].post]);
         }
 
@@ -159,8 +160,9 @@ ScalarEvaluator *LandmarkCutFloHeuristic::create(const std::vector<string> &conf
                                                  bool dry_run) {
     HeuristicOptions common_options;
 
-    if (config.size() <= start)
+    if (config.size() <= start) {
         throw ParseError(start);
+    }
 
     // "<name>()" or "<name>(<options>)"
     if (config.size() > start + 2 && config[start + 1] == "(") {
@@ -172,15 +174,17 @@ ScalarEvaluator *LandmarkCutFloHeuristic::create(const std::vector<string> &conf
             option_parser.parse_options(config, end, end, dry_run);
             end++;
         }
-        if (config[end] != ")")
+        if (config[end] != ")") {
             throw ParseError(end);
+        }
     } else {
         throw ParseError(start + 1);
     }
 
-    if (dry_run)
+    if (dry_run) {
         return 0;
-    else
+    } else {
         return new LandmarkCutFloHeuristic(common_options);
+    }
 }
 

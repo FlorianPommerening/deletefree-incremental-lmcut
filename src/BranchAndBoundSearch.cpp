@@ -58,7 +58,9 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
     SearchNode *successor = NULL;
     // iterate over 2 successors to avoid writing the same code twice
     for (int iSuc = 0; iSuc < 2; ++iSuc) {
-        if (iSuc > 1) throw "There are only two successors. Do not call the loop more often!";
+        if (iSuc > 1) {
+            throw "There are only two successors. Do not call the loop more often!";
+        }
         bool first = (iSuc == 0);
         if (first ^ addFirst) {
 #ifdef FULL_DEBUG
@@ -89,11 +91,12 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
         delete successor; successor = NULL;
     }
 
-    if (foundBetterPlan)
+    if (foundBetterPlan) {
 #ifdef FULL_DEBUG
         cout << endl << "Backtracking with better plan of cost " << this->costUpperBound << endl;
 #endif
         return this->costUpperBound;
+    }
     // else
 #ifdef FULL_DEBUG
     cout << endl << "Backtracking without better plan" << endl;
@@ -111,8 +114,9 @@ void printNode(SearchNode &searchNode, UIntEx &upperBound) {
     std::cout << std::endl;
     std::cout << "Forbidden" << std::endl;
     foreach(RelaxedOperator &op, searchNode.task.operators) {
-        if (searchNode.operatorCost[&op] == UIntEx::INF)
+        if (searchNode.operatorCost[&op] == UIntEx::INF) {
             std::cout << op.name << ", ";
+        }
     }
     std::cout << std::endl;
     std::cout << "Landmarks" << std::endl;

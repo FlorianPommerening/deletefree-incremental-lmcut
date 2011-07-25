@@ -10,16 +10,18 @@ UIntEx& UIntEx::operator=(const UIntEx &other) {
 }
 
 UIntEx& UIntEx::operator+=(const UIntEx &other) {
-    if (this->isFinite && other.isFinite)
+    if (this->isFinite && other.isFinite) {
         this->value += other.value;
-    else
+    } else {
         this->isFinite = false;
+    }
     return *this;
 }
 
 UIntEx& UIntEx::operator-=(const UIntEx &other) {
-    if (!other.isFinite)
+    if (!other.isFinite) {
         throw SubtractedInfinity("Subtracting infinity from a UIntEx.");
+    }
     this->value -= other.value;
     return *this;
 }
@@ -29,8 +31,9 @@ UIntEx UIntEx::operator+(const UIntEx &other) const {
 }
 
 UIntEx UIntEx::operator-(const UIntEx &other) const {
-    if (!other.isFinite)
+    if (!other.isFinite) {
         throw SubtractedInfinity("Subtracting infinity from a UIntEx.");
+    }
     return UIntEx(this->value - other.value, this->isFinite);
 }
 
@@ -59,10 +62,12 @@ bool UIntEx::operator <(const UIntEx& other) const {
      inf | false false
      int | true  <
 */
-    if (!this->isFinite)
+    if (!this->isFinite) {
         return false;
-    if (!other.isFinite)
+    }
+    if (!other.isFinite) {
         return true;
+    }
     return (this->value < other.value);
 }
 
@@ -77,10 +82,12 @@ bool UIntEx::operator <=(const UIntEx& other) const {
      inf | true  false
      int | true  <=
 */
-    if (!other.isFinite)
+    if (!other.isFinite) {
         return true;
-    if (!this->isFinite)
+    }
+    if (!this->isFinite) {
         return false;
+    }
     return (this->value <= other.value);
 }
 

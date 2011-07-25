@@ -69,16 +69,19 @@ void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
     while (!goalStack.empty()) {
         Variable *var = goalStack.top();
         goalStack.pop();
-        if (goalZone.contains(var))
+        if (goalZone.contains(var)) {
             continue;
+        }
         goalZone.add(var);
         PointerMap<Variable, list<RelaxedOperator *> >::iterator it =
                 effectToZeroCostOp.find(var);
-        if (it == effectToZeroCostOp.end())
+        if (it == effectToZeroCostOp.end()) {
             continue;
+        }
         foreach(RelaxedOperator *op, it->second) {
-            if (operatorCosts[op] == UIntEx::INF || op->preconditionChoice == NULL)
+            if (operatorCosts[op] == UIntEx::INF || op->preconditionChoice == NULL) {
                 continue;
+            }
             goalStack.push(op->preconditionChoice);
         }
     }
@@ -96,8 +99,9 @@ void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
     while (!reachedStack.empty()) {
         Variable *var = reachedStack.top();
         reachedStack.pop();
-        if (var->closed)
+        if (var->closed) {
             continue;
+        }
         var->closed = true;
         foreach(RelaxedOperator *op, var->precondition_of) {
             unsigned int operatorCost;

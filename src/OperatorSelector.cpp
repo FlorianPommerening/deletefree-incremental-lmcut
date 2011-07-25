@@ -18,10 +18,12 @@ void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, UIntEx &co
             // landmarks of size 1 are handled in unit propagation, but
             // an operator contained in a landmark of size 1 can still be applicable here if the landmark
             // was discovered after the last unit propagation, so do NOT ignore it
-            //if (this->options.useUnitPropagation && landmark.size() == 1)
+            //if (this->options.useUnitPropagation && landmark.size() == 1) {
             //    continue;
-            if (*nextOperator != NULL && landmark.size() >= best)
+            //}
+            if (*nextOperator != NULL && landmark.size() >= best) {
                 continue;
+            }
             foreach(Landmark::value_type &entry, landmark) {
                 RelaxedOperator *op = entry.first;
                 if (searchNode.operatorCost[op] != UIntEx::INF && op->isApplicable(currentState)) {
@@ -30,8 +32,9 @@ void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, UIntEx &co
                 }
             }
         }
-        if (*nextOperator != NULL)
+        if (*nextOperator != NULL) {
             return;
+        }
     }
     // pick first applicable
     foreach(RelaxedOperator &op, searchNode.task.operators) {

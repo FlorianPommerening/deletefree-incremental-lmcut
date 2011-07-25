@@ -59,8 +59,9 @@ bool VariableSet::isDisjointWith(const VariableSet &other) const {
         largerSet = this;
     }
     for (; it != last; ++it) {
-        if (largerSet->contains(*it))
+        if (largerSet->contains(*it)) {
             return false;
+        }
     }
     return true;
 }
@@ -68,11 +69,13 @@ bool VariableSet::isDisjointWith(const VariableSet &other) const {
 bool VariableSet::isSubsetOf(const VariableSet &other) const {
     // could do more checks with empty() but this will almost never happen,
     // so the additional test would probably make it slower instead of faster
-    if (this->variables.size() > other.variables.size())
+    if (this->variables.size() > other.variables.size()) {
         return false;
+    }
     for (const_iterator it = this->variables.begin(); it != this->variables.end(); ++it) {
-        if (!other.contains(*it))
+        if (!other.contains(*it)) {
             return false;
+        }
     }
     return true;
 }
@@ -80,7 +83,8 @@ bool VariableSet::isSubsetOf(const VariableSet &other) const {
 void VariableSet::removeIrrelevant(PointerMap<Variable, bool> &relevant) {
     // iterator in dense_hash_set stay valid during erase, so no need to copy it before
     for (iterator it = this->variables.begin(); it != this->variables.end(); ++it) {
-        if (!relevant[*it])
+        if (!relevant[*it]) {
             this->variables.erase(it);
+        }
     }
 }
