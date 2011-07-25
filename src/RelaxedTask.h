@@ -21,6 +21,7 @@ public:
     // using list here so pointers stay valid even if entries are deleted afterwards
     std::list<Variable> variables;
     std::list<RelaxedOperator> operators;
+    std::list<RelaxedOperator*> zeroBaseCostOperators;
 
     void parseFile(const char *filename);
     Variable *getVariable(const std::string &name);

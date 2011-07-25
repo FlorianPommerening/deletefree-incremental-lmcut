@@ -31,9 +31,10 @@ public:
     int unitPropagationCount;
 
 private:
-    void applyOperatorWithoutUpdate(RelaxedOperator *appliedOp);
+    bool applyOperatorWithoutUpdate(RelaxedOperator *appliedOp);
     void updateHeuristicValue();
     void unitPropagation();
+    bool tryApplyUnitPropagationOperator(RelaxedOperator *op);
     PointerMap<RelaxedOperator, Landmark *> operatorToLandmark;
     std::list<Landmark *> singleOperatorLandmarks;
     OptimizationOptions &options;

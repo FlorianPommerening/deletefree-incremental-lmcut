@@ -10,6 +10,7 @@ struct OptimizationOptions {
     static const bool tryGoalOnZeroHeuristic = true;
     static const bool useUnitPropagation = true;
     static const bool avoidExpandingSecondSuccessor = true;
+    static const bool incrementalSearch = true;
 };
 
 #endif /* OPTIONS_H_ */
