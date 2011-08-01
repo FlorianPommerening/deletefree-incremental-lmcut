@@ -7,12 +7,16 @@
 
 #include "RelaxedTask.h"
 
+// forward declarations
 struct SASVariable;
 struct SASVariableAssignment;
 struct SASEffect;
 struct SASOperator;
 struct SASAxiom;
 
+/*
+ * SAS+ planning task
+ */
 class SASTask {
 public:
     std::vector<SASVariable> variables;
@@ -51,6 +55,9 @@ struct SASAxiom {
     SASVariableAssignment effect;
 };
 
+/*
+ * Used to parse a SASTask from a file and keep track of any errors that occur while parsing
+ */
 class SASParser {
 public:
     bool parseTask(const std::string &taskFilename, const std::string &translationKeyFilename, SASTask &task);
@@ -87,6 +94,9 @@ private:
     bool isNextLine(const std::string &text);
 };
 
+/*
+ * Generates the delete relaxation of an SASTask and keeps track of errors that occur during the relaxation.
+ */
 class DeleteRelaxer {
 public:
     bool deleteRelaxation(SASTask &sasTask, RelaxedTask &task);

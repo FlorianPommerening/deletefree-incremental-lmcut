@@ -5,12 +5,20 @@
 
 #include "RelaxedOperator.h"
 
+/*
+ * Represents a disjunctive action landmark and its corresponding cost partitioning
+ * This is represented as a mapping from operators to cost s.t. the domain of this mapping
+ * is the set of operators in the landmark.
+ * The cost function maps each operator to the cost it had during the creation of the landmark.
+ * This is used to adjust the cost of the landmark when its most expensive operator is removed.
+ */
 class Landmark {
 public:
     // TODO introduce iterator over operators only (python "map.keys()")
     typedef PointerMap<RelaxedOperator, int>::value_type value_type;
     typedef PointerMap<RelaxedOperator, int>::iterator iterator;
     typedef PointerMap<RelaxedOperator, int>::const_iterator const_iterator;
+    // The cost of the operator is updated on each change to the landmark, which is cheaper than recomputing it each time
     int cost;
     void add(RelaxedOperator *op, int opCost);
     void remove(RelaxedOperator *op);
@@ -28,10 +36,6 @@ public:
         return (this == &other);
     }
 private:
-    // this copies the cost values for each operator which uses more space
-    // but has a nicer interface (remove needs to know the cost of all operators in the LM)
-    // if there are problems with running out of memory, change this to
-    // vector<RelaxedOperator *>
     PointerMap<RelaxedOperator, int> operatorEntries;
 };
 

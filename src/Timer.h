@@ -8,8 +8,14 @@
 #define CPU_TIME        CLOCK_PROCESS_CPUTIME_ID
 #define WALLCLOCK_TIME  CLOCK_MONOTONIC
 
+/*
+ * Timer that can measure cpu time or wall clock time.
+ */
 class Timer {
 public:
+    /*
+     * Timer automatically starts on creation, but can be reset any time.
+     */
     Timer(clockid_t clockId): clockId(clockId) {
         restart();
     }

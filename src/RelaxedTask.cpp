@@ -13,11 +13,11 @@ RelaxedTask::RelaxedTask() {
 }
 
 RelaxedTask::RelaxedTask(const RelaxedTask& /* other */) {
-    throw "Copying the task will break it. Too lazy to change it";
+    throw "Copying the task will break it. Too lazy to change it.";
 }
 
 RelaxedTask& RelaxedTask::operator=(const RelaxedTask& /* rhs */) {
-    throw "Copying the task will break it. Too lazy to change it";
+    throw "Copying the task will break it. Too lazy to change it.";
 }
 
 void RelaxedTask::parseFile(const char *filename) {
@@ -42,6 +42,7 @@ Variable *RelaxedTask::getVariable(const std::string &name) {
 
 bool RelaxedTask::removeIrrelevantVariables() {
     this->crossreference();
+    // The goal is relevant. If an operator adds a relevant variable all its preconditions are relevant
     PointerMap<Variable, bool> relevant;
     foreach(Variable &var, this->variables) {
         relevant[&var] = false;
@@ -51,7 +52,10 @@ bool RelaxedTask::removeIrrelevantVariables() {
     while (!relevantVariableQueue.empty()) {
         Variable *var = relevantVariableQueue.front();
         relevantVariableQueue.pop();
-        if (relevant[var]) { continue; }
+        if (relevant[var]) {
+            // we have already seen this variable
+            continue;
+        }
         relevant[var] = true;
         foreach(RelaxedOperator *op, var->effect_of) {
             foreach(Variable *pre, op->preconditions) {
@@ -63,6 +67,7 @@ bool RelaxedTask::removeIrrelevantVariables() {
         // unsolvable
         return false;
     }
+    // remove unnecessary operators and unnecessary variables from preconditions and effects
     Variable *dummyPrecondition = this->getVariable("@@precond");
     if (!dummyPrecondition) {
         throw "Task is not in canonical form. Use parse function to create a task object.";
@@ -76,11 +81,15 @@ bool RelaxedTask::removeIrrelevantVariables() {
             continue;
         }
         if (itOp->preconditions.size() == 0) {
+            // make sure the task stays in canonical form
             itOp->preconditions.add(dummyPrecondition);
+            // if each operator already has a precondition, this might never trigger
+            // and the dummy precondition will be removed again
             relevant[dummyPrecondition] = true;
         }
         ++itOp;
     }
+    // remove unnecessary variables
     list<Variable>::iterator itVar = this->variables.begin();
     while (itVar != this->variables.end()) {
         if (!relevant[&(*itVar)]) {
@@ -117,6 +126,8 @@ void RelaxedTask::crossreference() {
 }
 
 void RelaxedTask::parseTask(ifstream &taskfile) {
+    // Parse task from a file. The format is similar to the sas task format,
+    // but since this is not used right now, its not described in mor detail.
     string line;
     if (!getline(taskfile, line) || line != "Variables") { throw "'Variables' expected"; }
     if (!getline(taskfile, line)) { throw "Number of variables expected"; }

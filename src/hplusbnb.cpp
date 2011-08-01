@@ -24,11 +24,13 @@ using namespace boost::filesystem;
 // needed for boost_foreach
 typedef map<string, string> Results;
 
+// TODO: stop hard coding directory names
 const string RESULTS_DIR = "../../results/";
 const string TRANSLATIONS_DIR = "../../translations/";
 const string TRANSLATE_CMD = "../translate/translate-relaxed.py";
 
 int main(int argc, char *argv[]) {
+    // Parse command line arguments.
     if (argc > 3) {
         cout << "Only 2 arguments expected: problemfile, domainfile" << endl;
         return 1;
@@ -47,9 +49,10 @@ int main(int argc, char *argv[]) {
     path resultsFilePath = path(RESULTS_DIR) / (domainName + "_" + problemName + ".result");
 
     // TODO use command line options to set this
-    // right now: set defaults in class definition to keep all configuration in one place
+    // right now: set defaults in class definition to keep all configuration in one place.
     OptimizationOptions options;
 
+    // results will contain all properties recorded in the result file
     Results results;
     Timer cpuTimer(CPU_TIME);
     Timer wallClockTimer(WALLCLOCK_TIME);
@@ -58,10 +61,11 @@ int main(int argc, char *argv[]) {
     cout << setprecision(3);
 
     try {
+        // Translation from pddl to sas
         cout << "Translating problem file ... " << flush;
         // check if cached translations already exist
         if (!exists(taskTranslationPath) || !exists(translationKeyPath)) {
-            // call python translate.py to translate file
+            // call python translate-relaxed.py to translate file
             string command = TRANSLATE_CMD + " " + problemFilename + " " + domainFilename + " " + translationPath.string();
             wallClockTimer.restart();
             if (system(command.c_str()) != 0) {
@@ -78,6 +82,7 @@ int main(int argc, char *argv[]) {
             cout << "translation already exists" << endl;
         }
 
+        // Parsing the sas translation into a SASTask
         cout << "Parsing translated file ... " << flush;
         SASTask sasTask;
         SASParser parser;
@@ -90,6 +95,7 @@ int main(int argc, char *argv[]) {
         }
         cout << "done " << results["parse_time"] << endl;
 
+        // Generating the delete relaxation of the SASTask
         cout << "Relaxing task ... " << flush;
         RelaxedTask translatedTask;
         DeleteRelaxer relaxer;
@@ -102,14 +108,17 @@ int main(int argc, char *argv[]) {
         }
         cout << "done " << results["relaxation_time"] << endl;
 
+        // Relevance analysis
         cout << "Removing irrelevant variables ... " << flush;
         cpuTimer.restart();
+        // if the task is trivially unsolvable, this can be discovered here
         bool solvable = translatedTask.removeIrrelevantVariables();
         results["relevance_analysis_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
         cout << "done " << results["relevance_analysis_time"] << endl;
 
         if (solvable) {
-    /*
+            // Previous tests to compute h^max and h^LM-cut values used to validate their implementations.
+            /*
             cout << "Calculating h^max ... " << flush;
             cpuTimer.restart();
             UIntEx hmax_value = hmax(translatedTask);
@@ -123,7 +132,7 @@ int main(int argc, char *argv[]) {
             results["h_lmcut_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
             results["h_lmcut"] = h_lmcut_value.toString();
             cout << "done (" << h_lmcut_value << ") " << results["h_lmcut_time"] << endl;
-    */
+            */
             cout << "Calculating h^+ ... " << flush;
             cpuTimer.restart();
             AchieveLandmarksTryGoalOperatorSelector opSelector(options);

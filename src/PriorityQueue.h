@@ -12,6 +12,9 @@ typedef std::pair<int, int> QueueKey;
 typedef std::pair<QueueKey, Variable *> QueueEntry;
 typedef std::greater<QueueEntry> EntryGreater;
 
+/*
+ * wrapper around std::priority_queue for easier access and decreaseKey functionality
+ */
 class PriorityQueue {
 public:
     bool empty();

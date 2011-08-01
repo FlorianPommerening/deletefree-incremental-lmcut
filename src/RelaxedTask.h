@@ -8,24 +8,39 @@
 #include "Variable.h"
 #include "RelaxedOperator.h"
 
-/// A relaxed planning task in canonical form
-/// (only one goal literal, only one literal in initial state and at least one precondition in each operator)
+/*
+ * A relaxed (or delete-free) planning task in canonical form
+ *  (only one goal literal, only one literal in initial state and at least one precondition in each operator)
+ */
 class RelaxedTask {
 public:
     RelaxedTask();
+    /*
+     * copy ctor and assignment operator throw exceptions to avoid accidental usage
+     */
     RelaxedTask(RelaxedTask const &other);
+    /*
+     * copy ctor and assignment operator throw exceptions to avoid accidental usage
+     */
     RelaxedTask& operator=(const RelaxedTask &rhs);
 
+    // not a set of variables here, since all tasks are in canonical form
     Variable *init;
+    // not a set of variables here, since all tasks are in canonical form
     Variable *goal;
     // using list here so pointers stay valid even if entries are deleted afterwards
     std::list<Variable> variables;
     std::list<RelaxedOperator> operators;
+    // Operators without base cost are used in unit propagation. They are determined
+    // while cross-referencing the task
     std::list<RelaxedOperator*> zeroBaseCostOperators;
 
     void parseFile(const char *filename);
+    // find a variable with that name and return its address
     Variable *getVariable(const std::string &name);
+    // relevance analysis
     bool removeIrrelevantVariables();
+    // creates mappings from effect to operator and from precondition to operator
     void crossreference();
 
 private:

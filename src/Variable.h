@@ -9,8 +9,13 @@
 #include "UIntEx.h"
 #include "PointerMap.h"
 
+// forward declaration
 class RelaxedOperator;
 
+/*
+ * A variable in a delete-free planning task with some temporary variables for
+ * cross-referencing, h^max and h^LM-cut calculation.
+ */
 struct Variable {
 public:
     Variable();
@@ -22,6 +27,10 @@ public:
     std::vector<RelaxedOperator *> effect_of;
 };
 
+/*
+ * A set of variables.
+ * Wraps googles dense hash set.
+ */
 class VariableSet {
 public:
     typedef google::dense_hash_set<Variable*, boost::hash<Variable*> >::iterator iterator;

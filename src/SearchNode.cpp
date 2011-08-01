@@ -14,6 +14,7 @@ SearchNode::SearchNode(RelaxedTask &task, OptimizationOptions &options):
         unitPropagationCount(0),
         options(options) {
     this->currentState.add(task.init);
+    // create default cost function
     foreach(RelaxedOperator &op, task.operators) {
         this->operatorCost[&op] = op.baseCost;
     }
@@ -30,6 +31,7 @@ SearchNode::SearchNode(const SearchNode &other):
                     task(other.task),
                     unitPropagationCount(0),
                     options(other.options) {
+    // re-create operator to landmark mapping and list of singleOperatorLandmarks
     foreach(Landmark &landmark, this->landmarks) {
         foreach(Landmark::value_type &entry, landmark) {
             RelaxedOperator *op = entry.first;
@@ -158,8 +160,10 @@ void SearchNode::updateHeuristicValue() {
         this->operatorToLandmark.clear();
         this->singleOperatorLandmarks.clear();
     }
+    // run heuristic calculation
     list<Landmark>::iterator firstAdded;
     UIntEx lmCutValue = lmCut(this->task, this->currentState, this->operatorCost, this->landmarks, &firstAdded);
+    // sort and cross-reference new landmarks
     for (list<Landmark>::iterator it = firstAdded; it != this->landmarks.end(); ++it) {
         Landmark &landmark = *it;
         foreach(Landmark::value_type &entry, landmark) {
@@ -178,12 +182,14 @@ void SearchNode::unitPropagation() {
         return;
     }
     bool stateChanged = true;
+    // if the state changed, new operators could be applicable
     while (stateChanged) {
         stateChanged = false;
-
+        // try 0-base-cost operators
         foreach(RelaxedOperator *freeOp, this->task.zeroBaseCostOperators) {
             stateChanged = this->tryApplyUnitPropagationOperator(freeOp);
         }
+        // try operators in landmarks of size 1
         list<Landmark *>::iterator it = this->singleOperatorLandmarks.begin();
         while (it != this->singleOperatorLandmarks.end()) {
             // applyOperatorWithoutUpdate() can delete the entry in singleOperatorLandmarks

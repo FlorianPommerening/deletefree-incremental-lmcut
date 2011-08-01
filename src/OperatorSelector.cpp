@@ -22,6 +22,7 @@ void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, UIntEx &co
             //    continue;
             //}
             if (*nextOperator != NULL && landmark.size() >= best) {
+                // we already know an operator at least as good
                 continue;
             }
             foreach(Landmark::value_type &entry, landmark) {
@@ -49,6 +50,7 @@ void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, UIntEx &co
 void AchieveLandmarksTryGoalOperatorSelector::select(SearchNode &searchNode, UIntEx &costUpperBound, RelaxedOperator **nextOperator, bool *addFirst) {
     if (this->options.tryGoalOnZeroHeuristic) {
         if (this->goalOperator == NULL) {
+            // determine and remember the goal operator once
             foreach(RelaxedOperator &op, searchNode.task.operators) {
                 if (op.name == "@@goal-operator") {
                     this->goalOperator = &op;
