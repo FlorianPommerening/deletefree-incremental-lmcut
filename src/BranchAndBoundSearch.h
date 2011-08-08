@@ -41,9 +41,15 @@ private:
     OperatorSelector &operatorSelector;
     OptimizationOptions &options;
     /*
-     * cost of the currently best solution or infinity if no solution was found yet.
+     * Cost of the currently best solution or infinity if no solution was found yet.
      */
     UIntEx costUpperBound;
+    /*
+     * Best proven approximation to h^+ from below. Currently the only time we can prove a lower
+     * bound for the whole task is in the initial node. For all other search nodes, lower bounds
+     * are only valid for the subtree rooted in the search node.
+     */
+    UIntEx costLowerBound;
     /*
      * Returns the value of the best solution in the subtree starting in searchNode if it is cheaper than the current upper bound
      * or infinity if there is no (cheaper) solution in this subtree.

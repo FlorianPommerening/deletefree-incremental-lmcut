@@ -14,7 +14,8 @@ BranchAndBoundSearch::BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &
     task(task),
     operatorSelector(operatorSelector),
     options(options),
-    costUpperBound(UIntEx::INF) {
+    costUpperBound(UIntEx::INF),
+    costLowerBound(0) {
 }
 
 UIntEx BranchAndBoundSearch::run() {
@@ -24,6 +25,8 @@ UIntEx BranchAndBoundSearch::run() {
     this->unitPropagationCount = 0;
     // construct search node representing the initial state without any forbidden or applied operators
     SearchNode initialNode = SearchNode(this->task, this->options);
+    this->costLowerBound = initialNode.heuristicValue;
+    cout << "    Starting with bounds (" << this->costLowerBound << "-" << this->costUpperBound << ")" << endl;
     return this->recursiveBranchAndBound(initialNode);
 }
 
@@ -41,14 +44,13 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
     }
 
     // Have we reached the goal? If so, update the current best solution and return with its cost.
+    // Test on heuristic == 0 is faster than subset test and should filter out most of the nodes during the search.
     // TODO could optimize this by saving goal in every VariableSet and setting a flag as soon as goal is added
-    if (searchNode.currentState.contains(this->task.goal)) {
+    if (searchNode.heuristicValue == 0 && searchNode.currentState.contains(this->task.goal)) {
         this->costUpperBound = searchNode.currentCost;
         this->plan.clear();
         this->plan.assign(searchNode.partialPlan.begin(), searchNode.partialPlan.end());
-#ifdef FULL_DEBUG
-        cout << endl << "New Solution, updated bound (" << this->costUpperBound << ")" << endl << endl;
-#endif
+        cout << "    New Solution, updated bounds (" << this->costLowerBound << "-" << this->costUpperBound << ")" << endl;
         return this->costUpperBound;
     }
 

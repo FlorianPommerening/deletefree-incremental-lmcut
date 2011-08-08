@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
             results["h_lmcut"] = h_lmcut_value.toString();
             cout << "done (" << h_lmcut_value << ") " << results["h_lmcut_time"] << endl;
             */
-            cout << "Calculating h^+ ... " << flush;
+            cout << "Calculating h^+ ... " << endl << flush;
             cpuTimer.restart();
             AchieveLandmarksTryGoalOperatorSelector opSelector(options);
             BranchAndBoundSearch search = BranchAndBoundSearch(translatedTask, opSelector, options);
