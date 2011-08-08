@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/BranchAndBoundSearch.cpp \
+../src/GabowSCC.cpp \
 ../src/Landmark.cpp \
 ../src/OperatorSelector.cpp \
 ../src/RelaxedTask.cpp \
@@ -18,6 +19,7 @@ CPP_SRCS += \
 
 OBJS += \
 ./src/BranchAndBoundSearch.o \
+./src/GabowSCC.o \
 ./src/Landmark.o \
 ./src/OperatorSelector.o \
 ./src/RelaxedTask.o \
@@ -31,6 +33,7 @@ OBJS += \
 
 CPP_DEPS += \
 ./src/BranchAndBoundSearch.d \
+./src/GabowSCC.d \
 ./src/Landmark.d \
 ./src/OperatorSelector.d \
 ./src/RelaxedTask.d \
