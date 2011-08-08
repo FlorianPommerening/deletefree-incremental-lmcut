@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
         results["relevance_analysis_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
         cout << "done " << results["relevance_analysis_time"] << endl;
 
-        /*
+        /**/
         // calculate some statistics on the inital node
         if (solvable) {
             // Previous tests to compute h^max and h^LM-cut values used to validate their implementations.
