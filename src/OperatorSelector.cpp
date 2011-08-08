@@ -2,6 +2,7 @@
 
 #include "foreach.h"
 #include "Landmark.h"
+#include "GabowSCC.h"
 
 #include <limits.h>
 #include <stdexcept>
@@ -68,4 +69,49 @@ void AchieveLandmarksTryGoalOperatorSelector::select(SearchNode &searchNode, UIn
     }
     // call base implementation to achieve landmark
     AchieveLandmarksOperatorSelector::select(searchNode, costUpperBound, nextOperator, addFirst);
+}
+
+
+void SSCOperatorSelector::select(SearchNode &searchNode, UIntEx &costUpperBound, RelaxedOperator **nextOperator, bool *addFirst) {
+    *addFirst = true;
+    *nextOperator = NULL;
+    GabowSCC &gabowSCC = GabowSCC::Instance();
+    VariableSet &currentState = searchNode.currentState;
+    list<RelaxedOperator *> applicableOperators;
+    // remove all applicable operators for the SCC graph generation
+    OperatorCosts operatorCostSCC = searchNode.operatorCost;
+    foreach(RelaxedOperator &op, searchNode.task.operators) {
+        if (op.isApplicable(currentState)) {
+            applicableOperators.push_back(&op);
+            operatorCostSCC[&op] = UIntEx::INF;
+        }
+    }
+    gabowSCC.findSourceConnectedComponents(searchNode.task.variables, operatorCostSCC);
+    list<RelaxedOperator *> applicableOperatorsInSourceComponents;
+    // tie breaking with landmarks
+    int bestLandmarkSize = INT_MAX;
+    RelaxedOperator *best = NULL;
+    foreach(RelaxedOperator *op, applicableOperators) {
+        foreach(Variable *v, op->effects) {
+            if (gabowSCC.isInSourceComponent(v)) {
+                PointerMap<RelaxedOperator, Landmark *>::iterator itLandmark = searchNode.operatorToLandmark.find(op);
+                if (itLandmark != searchNode.operatorToLandmark.end()) {
+                    if (itLandmark->second->size() < bestLandmarkSize) {
+                        best = op;
+                    }
+                }
+                applicableOperatorsInSourceComponents.push_back(op);
+                break;
+            }
+        }
+    }
+    if (best != NULL) {
+        *nextOperator = best;
+    }
+    else if (applicableOperatorsInSourceComponents.size() > 0) {
+        *nextOperator = applicableOperatorsInSourceComponents.front();
+    }
+    else {
+        *nextOperator = NULL;
+    }
 }

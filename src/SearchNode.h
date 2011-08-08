@@ -58,6 +58,8 @@ public:
     RelaxedTask &task;
     // Number of operators applied in unit propagation in this node.
     int unitPropagationCount;
+    // maps operators to landmarks (only possible in unit cost tasks)
+    PointerMap<RelaxedOperator, Landmark *> operatorToLandmark;
 private:
     // Applies an operator and changes operator costs and landmarks accordingly
     // but does not update the heuristic value.
@@ -70,8 +72,6 @@ private:
     void unitPropagation();
     // apply operator without update if it is applicable
     bool tryApplyUnitPropagationOperator(RelaxedOperator *op);
-    // maps operators to landmarks (only possible in unit cost tasks)
-    PointerMap<RelaxedOperator, Landmark *> operatorToLandmark;
     // list of landmarks that could be used for unit propagation
     std::list<Landmark *> singleOperatorLandmarks;
     OptimizationOptions &options;

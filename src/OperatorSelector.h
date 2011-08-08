@@ -50,4 +50,15 @@ private:
     RelaxedOperator *goalOperator;
 };
 
+/*
+ * Try to use operators that achieves a variable in a source component of the strongly connected component graph
+ * i.e. the strongly connected components of the graph that contains variables as nodes and an edge (x,y) iff
+ * there is an operator o with x in pre(o) and y in add(o).
+ * Landmarks size is used as a tie breaker among the operators that add variables in source components.
+ */
+class SSCOperatorSelector: public OperatorSelector {
+public:
+    SSCOperatorSelector(OptimizationOptions &options): OperatorSelector(options) {}
+    void select(SearchNode &searchNode, UIntEx &costUpperBound, RelaxedOperator **nextOperator, bool *addFirst);
+};
 #endif /* OPERATORSELECTOR_H_ */
