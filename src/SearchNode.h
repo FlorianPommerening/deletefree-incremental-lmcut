@@ -60,6 +60,9 @@ public:
     int unitPropagationCount;
     // maps operators to landmarks (only possible in unit cost tasks)
     PointerMap<RelaxedOperator, Landmark *> operatorToLandmark;
+    std::list<Landmark *> getSingleOperatorLandmarks() {
+        return this->singleOperatorLandmarks;
+    }
 private:
     // Applies an operator and changes operator costs and landmarks accordingly
     // but does not update the heuristic value.

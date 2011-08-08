@@ -43,6 +43,18 @@ void VariableSet::inplaceUnion(const VariableSet &other) {
     this->variables.insert(other.begin(), other.end());
 }
 
+void VariableSet::inplaceIntersection(const VariableSet &other) {
+    iterator it = this->variables.begin();
+    while (it != this->variables.end()) {
+        iterator next = it;
+        ++next;
+        if (!other.contains(*it)) {
+            this->variables.erase(it);
+        }
+        it = next;
+    }
+}
+
 bool VariableSet::isDisjointWith(const VariableSet &other) const {
     if (this->variables.empty() || other.variables.empty()) {
         return true;

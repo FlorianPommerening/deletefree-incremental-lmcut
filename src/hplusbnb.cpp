@@ -116,9 +116,10 @@ int main(int argc, char *argv[]) {
         results["relevance_analysis_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
         cout << "done " << results["relevance_analysis_time"] << endl;
 
+        /*
+        // calculate some statistics on the inital node
         if (solvable) {
             // Previous tests to compute h^max and h^LM-cut values used to validate their implementations.
-            /*
             cout << "Calculating h^max ... " << flush;
             cpuTimer.restart();
             UIntEx hmax_value = hmax(translatedTask);
@@ -132,7 +133,86 @@ int main(int argc, char *argv[]) {
             results["h_lmcut_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
             results["h_lmcut"] = h_lmcut_value.toString();
             cout << "done (" << h_lmcut_value << ") " << results["h_lmcut_time"] << endl;
-            */
+
+            SearchNode initialNode = SearchNode(translatedTask, options);
+            results["landmarks_count"] = boost::lexical_cast<string>(initialNode.landmarks.size());
+            results["unit_landmarks_count"] = boost::lexical_cast<string>(initialNode.getSingleOperatorLandmarks().size());
+            int maxSize = 0;
+            foreach(Landmark &landmark, initialNode.landmarks) {
+                if (landmark.size() > maxSize) {
+                    maxSize = landmark.size();
+                }
+            }
+            results["landmarks_max_size"] = boost::lexical_cast<string>(maxSize);
+
+            // find effect landmarks in some primitive way
+            foreach(Variable &v, translatedTask.variables) {
+                v.closed = false;
+            }
+            list<Variable *> effectLandmarks;
+            stack<Variable *> effectLandmarkStack;
+            effectLandmarkStack.push(translatedTask.goal);
+            effectLandmarkStack.push(translatedTask.init);
+            foreach(Landmark &landmark, initialNode.landmarks) {
+                RelaxedOperator *firstOp = landmark.begin()->first;
+                VariableSet effectLandmark = firstOp->effects;
+                VariableSet preconditionLandmark = firstOp->preconditions;
+                foreach(Landmark::value_type &entry, landmark) {
+                    RelaxedOperator *op = entry.first;
+                    effectLandmark.inplaceIntersection(op->effects);
+                    preconditionLandmark.inplaceIntersection(op->preconditions);
+                }
+                foreach(Variable *v, effectLandmark) {
+                    effectLandmarkStack.push(v);
+                }
+                foreach(Variable *v, preconditionLandmark) {
+                    effectLandmarkStack.push(v);
+                }
+            }
+            while (!effectLandmarkStack.empty()) {
+                Variable *v = effectLandmarkStack.top();
+                effectLandmarkStack.pop();
+                if (v->closed) {
+                    continue;
+                }
+                v->closed = true;
+                effectLandmarks.push_back(v);
+                if (v->effect_of.size() == 0) {
+                    continue;
+                }
+                RelaxedOperator *firstOp = *(v->effect_of.begin());
+                VariableSet effectLandmark = firstOp->effects;
+                VariableSet preconditionLandmark = firstOp->preconditions;
+                foreach(RelaxedOperator *op, v->effect_of) {
+                    effectLandmark.inplaceIntersection(op->effects);
+                    preconditionLandmark.inplaceIntersection(op->preconditions);
+                }
+                foreach(Variable *v, effectLandmark) {
+                    effectLandmarkStack.push(v);
+                }
+                foreach(Variable *v, preconditionLandmark) {
+                    effectLandmarkStack.push(v);
+                }
+            }
+            ostringstream effectLandmarkString;
+            foreach(Variable *v, effectLandmarks) {
+                effectLandmarkString << v->name << ", ";
+            }
+
+            results["effect_landmarks_count"] = boost::lexical_cast<string>(effectLandmarks.size());
+            results["effect_landmarks"] = effectLandmarkString.str();
+            results["variables_count"] = boost::lexical_cast<string>(translatedTask.variables.size());
+
+            cout << "Calculating h^+ until first solution... " << endl << flush;
+            AchieveLandmarksTryGoalOperatorSelector opSelector(options);
+            BranchAndBoundSearch search = BranchAndBoundSearch(translatedTask, opSelector, options);
+            search.run();
+            results["h_plus_upper_bound"] = search.getCostUpperBound().toString();
+
+        } else
+        /**/
+
+        if (solvable) {
             cout << "Calculating h^+ ... " << endl << flush;
             cpuTimer.restart();
             AchieveLandmarksTryGoalOperatorSelector opSelector(options);

@@ -31,6 +31,9 @@ UIntEx BranchAndBoundSearch::run() {
 }
 
 UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
+    if (this->options.breakOnFirstSolution && this->plan.size() > 0) {
+        return UIntEx::INF;
+    }
 #ifdef FULL_DEBUG
     printNode(searchNode, this->costUpperBound);
 #endif

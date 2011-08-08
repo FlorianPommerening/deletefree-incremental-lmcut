@@ -36,6 +36,9 @@ public:
      * Number of operators applied in unit propagation steps during the search.
      */
     int unitPropagationCount;
+    UIntEx getCostUpperBound() {
+        return this->costUpperBound;
+    }
 private:
     RelaxedTask &task;
     OperatorSelector &operatorSelector;

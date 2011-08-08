@@ -34,6 +34,12 @@ struct OptimizationOptions {
      * If set to true, LM-cut is run with the default cost function in each step.
      */
     static const bool incrementalSearch = true;
+    /*
+     * If set to true, the search will only run until a first solution is discovered.
+     * This is only useful to get an idea of the range in which h+ falls.
+     * To emphasize that this doesn't calculate h+, the search returns infinity.
+     */
+    static const bool breakOnFirstSolution = false;
 };
 
 #endif /* OPTIONS_H_ */

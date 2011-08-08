@@ -44,6 +44,7 @@ public:
     void add(Variable *element);
     bool contains(Variable *element) const;
     void inplaceUnion(const VariableSet &other);
+    void inplaceIntersection(const VariableSet &other);
     bool isDisjointWith(const VariableSet &other) const;
     bool isSubsetOf(const VariableSet &other) const;
     int size() const;
