@@ -62,46 +62,30 @@ UIntEx lmCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
 }
 
 void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts, Landmark &cut) {
-    // Map effects to operators for 0-cost operators.
-    // This mapping is already present in the task for all operators but recreating it only for 0-cost operators
-    // should avoid some tests in the cost function later on.
-    PointerMap<Variable, list<RelaxedOperator *> > effectToZeroCostOp;
-    foreach(OperatorCostEntry &entry, operatorCosts) {
-        RelaxedOperator *op = entry.first;
-        UIntEx &cost = entry.second;
-        if (cost == 0) {
-            foreach(Variable *effect, op->effects) {
-                effectToZeroCostOp[effect].push_back(op);
-            }
-        }
-    }
     // First discover the goal zone by enumerating all variables that allow the goal to be reached with 0-cost.
     // That is, moving backwards from the goal along 0-cost operators from effect to preconditionChoice until no more
     // variables are discovered.
     VariableSet goalZone;
-    stack<Variable *> goalStack;
-    goalStack.push(task.goal);
+    vector<Variable *> goalStack;
+    foreach(Variable &var, task.variables) {
+        var.closed = false;
+    }
+    goalStack.push_back(task.goal);
     while (!goalStack.empty()) {
-        Variable *var = goalStack.top();
-        goalStack.pop();
-        // TODO: this could be done in O(1) if variables store an isInGoalZone value
-        if (goalZone.contains(var)) {
-            continue;
-        }
+        Variable *var = goalStack.back();
+        goalStack.pop_back();
+        var->closed = true;
         goalZone.add(var);
-        PointerMap<Variable, list<RelaxedOperator *> >::iterator it =
-                effectToZeroCostOp.find(var);
-        if (it == effectToZeroCostOp.end()) {
-            continue;
-        }
-        foreach(RelaxedOperator *op, it->second) {
-            if (operatorCosts[op] == UIntEx::INF || op->preconditionChoice == NULL) {
-                // forbidden operator or unreachable operator
+        foreach(RelaxedOperator *op, var->effect_of) {
+            if (operatorCosts[op] != 0 || op->preconditionChoice == NULL) {
+                // avoid non-zero-cost operator, forbidden operator or unreachable operator
                 // TODO: if there are operators with operatorCosts[op] != UIntEx::INF && op->preconditionChoice == NULL
                 // they could probably be removed
                 continue;
             }
-            goalStack.push(op->preconditionChoice);
+            if (!op->preconditionChoice->closed) {
+                goalStack.push_back(op->preconditionChoice);
+            }
         }
     }
 
