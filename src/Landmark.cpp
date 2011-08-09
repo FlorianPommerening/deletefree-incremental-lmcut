@@ -1,10 +1,12 @@
 #include "Landmark.h"
 #include "foreach.h"
 
+#include <limits.h>
+
 using namespace std;
 
 void Landmark::add(RelaxedOperator *op, int opCost) {
-    if (opCost < this->cost) {
+    if (this->operatorEntries.size() == 0 || opCost < this->cost) {
         this->cost = opCost;
     }
     this->operatorEntries[op] = opCost;
@@ -17,13 +19,14 @@ void Landmark::remove(RelaxedOperator *op) {
         this->operatorEntries.erase(it);
         //recalculate cost if necessary
         if (this->cost == removedOpCost) {
-            this->cost = 0;
+            int minCost = INT_MAX;
             foreach(Landmark::value_type &entry, this->operatorEntries) {
                 int opCost = entry.second;
-                if (this->cost < opCost) {
-                    this->cost = opCost;
+                if (opCost < minCost) {
+                    minCost = opCost;
                 }
             }
+            this->cost = minCost;
         }
     }
 }
