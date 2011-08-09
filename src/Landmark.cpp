@@ -4,7 +4,7 @@
 using namespace std;
 
 void Landmark::add(RelaxedOperator *op, int opCost) {
-    if (opCost > this->cost) {
+    if (opCost < this->cost) {
         this->cost = opCost;
     }
     this->operatorEntries[op] = opCost;
