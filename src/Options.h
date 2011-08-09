@@ -18,11 +18,15 @@ struct OptimizationOptions {
     // TODO this is redundant now that 0-cost operators are applied during unit propagation
     static const bool tryGoalOnZeroHeuristic = true;
     /*
-     * If set to true, all applicable operators in landmarks of size 1 and
-     * all applicable operators with base cost 0 are applied without recalculating LM-cut,
-     * every time after an operator is applied or forbidden.
+     * If set to true, all applicable operators in landmarks of size 1 are applied
+     * without recalculating LM-cut every time after an operator is applied or forbidden.
      */
-    static const bool useUnitPropagation = true;
+    static const bool autoApplyUnitLandmarks = true;
+    /*
+     * If set to true, all applicable operators with base cost 0 are applied
+     * without recalculating LM-cut every time after an operator is applied or forbidden.
+     */
+    static const bool autoApplyZeroCostOperators = true;
     /*
      * If the first successor finds a perfect solution (one matching the heuristic prediction) the
      * second successor cannot find a better one and can be avoided.

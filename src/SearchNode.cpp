@@ -178,7 +178,7 @@ void SearchNode::updateHeuristicValue() {
 }
 
 void SearchNode::unitPropagation() {
-    if (!this->options.useUnitPropagation) {
+    if (!(this->options.autoApplyUnitLandmarks || this->options.autoApplyZeroCostOperators)) {
         return;
     }
     bool stateChanged = true;
@@ -186,20 +186,24 @@ void SearchNode::unitPropagation() {
     while (stateChanged) {
         stateChanged = false;
         // try 0-base-cost operators
-        foreach(RelaxedOperator *freeOp, this->task.zeroBaseCostOperators) {
-            stateChanged = this->tryApplyUnitPropagationOperator(freeOp);
+        if (!this->options.autoApplyZeroCostOperators) {
+            foreach(RelaxedOperator *freeOp, this->task.zeroBaseCostOperators) {
+                stateChanged = this->tryApplyUnitPropagationOperator(freeOp);
+            }
         }
         // try operators in landmarks of size 1
-        list<Landmark *>::iterator it = this->singleOperatorLandmarks.begin();
-        while (it != this->singleOperatorLandmarks.end()) {
-            // applyOperatorWithoutUpdate() can delete the entry in singleOperatorLandmarks
-            // copy iterator so it can be used for erase without breaking the loop
-            list<Landmark *>::iterator current = it;
-            // increment iterator before (!!!) erase
-            ++it;
-            Landmark *unitClause = *current;
-            RelaxedOperator *op = unitClause->begin()->first;
-            stateChanged = this->tryApplyUnitPropagationOperator(op);
+        if (!this->options.autoApplyUnitLandmarks) {
+            list<Landmark *>::iterator it = this->singleOperatorLandmarks.begin();
+            while (it != this->singleOperatorLandmarks.end()) {
+                // applyOperatorWithoutUpdate() can delete the entry in singleOperatorLandmarks
+                // copy iterator so it can be used for erase without breaking the loop
+                list<Landmark *>::iterator current = it;
+                // increment iterator before (!!!) erase
+                ++it;
+                Landmark *unitClause = *current;
+                RelaxedOperator *op = unitClause->begin()->first;
+                stateChanged = this->tryApplyUnitPropagationOperator(op);
+            }
         }
     }
 }
