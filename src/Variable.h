@@ -35,9 +35,9 @@ public:
 
 /*
  * A set of variables.
- * Wraps vector<int> with 0 at position i iff variable with id == i is in the set
- * (this will take up more space than vector<bool> but requires no bit magic)
- * TODO: compare performance with vector<bool> and boost::dynamic_bitset
+ * Wraps vector<bool> with true at position i iff variable with id == i is in the set
+ * (this will take up less space than vector<int> but requires bit magic)
+ * TODO: compare performance with boost::dynamic_bitset
  */
 class VariableSet {
 public:
@@ -48,7 +48,7 @@ public:
     public:
         VariableSetIterator(): set(NULL), index(0) {}
         VariableSetIterator(VariableSetClass *set, int index): set(set), index(index) {
-            if (this->set->containsIndex[this->index] == 0) {
+            if (!this->set->containsIndex[this->index]) {
                 this->increment();
             }
         }
@@ -66,7 +66,7 @@ public:
                     this->index = VariableSet::nVariables;
                     break;
                 }
-            } while(this->set->containsIndex[this->index] == 0);
+            } while(!this->set->containsIndex[this->index]);
         }
 
         Value&dereference() const {
@@ -92,7 +92,7 @@ public:
     VariableSet& operator =(const VariableSet &other);
 
     void clear() {
-        memset(&(this->containsIndex[0]), 0, sizeof(int) * this->containsIndex.size());
+        memset(&(this->containsIndex[0]), 0, sizeof(bool) * this->containsIndex.size());
     }
 
     void add(Variable *element) {
@@ -100,34 +100,34 @@ public:
             return;
         }
         this->nEntries++;
-        this->containsIndex[element->id] = 1;
+        this->containsIndex[element->id] = true;
     }
 
     bool contains(Variable *element) const {
-        return (this->containsIndex[element->id] != 0);
+        return this->containsIndex[element->id];
     }
 
     void inplaceUnion(const VariableSet &other) {
         for (int i=0; i < VariableSet::nVariables; ++i) {
-            if (other.containsIndex[i] != 0 && this->containsIndex[i] == 0) {
+            if (other.containsIndex[i] && !this->containsIndex[i]) {
                 this->nEntries++;
-                this->containsIndex[i] = 1;
+                this->containsIndex[i] = true;
             }
         }
     }
 
     void inplaceIntersection(const VariableSet &other) {
         for (int i=0; i < VariableSet::nVariables; ++i) {
-            if (other.containsIndex[i] == 0 && this->containsIndex[i] != 0) {
+            if (!other.containsIndex[i] && this->containsIndex[i]) {
                 this->nEntries--;
-                this->containsIndex[i] = 0;
+                this->containsIndex[i] = false;
             }
         }
     }
 
     bool isDisjointWith(const VariableSet &other) const {
         for (int i=0; i < VariableSet::nVariables; ++i) {
-            if (other.containsIndex[i] != 0 && this->containsIndex[i] != 0) {
+            if (other.containsIndex[i] && this->containsIndex[i]) {
                 return false;
             }
         }
@@ -142,7 +142,7 @@ public:
             return true;
         }
         for (int i=0; i < VariableSet::nVariables; ++i) {
-            if (other.containsIndex[i] == 0 && this->containsIndex[i] != 0) {
+            if (!other.containsIndex[i] && this->containsIndex[i]) {
                 return false;
             }
         }
@@ -154,7 +154,7 @@ public:
     }
 
     void removeIrrelevant(PointerMap<Variable, bool> &relevant) {
-        std::vector<int> containsRelevantIndex;
+        std::vector<bool> containsRelevantIndex;
         containsRelevantIndex.reserve(relevant.size());
         this->nEntries = 0;
         int relevantIndex = 0;
@@ -188,7 +188,7 @@ public:
         VariableSet::nVariables = variables->size();
     }
 private:
-    std::vector<int> containsIndex;
+    std::vector<bool> containsIndex;
     int nEntries;
     static int nVariables;
     static std::vector<Variable *> *variables;
