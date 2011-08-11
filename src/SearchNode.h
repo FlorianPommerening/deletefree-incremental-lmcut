@@ -49,7 +49,7 @@ public:
     unsigned int currentCost;
     State currentState;
     // plan used to reach this state
-    std::list<RelaxedOperator *> partialPlan;
+    std::vector<RelaxedOperator *> partialPlan;
     // Valid landmarks in this node, together with their cost partitioning.
     // Has to be a list so pointers stay valid, when removing landmarks.
     std::list<Landmark> landmarks;

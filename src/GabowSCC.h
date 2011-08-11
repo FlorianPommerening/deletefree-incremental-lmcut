@@ -40,8 +40,8 @@ private:
     int pre;
     int count;
     // should be stacks but those have no clear() and no peek()
-    std::list<Variable *> notYetAssigned;
-    std::list<Variable *> maybeDifferent;
+    std::vector<Variable *> notYetAssigned;
+    std::vector<Variable *> maybeDifferent;
     void findConnectedComponents(std::vector<Variable *> &variables, OperatorCosts &operatorCosts);
     void gabowDfs(Variable *v, OperatorCosts &operatorCosts);
 };

@@ -19,6 +19,7 @@ SearchNode::SearchNode(RelaxedTask &task, OptimizationOptions &options):
         this->operatorCost[op] = op->baseCost;
     }
     this->updateHeuristicValue();
+    this->partialPlan.reserve(task.operators.size());
 }
 
 SearchNode::SearchNode(const SearchNode &other):

@@ -34,7 +34,9 @@ void GabowSCC::findConnectedComponents(vector<Variable *> &variables, OperatorCo
     this->componentId.clear();
     this->preorder.clear();
     this->maybeDifferent.clear();
+    this->maybeDifferent.reserve(variables.size());
     this->notYetAssigned.clear();
+    this->maybeDifferent.reserve(variables.size());
     this->pre = 0;
     this->count = 0;
     foreach(Variable *v, variables) {

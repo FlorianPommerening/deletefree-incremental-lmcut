@@ -146,17 +146,18 @@ int main(int argc, char *argv[]) {
             results["landmarks_max_size"] = boost::lexical_cast<string>(maxSize);
 
             // find effect landmarks in some primitive way
-            foreach(Variable &v, translatedTask.variables) {
-                v.closed = false;
+            foreach(Variable *v, translatedTask.variables) {
+                v->closed = false;
             }
-            list<Variable *> effectLandmarks;
+            vector<Variable *> effectLandmarks;
+            effectLandmarks.reserve(translatedTask.variables.size());
             stack<Variable *> effectLandmarkStack;
             effectLandmarkStack.push(translatedTask.goal);
             effectLandmarkStack.push(translatedTask.init);
             foreach(Landmark &landmark, initialNode.landmarks) {
                 RelaxedOperator *firstOp = landmark.begin()->first;
-                VariableSet effectLandmark = firstOp->effects;
-                VariableSet preconditionLandmark = firstOp->preconditions;
+                Effects effectLandmark = firstOp->effects;
+                Preconditions preconditionLandmark = firstOp->preconditions;
                 foreach(Landmark::value_type &entry, landmark) {
                     RelaxedOperator *op = entry.first;
                     effectLandmark.inplaceIntersection(op->effects);
@@ -181,8 +182,8 @@ int main(int argc, char *argv[]) {
                     continue;
                 }
                 RelaxedOperator *firstOp = *(v->effect_of.begin());
-                VariableSet effectLandmark = firstOp->effects;
-                VariableSet preconditionLandmark = firstOp->preconditions;
+                Effects effectLandmark = firstOp->effects;
+                Preconditions preconditionLandmark = firstOp->preconditions;
                 foreach(RelaxedOperator *op, v->effect_of) {
                     effectLandmark.inplaceIntersection(op->effects);
                     preconditionLandmark.inplaceIntersection(op->preconditions);

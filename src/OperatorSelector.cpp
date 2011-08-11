@@ -77,7 +77,8 @@ void SSCOperatorSelector::select(SearchNode &searchNode, UIntEx &costUpperBound,
     *nextOperator = NULL;
     GabowSCC &gabowSCC = GabowSCC::Instance();
     State &currentState = searchNode.currentState;
-    list<RelaxedOperator *> applicableOperators;
+    vector<RelaxedOperator *> applicableOperators;
+    applicableOperators.reserve(searchNode.task.operators.size());
     // remove all applicable operators for the SCC graph generation
     OperatorCosts operatorCostSCC = searchNode.operatorCost;
     foreach(RelaxedOperator *op, searchNode.task.operators) {
@@ -87,7 +88,8 @@ void SSCOperatorSelector::select(SearchNode &searchNode, UIntEx &costUpperBound,
         }
     }
     gabowSCC.findSourceConnectedComponents(searchNode.task.variables, operatorCostSCC);
-    list<RelaxedOperator *> applicableOperatorsInSourceComponents;
+    vector<RelaxedOperator *> applicableOperatorsInSourceComponents;
+    applicableOperatorsInSourceComponents.reserve(applicableOperators.size());
     // tie breaking with landmarks
     int bestLandmarkSize = INT_MAX;
     RelaxedOperator *best = NULL;
