@@ -12,7 +12,7 @@ using namespace std;
 void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, UIntEx &costUpperBound, RelaxedOperator **nextOperator, bool *addFirst) {
     *addFirst = true;
     *nextOperator = NULL;
-    VariableSet &currentState = searchNode.currentState;
+    State &currentState = searchNode.currentState;
     if (this->options.selectOperatorInSmallestLandmark) {
         int best = INT_MAX;
         foreach(Landmark &landmark, searchNode.landmarks) {
@@ -76,7 +76,7 @@ void SSCOperatorSelector::select(SearchNode &searchNode, UIntEx &costUpperBound,
     *addFirst = true;
     *nextOperator = NULL;
     GabowSCC &gabowSCC = GabowSCC::Instance();
-    VariableSet &currentState = searchNode.currentState;
+    State &currentState = searchNode.currentState;
     list<RelaxedOperator *> applicableOperators;
     // remove all applicable operators for the SCC graph generation
     OperatorCosts operatorCostSCC = searchNode.operatorCost;

@@ -17,24 +17,24 @@ class RelaxedOperator {
 public:
     std::string name;
     int baseCost;
-    VariableSet preconditions;
+    Preconditions preconditions;
     // temporary variable for h^max and h^LM-cut calculation
     int unsatisfiedPreconditions;
     // temporary variable for h^max and h^LM-cut calculation
     Variable *preconditionChoice;
-    VariableSet effects;
+    Effects effects;
     /*
      * Returns true iff this operator is applicable in 'state'
      */
-    bool isApplicable(const VariableSet &state) const {
-        return this->preconditions.isSubsetOf(state);
+    bool isApplicable(const State &state) const {
+        return state.contains(this->preconditions);
     }
     /*
      * Changes 'state' to represent the state that results from applying this operator in state.
      * This operator must be applicable in 'state' for a correct result. To speed things up this is not checked again!
      */
-    void apply(VariableSet &state) const {
-        state.inplaceUnion(this->effects);
+    void apply(State &state) const {
+        state.add(this->effects);
     }
 };
 

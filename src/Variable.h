@@ -33,22 +33,70 @@ public:
     std::vector<RelaxedOperator *> effect_of;
 };
 
+/*
+ * A set of variables representing an effect.
+ * Wraps vector<Variable *>. Adding and removing variables is slow (O(n))
+ * but looping over all entries is faster than in the implementation of State.
+ */
+class Effects {
+public:
+    typedef std::vector<Variable *>::value_type value_type;
+    typedef std::vector<Variable *>::iterator iterator;
+    typedef std::vector<Variable *>::const_iterator const_iterator;
+
+    void add(Variable *element) {
+        foreach (std::vector<Variable *>::value_type it, this->entries) {
+            if (&*it == element) {
+                return;
+            }
+        }
+        this->entries.push_back(element);
+    }
+
+    int size() {
+        return this->entries.size();
+    }
+
+    void inplaceIntersection(const Effects &other);
+
+    void removeIrrelevant(PointerMap<Variable, bool> &relevant);
+
+    iterator begin() {
+        return this->entries.begin();
+    }
+    iterator end() {
+        return this->entries.end();
+    }
+    const_iterator begin() const {
+        return this->entries.begin();
+    }
+    const_iterator end() const {
+        return this->entries.end();
+    }
+private:
+    std::vector<Variable *> entries;
+};
 
 /*
- * A set of variables.
+ * Precondition sets can be represented in the same way as effects
+ */
+typedef Effects Preconditions;
+
+/*
+ * A set of variables representing a state.
  * Wraps vector<int> with 1 at position i iff variable with id == i is in the set
  * (this will take up more space than vector<bool> but requires no bit magic)
  * TODO: compare performance with vector<bool> and boost::dynamic_bitset
  */
-class VariableSet {
+class State {
 public:
-    template <class Value, class VariableSetClass>
-    class VariableSetIterator: public boost::iterator_facade<VariableSetIterator<Value, VariableSetClass>,
-                                                             Value,
-                                                             boost::forward_traversal_tag> {
+    template <class Value, class StateClass>
+    class StateIterator: public boost::iterator_facade<StateIterator<Value, StateClass>,
+                                                       Value,
+                                                       boost::forward_traversal_tag> {
     public:
-        VariableSetIterator(): set(NULL), index(0) {}
-        VariableSetIterator(VariableSetClass *set, int index): set(set), index(index) {
+        StateIterator(): set(NULL), index(0) {}
+        StateIterator(StateClass *set, int index): set(set), index(index) {
             if (this->set->containsIndex[this->index] == 0) {
                 this->increment();
             }
@@ -56,45 +104,41 @@ public:
     private:
         friend class boost::iterator_core_access;
 
-        bool equal(const VariableSet::VariableSetIterator<Value, VariableSetClass>& other) const {
+        bool equal(const State::StateIterator<Value, StateClass>& other) const {
             return (this->index == other.index && this->set == other.set);
         }
 
         void increment() {
             do {
                 this->index++;
-                if (this->index >= VariableSet::nVariables) {
-                    this->index = VariableSet::nVariables;
+                if (this->index >= State::nVariables) {
+                    this->index = State::nVariables;
                     break;
                 }
             } while(this->set->containsIndex[this->index] == 0);
         }
 
         Value&dereference() const {
-            return (*VariableSet::variables)[this->index];
+            return (*State::variables)[this->index];
         }
 
     private:
-        VariableSetClass *set;
+        StateClass *set;
         int index;
     };
 public:
     typedef Variable* value_type;
-    typedef VariableSetIterator<Variable *, VariableSet> iterator;
-    typedef VariableSetIterator<Variable *const, const VariableSet> const_iterator;
+    typedef StateIterator<Variable *, State> iterator;
+    typedef StateIterator<Variable *const, const State> const_iterator;
 
-    VariableSet() {
-        this->containsIndex.resize(VariableSet::nVariables);
+    State() {
+        this->containsIndex.resize(State::nVariables);
     }
-    VariableSet(const VariableSet &other): containsIndex(other.containsIndex),
+    State(const State &other): containsIndex(other.containsIndex),
                                            nEntries(other.nEntries) {
     }
 
-    VariableSet& operator =(const VariableSet &other);
-
-    void clear() {
-        memset(&(this->containsIndex[0]), 0, sizeof(int) * this->containsIndex.size());
-    }
+    State& operator =(const State &other);
 
     void add(Variable *element) {
         if (this->contains(element)) {
@@ -104,57 +148,21 @@ public:
         this->containsIndex[element->id] = 1;
     }
 
+    void add(const Effects &effects) {
+        foreach(Variable* v, effects) {
+            this->add(v);
+        }
+    }
+
     bool contains(Variable *element) const {
         return (this->containsIndex[element->id] != 0);
     }
 
-    void inplaceUnion(const VariableSet &other) {
-        assert(this->containsIndex.size() == other.containsIndex.size());
-        std::vector<int>::iterator end = this->containsIndex.end();
-        std::vector<int>::iterator itThis = this->containsIndex.begin();
-        std::vector<int>::const_iterator itOther = other.containsIndex.begin();
-        while (itThis != end) {
-            if (*itOther != 0 && *itThis == 0) {
-                this->nEntries++;
-                *itThis = 1;
-            }
-            ++itThis;
-            ++itOther;
-        }
-    }
-
-    void inplaceIntersection(const VariableSet &other) {
-        assert(this->containsIndex.size() == other.containsIndex.size());
-        std::vector<int>::iterator end = this->containsIndex.end();
-        std::vector<int>::iterator itThis = this->containsIndex.begin();
-        std::vector<int>::const_iterator itOther = other.containsIndex.begin();
-        while (itThis != end) {
-            if (*itOther == 0 && *itThis != 0) {
-                this->nEntries--;
-                *itThis = 0;
-            }
-            ++itThis;
-            ++itOther;
-        }
-    }
-
-    bool isSubsetOf(const VariableSet &other) const {
-        if (this->nEntries > other.nEntries) {
-            return false;
-        }
-        if (this->nEntries == 0) {
-            return true;
-        }
-        assert(this->containsIndex.size() == other.containsIndex.size());
-        std::vector<int>::const_iterator end = this->containsIndex.end();
-        std::vector<int>::const_iterator itThis = this->containsIndex.begin();
-        std::vector<int>::const_iterator itOther = other.containsIndex.begin();
-        while (itThis != end) {
-            if (*itOther == 0 && *itThis != 0) {
+    bool contains(const Preconditions &preconditions) const {
+        foreach(Variable * v, preconditions) {
+            if (!this->contains(v)) {
                 return false;
             }
-            ++itThis;
-            ++itOther;
         }
         return true;
     }
@@ -163,47 +171,23 @@ public:
         return this->nEntries;
     }
 
-    void removeIrrelevant(PointerMap<Variable, bool> &relevant) {
-        // TODO this could be more elegant
-        int newSize = 0;
-        typedef PointerMap<Variable, bool>::value_type entry_value_type;
-        foreach(entry_value_type &entry, relevant) {
-            if (entry.second) {
-                newSize++;
-            }
-        }
-        std::vector<int> containsRelevantIndex;
-        containsRelevantIndex.resize(newSize);
-        this->nEntries = 0;
-        int relevantIndex = 0;
-        for (unsigned index=0; index < this->containsIndex.size(); ++index) {
-            if (relevant[(*VariableSet::variables)[index]]) {
-                containsRelevantIndex[relevantIndex++] = this->containsIndex[index];
-                if (this->containsIndex[index]) {
-                    this->nEntries++;
-                }
-            }
-        }
-        std::swap(this->containsIndex, containsRelevantIndex);
-    }
-
     // allow iteration over set
     iterator begin() {
         return iterator(this, 0);
     }
     iterator end() {
-        return iterator(this, VariableSet::nVariables);
+        return iterator(this, State::nVariables);
     }
     const_iterator begin() const {
         return const_iterator(this, 0);
     }
     const_iterator end() const {
-        return const_iterator(this, VariableSet::nVariables);
+        return const_iterator(this, State::nVariables);
     }
 
     static void setFullVariableSet(std::vector<Variable *> *variables) {
-        VariableSet::variables = variables;
-        VariableSet::nVariables = variables->size();
+        State::variables = variables;
+        State::nVariables = variables->size();
     }
 private:
     std::vector<int> containsIndex;

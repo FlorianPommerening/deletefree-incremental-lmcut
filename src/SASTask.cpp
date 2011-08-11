@@ -275,7 +275,7 @@ bool DeleteRelaxer::deleteRelaxation(SASTask &sasTask, RelaxedTask &task) {
     task.goal = new Variable("@@goal", varID++);
     task.variables.push_back(task.goal);
 
-    VariableSet::setFullVariableSet(&task.variables);
+    State::setFullVariableSet(&task.variables);
 
     // Operator creating the initial state
     RelaxedOperator *initOperator = new RelaxedOperator();

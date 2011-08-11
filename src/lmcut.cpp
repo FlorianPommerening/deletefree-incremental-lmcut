@@ -15,7 +15,7 @@ UIntEx lmCut(RelaxedTask &task) {
     return initialNode.heuristicValue;
 }
 
-UIntEx lmCut(RelaxedTask &task, VariableSet &state) {
+UIntEx lmCut(RelaxedTask &task, State &state) {
     // use default operator cost mapping
     OperatorCosts operatorCosts;
     foreach(RelaxedOperator *op, task.operators) {
@@ -26,7 +26,7 @@ UIntEx lmCut(RelaxedTask &task, VariableSet &state) {
     return lmCut(task, state, operatorCosts, landmarks);
 }
 
-UIntEx lmCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts, list<Landmark> &landmarks, list<Landmark>::iterator *firstAdded) {
+UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, list<Landmark> &landmarks, list<Landmark>::iterator *firstAdded) {
     // only set firstAdded once and use landmarks.end() as default in case no landmarks are added
     bool isFirst = true;
     if (firstAdded != NULL) {
@@ -61,11 +61,11 @@ UIntEx lmCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
     return lmcutValue;
 }
 
-void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts, Landmark &cut) {
+void findCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, Landmark &cut) {
     // First discover the goal zone by enumerating all variables that allow the goal to be reached with 0-cost.
     // That is, moving backwards from the goal along 0-cost operators from effect to preconditionChoice until no more
     // variables are discovered.
-    VariableSet goalZone;
+    State goalZone;
     vector<Variable *> goalStack;
     foreach(Variable *var, task.variables) {
         var->closed = false;

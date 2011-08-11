@@ -48,6 +48,7 @@ public:
 
 private:
     void parseTask(std::ifstream &taskfile);
+    template <class VariableSet>
     void parseVariableSet(std::ifstream &taskfile, VariableSet &set);
 };
 

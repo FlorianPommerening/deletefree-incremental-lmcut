@@ -111,7 +111,7 @@ bool RelaxedTask::removeIrrelevantVariables() {
     }
     std::swap(this->variables, relevantVariables);
 
-    VariableSet::setFullVariableSet(&this->variables);
+    State::setFullVariableSet(&this->variables);
 
     // cross reference entries can be invalid, so recreate them
     this->crossreference();
@@ -154,7 +154,7 @@ void RelaxedTask::parseTask(ifstream &taskfile) {
         if (!getline(taskfile, line)) { throw "Name of a variable expected"; }
         this->variables.push_back(new Variable(line, i));
     }
-    VariableSet::setFullVariableSet(&this->variables);
+    State::setFullVariableSet(&this->variables);
     if (!getline(taskfile, line) || line != "Initial state") { throw "'Initial state' expected"; }
     if (!getline(taskfile, line) || line != "1") { throw "Number of variables in initial state expected (must be 1)"; }
     if (!getline(taskfile, line)) { throw "Initial state variable expected"; }
@@ -178,6 +178,7 @@ void RelaxedTask::parseTask(ifstream &taskfile) {
     }
 }
 
+template<class VariableSet>
 void RelaxedTask::parseVariableSet(ifstream &taskfile, VariableSet &set) {
     string line;
     if (!getline(taskfile, line)) { throw "Number of variables expected"; }

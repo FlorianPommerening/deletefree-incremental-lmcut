@@ -47,7 +47,7 @@ public:
 
     UIntEx heuristicValue;
     unsigned int currentCost;
-    VariableSet currentState;
+    State currentState;
     // plan used to reach this state
     std::list<RelaxedOperator *> partialPlan;
     // Valid landmarks in this node, together with their cost partitioning.

@@ -5,12 +5,12 @@
 
 UIntEx hmax(RelaxedTask &task) {
     // start calculation for initial state
-    VariableSet initialState;
+    State initialState;
     initialState.add(task.init);
     return hmax(task, initialState);
 }
 
-UIntEx hmax(RelaxedTask &task, VariableSet &state) {
+UIntEx hmax(RelaxedTask &task, State &state) {
     // start calculation for default operator cost function
     OperatorCosts operatorCosts;
     foreach(RelaxedOperator *op, task.operators) {
@@ -19,7 +19,7 @@ UIntEx hmax(RelaxedTask &task, VariableSet &state) {
     return hmax(task, state, operatorCosts);
 }
 
-UIntEx hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts) {
+UIntEx hmax(RelaxedTask &task, State &state, OperatorCosts &operatorCosts) {
     // reset all temporary variables
     foreach(Variable *var, task.variables) {
         var->hmax = UIntEx::INF;
