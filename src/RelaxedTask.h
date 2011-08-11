@@ -15,6 +15,7 @@
 class RelaxedTask {
 public:
     RelaxedTask();
+    ~RelaxedTask();
     /*
      * copy ctor and assignment operator throw exceptions to avoid accidental usage
      */
@@ -29,11 +30,11 @@ public:
     // not a set of variables here, since all tasks are in canonical form
     Variable *goal;
     // using list here so pointers stay valid even if entries are deleted afterwards
-    std::list<Variable> variables;
-    std::list<RelaxedOperator> operators;
+    std::vector<Variable *> variables;
+    std::vector<RelaxedOperator *> operators;
     // Operators without base cost are used in unit propagation. They are determined
     // while cross-referencing the task
-    std::list<RelaxedOperator*> zeroBaseCostOperators;
+    std::vector<RelaxedOperator *> zeroBaseCostOperators;
 
     void parseFile(const char *filename);
     // find a variable with that name and return its address
@@ -42,6 +43,8 @@ public:
     bool removeIrrelevantVariables();
     // creates mappings from effect to operator and from precondition to operator
     void crossreference();
+
+    void printReadable();
 
 private:
     void parseTask(std::ifstream &taskfile);

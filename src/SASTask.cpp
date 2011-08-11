@@ -252,59 +252,63 @@ bool DeleteRelaxer::deleteRelaxation(SASTask &sasTask, RelaxedTask &task) {
     // start with one variable for each value of each SASVariable (some of those
     // might be removed again by relevance analysis)
     PointerMap<SASVariable, vector<Variable*> > variableTranslations;
-    for (unsigned int varId = 0; varId < sasTask.variables.size(); ++varId) {
-        SASVariable* sasVar = &(sasTask.variables[varId]);
+    int varID = 0;
+    for (unsigned int sasVarId = 0; sasVarId < sasTask.variables.size(); ++sasVarId) {
+        SASVariable* sasVar = &(sasTask.variables[sasVarId]);
         variableTranslations[sasVar].reserve(sasVar->values.size());
         for (unsigned int valId = 0; valId < sasVar->values.size(); ++valId) {
             string name = sasVar->values[valId];
             if (name == "<none of those>") {
                 // try to keep names unique
-                name = "None of var" + intToStr(varId);
+                name = "None of var" + intToStr(sasVarId);
             };
-            task.variables.push_back(Variable(name));
-            variableTranslations[sasVar].push_back(&(task.variables.back()));
+            Variable *var = new Variable(name, varID++);
+            task.variables.push_back(var);
+            variableTranslations[sasVar].push_back(var);
         }
     }
     // canonicalization (if @@precond is not needed it will be removed by the relevance analysis)
-    task.variables.push_back(Variable("@@precond"));
-    Variable *dummyPrecondition = &(task.variables.back());
-    task.variables.push_back(Variable("@@init"));
-    task.init = &(task.variables.back());
-    task.variables.push_back(Variable("@@goal"));
-    task.goal = &(task.variables.back());
+    Variable *dummyPrecondition = new Variable("@@precond", varID++);
+    task.variables.push_back(dummyPrecondition);
+    task.init = new Variable("@@init", varID++);
+    task.variables.push_back(task.init);
+    task.goal = new Variable("@@goal", varID++);
+    task.variables.push_back(task.goal);
+
+    VariableSet::setFullVariableSet(&task.variables);
 
     // Operator creating the initial state
-    RelaxedOperator initOperator;
-    initOperator.name = "@@init-operator";
-    initOperator.baseCost = 0;
-    initOperator.preconditions.add(task.init);
+    RelaxedOperator *initOperator = new RelaxedOperator();
+    initOperator->name = "@@init-operator";
+    initOperator->baseCost = 0;
+    initOperator->preconditions.add(task.init);
     foreach(SASVariableAssignment &assignment, sasTask.init) {
         Variable *var = variableTranslations[assignment.variable][assignment.valueIndex];
-        initOperator.effects.add(var);
+        initOperator->effects.add(var);
     }
-    initOperator.effects.add(dummyPrecondition);
+    initOperator->effects.add(dummyPrecondition);
     task.operators.push_back(initOperator);
 
     // Operator achieving the goal
-    RelaxedOperator goalOperator;
-    goalOperator.name = "@@goal-operator";
-    goalOperator.baseCost = 0;
+    RelaxedOperator *goalOperator = new RelaxedOperator();
+    goalOperator->name = "@@goal-operator";
+    goalOperator->baseCost = 0;
     foreach(SASVariableAssignment &assignment, sasTask.goal) {
         Variable *var = variableTranslations[assignment.variable][assignment.valueIndex];
-        goalOperator.preconditions.add(var);
+        goalOperator->preconditions.add(var);
     }
-    goalOperator.effects.add(task.goal);
+    goalOperator->effects.add(task.goal);
     task.operators.push_back(goalOperator);
 
     // Relax operators
     foreach(SASOperator &sasOp, sasTask.operators) {
-        RelaxedOperator op;
-        op.name = sasOp.name;
-        op.baseCost = sasOp.cost;
+        RelaxedOperator *op = new RelaxedOperator();
+        op->name = sasOp.name;
+        op->baseCost = sasOp.cost;
         // every prevail condition of the SASOperator is a precondition of the RelaxedOperator
         foreach(SASVariableAssignment &sasPrevail, sasOp.prevail){
             Variable *var = variableTranslations[sasPrevail.variable][sasPrevail.valueIndex];
-            op.preconditions.add(var);
+            op->preconditions.add(var);
         }
         foreach(SASEffect &sasEffect, sasOp.effects){
             if (sasEffect.condition.size() > 0) {
@@ -315,14 +319,14 @@ bool DeleteRelaxer::deleteRelaxation(SASTask &sasTask, RelaxedTask &task) {
             // otherwise add it to preconditions
             if (sasEffect.valueIndexBefore != -1) {
                 Variable *var = variableTranslations[sasEffect.variable][sasEffect.valueIndexBefore];
-                op.preconditions.add(var);
+                op->preconditions.add(var);
             }
             // add effect
             Variable *var = variableTranslations[sasEffect.variable][sasEffect.valueIndexAfter];
-            op.effects.add(var);
+            op->effects.add(var);
         }
-        if (op.preconditions.size() == 0) {
-            op.preconditions.add(dummyPrecondition);
+        if (op->preconditions.size() == 0) {
+            op->preconditions.add(dummyPrecondition);
         }
         task.operators.push_back(op);
     }

@@ -15,8 +15,8 @@ SearchNode::SearchNode(RelaxedTask &task, OptimizationOptions &options):
         options(options) {
     this->currentState.add(task.init);
     // create default cost function
-    foreach(RelaxedOperator &op, task.operators) {
-        this->operatorCost[&op] = op.baseCost;
+    foreach(RelaxedOperator *op, task.operators) {
+        this->operatorCost[op] = op->baseCost;
     }
     this->updateHeuristicValue();
 }

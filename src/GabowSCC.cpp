@@ -4,14 +4,14 @@
 
 using namespace std;
 
-void GabowSCC::findSourceConnectedComponents(list<Variable> &variables, OperatorCosts &operatorCosts) {
+void GabowSCC::findSourceConnectedComponents(vector<Variable *> &variables, OperatorCosts &operatorCosts) {
     this->inSourceComponent.clear();
     this->findConnectedComponents(variables, operatorCosts);
     // a variable is in a source component iff all its incoming edges come from the same component
-    foreach(Variable& v, variables) {
-        int componentId = this->componentId[&v];
+    foreach(Variable *v, variables) {
+        int componentId = this->componentId[v];
         bool inSourceComponent = true;
-        foreach(RelaxedOperator *op, v.effect_of) {
+        foreach(RelaxedOperator *op, v->effect_of) {
             if (operatorCosts[op] == UIntEx::INF) {
                 continue;
             }
@@ -25,11 +25,11 @@ void GabowSCC::findSourceConnectedComponents(list<Variable> &variables, Operator
                 break;
             }
         }
-        this->inSourceComponent[&v] = inSourceComponent;
+        this->inSourceComponent[v] = inSourceComponent;
     }
 }
 
-void GabowSCC::findConnectedComponents(list<Variable> &variables, OperatorCosts &operatorCosts) {
+void GabowSCC::findConnectedComponents(vector<Variable *> &variables, OperatorCosts &operatorCosts) {
     // reset everything
     this->componentId.clear();
     this->preorder.clear();
@@ -37,16 +37,16 @@ void GabowSCC::findConnectedComponents(list<Variable> &variables, OperatorCosts 
     this->notYetAssigned.clear();
     this->pre = 0;
     this->count = 0;
-    foreach(Variable& v, variables) {
-        v.closed = false;
-        this->componentId[&v] = -1;
-        this->preorder[&v] = -1;
+    foreach(Variable *v, variables) {
+        v->closed = false;
+        this->componentId[v] = -1;
+        this->preorder[v] = -1;
     }
     // Run DFS until all variables have been visited;
     // discovering all components on the way.
-    foreach(Variable& v, variables) {
-        if (!v.closed) {
-            this->gabowDfs(&v, operatorCosts);
+    foreach(Variable *v, variables) {
+        if (!v->closed) {
+            this->gabowDfs(v, operatorCosts);
         }
     }
 }

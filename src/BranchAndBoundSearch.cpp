@@ -136,9 +136,9 @@ void printNode(SearchNode &searchNode, UIntEx &upperBound) {
     }
     std::cout << std::endl;
     std::cout << "Forbidden" << std::endl;
-    foreach(RelaxedOperator &op, searchNode.task.operators) {
-        if (searchNode.operatorCost[&op] == UIntEx::INF) {
-            std::cout << op.name << ", ";
+    foreach(RelaxedOperator *op, searchNode.task.operators) {
+        if (searchNode.operatorCost[op] == UIntEx::INF) {
+            std::cout << op->name << ", ";
         }
     }
     std::cout << std::endl;

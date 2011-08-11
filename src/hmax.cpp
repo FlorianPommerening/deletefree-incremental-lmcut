@@ -13,21 +13,21 @@ UIntEx hmax(RelaxedTask &task) {
 UIntEx hmax(RelaxedTask &task, VariableSet &state) {
     // start calculation for default operator cost function
     OperatorCosts operatorCosts;
-    foreach(RelaxedOperator &op, task.operators) {
-        operatorCosts[&op] = op.baseCost;
+    foreach(RelaxedOperator *op, task.operators) {
+        operatorCosts[op] = op->baseCost;
     }
     return hmax(task, state, operatorCosts);
 }
 
 UIntEx hmax(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts) {
     // reset all temporary variables
-    foreach(Variable &var, task.variables) {
-        var.hmax = UIntEx::INF;
-        var.closed = false;
+    foreach(Variable *var, task.variables) {
+        var->hmax = UIntEx::INF;
+        var->closed = false;
     }
-    foreach(RelaxedOperator &op, task.operators) {
-        op.preconditionChoice = NULL;
-        op.unsatisfiedPreconditions = op.preconditions.size();
+    foreach(RelaxedOperator *op, task.operators) {
+        op->preconditionChoice = NULL;
+        op->unsatisfiedPreconditions = op->preconditions.size();
     }
     // Initialize the queue with variables contained in the state.
     // Values are ordered by hmax costs and (for tie-breaking) the depth in which they were discovered

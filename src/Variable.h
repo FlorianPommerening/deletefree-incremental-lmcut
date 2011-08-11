@@ -3,8 +3,11 @@
 
 #include <google/dense_hash_set>
 #include <boost/functional/hash.hpp>
+#include <boost/iterator/iterator_facade.hpp>
 #include <string>
+#include <string.h>
 #include <vector>
+#include <algorithm>
 
 #include "UIntEx.h"
 #include "PointerMap.h"
@@ -19,68 +22,176 @@ class RelaxedOperator;
 struct Variable {
 public:
     Variable();
-    Variable(std::string name);
+    Variable(std::string name, int id);
     std::string name;
     UIntEx hmax;
     bool closed;
+    // values filled by cross-referencing the task
+    int id;
     std::vector<RelaxedOperator *> precondition_of;
     std::vector<RelaxedOperator *> effect_of;
 };
 
+
 /*
  * A set of variables.
- * Wraps googles dense hash set.
+ * Wraps vector<int> with 0 at position i iff variable with id == i is in the set
+ * (this will take up more space than vector<bool> but requires no bit magic)
+ * TODO: compare performance with vector<bool> and boost::dynamic_bitset
  */
 class VariableSet {
 public:
-    typedef google::dense_hash_set<Variable*, boost::hash<Variable*> >::iterator iterator;
-    typedef google::dense_hash_set<Variable*, boost::hash<Variable*> >::const_iterator const_iterator;
+    template <class Value, class VariableSetClass>
+    class VariableSetIterator: public boost::iterator_facade<VariableSetIterator<Value, VariableSetClass>,
+                                                             Value,
+                                                             boost::forward_traversal_tag> {
+    public:
+        VariableSetIterator(): set(NULL), index(0) {}
+        VariableSetIterator(VariableSetClass *set, int index): set(set), index(index) {
+            if (this->set->containsIndex[this->index] == 0) {
+                this->increment();
+            }
+        }
+    private:
+        friend class boost::iterator_core_access;
 
-    VariableSet();
-    VariableSet(const VariableSet &other);
+        bool equal(const VariableSet::VariableSetIterator<Value, VariableSetClass>& other) const {
+            return (this->index == other.index && this->set == other.set);
+        }
+
+        void increment() {
+            do {
+                this->index++;
+                if (this->index >= VariableSet::nVariables) {
+                    this->index = VariableSet::nVariables;
+                    break;
+                }
+            } while(this->set->containsIndex[this->index] == 0);
+        }
+
+        Value&dereference() const {
+            return (*VariableSet::variables)[this->index];
+        }
+
+    private:
+        VariableSetClass *set;
+        int index;
+    };
+public:
+    typedef Variable* value_type;
+    typedef VariableSetIterator<Variable *, VariableSet> iterator;
+    typedef VariableSetIterator<Variable *const, const VariableSet> const_iterator;
+
+    VariableSet() {
+        this->containsIndex.resize(VariableSet::nVariables);
+    }
+    VariableSet(const VariableSet &other): containsIndex(other.containsIndex),
+                                           nEntries(other.nEntries) {
+    }
+
     VariableSet& operator =(const VariableSet &other);
 
-    void clear();
-    void add(Variable *element);
-    bool contains(Variable *element) const;
-    void inplaceUnion(const VariableSet &other);
-    void inplaceIntersection(const VariableSet &other);
-    bool isDisjointWith(const VariableSet &other) const;
-    bool isSubsetOf(const VariableSet &other) const;
-    int size() const;
-    void removeIrrelevant(PointerMap<Variable, bool> &relevant);
+    void clear() {
+        memset(&(this->containsIndex[0]), 0, sizeof(int) * this->containsIndex.size());
+    }
+
+    void add(Variable *element) {
+        if (this->contains(element)) {
+            return;
+        }
+        this->nEntries++;
+        this->containsIndex[element->id] = 1;
+    }
+
+    bool contains(Variable *element) const {
+        return (this->containsIndex[element->id] != 0);
+    }
+
+    void inplaceUnion(const VariableSet &other) {
+        for (int i=0; i < VariableSet::nVariables; ++i) {
+            if (other.containsIndex[i] != 0 && this->containsIndex[i] == 0) {
+                this->nEntries++;
+                this->containsIndex[i] = 1;
+            }
+        }
+    }
+
+    void inplaceIntersection(const VariableSet &other) {
+        for (int i=0; i < VariableSet::nVariables; ++i) {
+            if (other.containsIndex[i] == 0 && this->containsIndex[i] != 0) {
+                this->nEntries--;
+                this->containsIndex[i] = 0;
+            }
+        }
+    }
+
+    bool isDisjointWith(const VariableSet &other) const {
+        for (int i=0; i < VariableSet::nVariables; ++i) {
+            if (other.containsIndex[i] != 0 && this->containsIndex[i] != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool isSubsetOf(const VariableSet &other) const {
+        if (this->nEntries > other.nEntries) {
+            return false;
+        }
+        if (this->nEntries == 0) {
+            return true;
+        }
+        for (int i=0; i < VariableSet::nVariables; ++i) {
+            if (other.containsIndex[i] == 0 && this->containsIndex[i] != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    int size() const {
+        return this->nEntries;
+    }
+
+    void removeIrrelevant(PointerMap<Variable, bool> &relevant) {
+        std::vector<int> containsRelevantIndex;
+        containsRelevantIndex.reserve(relevant.size());
+        this->nEntries = 0;
+        int relevantIndex = 0;
+        for (unsigned index=0; index < this->containsIndex.size(); ++index) {
+            if (relevant[(*VariableSet::variables)[index]]) {
+                containsRelevantIndex[relevantIndex++] = this->containsIndex[index];
+                if (this->containsIndex[index]) {
+                    this->nEntries++;
+                }
+            }
+        }
+        std::swap(this->containsIndex, containsRelevantIndex);
+    }
 
     // allow iteration over set
-    iterator begin();
-    iterator end();
-    const_iterator begin() const;
-    const_iterator end() const;
+    iterator begin() {
+        return iterator(this, 0);
+    }
+    iterator end() {
+        return iterator(this, VariableSet::nVariables);
+    }
+    const_iterator begin() const {
+        return const_iterator(this, 0);
+    }
+    const_iterator end() const {
+        return const_iterator(this, VariableSet::nVariables);
+    }
+
+    static void setFullVariableSet(std::vector<Variable *> *variables) {
+        VariableSet::variables = variables;
+        VariableSet::nVariables = variables->size();
+    }
 private:
-    google::dense_hash_set<Variable*, boost::hash<Variable*> > variables;
-    // special value symbolizing an entry in the map that was deleted
-    static Variable DeletedKey;
-    // special value symbolizing an entry in the map that is not assigned yet
-    static Variable EmptyKey;
+    std::vector<int> containsIndex;
+    int nEntries;
+    static int nVariables;
+    static std::vector<Variable *> *variables;
 };
-
-inline int VariableSet::size() const {
-    return this->variables.size();
-}
-
-inline VariableSet::iterator VariableSet::begin() {
-    return this->variables.begin();
-}
-
-inline VariableSet::iterator VariableSet::end() {
-    return this->variables.end();
-}
-
-inline VariableSet::const_iterator VariableSet::begin() const {
-    return this->variables.begin();
-}
-
-inline VariableSet::const_iterator VariableSet::end() const {
-    return this->variables.end();
-}
 
 #endif

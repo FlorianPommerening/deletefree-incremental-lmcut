@@ -22,7 +22,7 @@ public:
       return instance;
     }
 
-    void findSourceConnectedComponents(std::list<Variable> &variables, OperatorCosts &operatorCosts);
+    void findSourceConnectedComponents(std::vector<Variable *> &variables, OperatorCosts &operatorCosts);
     int getComponent(Variable *v) {
         return this->componentId[v];
     }
@@ -42,7 +42,7 @@ private:
     // should be stacks but those have no clear() and no peek()
     std::list<Variable *> notYetAssigned;
     std::list<Variable *> maybeDifferent;
-    void findConnectedComponents(std::list<Variable> &variables, OperatorCosts &operatorCosts);
+    void findConnectedComponents(std::vector<Variable *> &variables, OperatorCosts &operatorCosts);
     void gabowDfs(Variable *v, OperatorCosts &operatorCosts);
 };
 

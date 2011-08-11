@@ -39,9 +39,9 @@ void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, UIntEx &co
         }
     }
     // pick first applicable
-    foreach(RelaxedOperator &op, searchNode.task.operators) {
-        if (searchNode.operatorCost[&op] != UIntEx::INF && op.isApplicable(currentState)) {
-            *nextOperator = &op;
+    foreach(RelaxedOperator *op, searchNode.task.operators) {
+        if (searchNode.operatorCost[op] != UIntEx::INF && op->isApplicable(currentState)) {
+            *nextOperator = op;
             return;
         }
     }
@@ -52,9 +52,9 @@ void AchieveLandmarksTryGoalOperatorSelector::select(SearchNode &searchNode, UIn
     if (this->options.tryGoalOnZeroHeuristic) {
         if (this->goalOperator == NULL) {
             // determine and remember the goal operator once
-            foreach(RelaxedOperator &op, searchNode.task.operators) {
-                if (op.name == "@@goal-operator") {
-                    this->goalOperator = &op;
+            foreach(RelaxedOperator *op, searchNode.task.operators) {
+                if (op->name == "@@goal-operator") {
+                    this->goalOperator = op;
                 }
             }
             if (this->goalOperator == NULL) {
@@ -80,10 +80,10 @@ void SSCOperatorSelector::select(SearchNode &searchNode, UIntEx &costUpperBound,
     list<RelaxedOperator *> applicableOperators;
     // remove all applicable operators for the SCC graph generation
     OperatorCosts operatorCostSCC = searchNode.operatorCost;
-    foreach(RelaxedOperator &op, searchNode.task.operators) {
-        if (op.isApplicable(currentState)) {
-            applicableOperators.push_back(&op);
-            operatorCostSCC[&op] = UIntEx::INF;
+    foreach(RelaxedOperator *op, searchNode.task.operators) {
+        if (op->isApplicable(currentState)) {
+            applicableOperators.push_back(op);
+            operatorCostSCC[op] = UIntEx::INF;
         }
     }
     gabowSCC.findSourceConnectedComponents(searchNode.task.variables, operatorCostSCC);

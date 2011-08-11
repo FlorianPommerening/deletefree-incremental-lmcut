@@ -26,21 +26,17 @@ public:
     /*
      * Returns true iff this operator is applicable in 'state'
      */
-    bool isApplicable(const VariableSet &state) const;
+    bool isApplicable(const VariableSet &state) const {
+        return this->preconditions.isSubsetOf(state);
+    }
     /*
      * Changes 'state' to represent the state that results from applying this operator in state.
-     * This operator must be applicable in 'state' fr a correct result. To speed things up this is not checked again!
+     * This operator must be applicable in 'state' for a correct result. To speed things up this is not checked again!
      */
-    void apply(VariableSet &state) const;
+    void apply(VariableSet &state) const {
+        state.inplaceUnion(this->effects);
+    }
 };
-
-inline bool RelaxedOperator::isApplicable(const VariableSet &state) const {
-    return this->preconditions.isSubsetOf(state);
-}
-
-inline void RelaxedOperator::apply(VariableSet &state) const {
-    state.inplaceUnion(this->effects);
-}
 
 /*
  * Operator costs map each allowed operator to a finite cost and all forbidden operators to infinity.
