@@ -26,13 +26,13 @@ UIntEx lmCut(RelaxedTask &task, State &state);
  * of each operator in the landmark by the cost of the landmark
  */
 UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts,
-             std::list<Landmark> &landmarks, std::list<Landmark>::iterator *firstAdded=NULL);
+             std::vector<Landmark *> &landmarks, std::vector<Landmark *>::iterator *firstAdded=NULL);
 /*
  * Discovers a cut in the justification graph, i.e. a set of operators, whose precondition choice can be reached
  * from the initial state without reaching a variable in the goal zone, and whose effects contain a variable in the goal zone.
  * This assumes that hmax costs are set for each variable and preconditionChoice is set for each operator in 'task'.
  * The operators defining the cut are added to the landmark 'cut'.
  */
-void findCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, Landmark &cut);
+void findCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, Landmark *cut);
 
 #endif /* LMCUT_H_ */

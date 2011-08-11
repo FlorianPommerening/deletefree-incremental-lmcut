@@ -4,6 +4,7 @@
 #include "lmcut.h"
 
 #include <stack>
+#include <algorithm>
 
 using namespace std;
 
@@ -22,24 +23,33 @@ SearchNode::SearchNode(RelaxedTask &task, OptimizationOptions &options):
     this->partialPlan.reserve(task.operators.size());
 }
 
+SearchNode::~SearchNode() {
+    foreach(Landmark *landmark, this->landmarks) {
+        delete landmark;
+    }
+}
+
 SearchNode::SearchNode(const SearchNode &other):
                     heuristicValue(other.heuristicValue),
                     currentCost(other.currentCost),
                     currentState(other.currentState),
                     partialPlan(other.partialPlan),
-                    landmarks(other.landmarks),
                     operatorCost(other.operatorCost),
                     task(other.task),
                     unitPropagationCount(0),
                     options(other.options) {
+    this->landmarks.reserve(other.landmarks.size());
+    this->singleOperatorLandmarks.reserve(other.singleOperatorLandmarks.size());
     // re-create operator to landmark mapping and list of singleOperatorLandmarks
-    foreach(Landmark &landmark, this->landmarks) {
-        foreach(Landmark::value_type &entry, landmark) {
+    foreach(Landmark *landmark, other.landmarks) {
+        Landmark *landmarkCopy = new Landmark(*landmark);
+        this->landmarks.push_back(landmarkCopy);
+        foreach(Landmark::value_type &entry, *landmarkCopy) {
             RelaxedOperator *op = entry.first;
-            this->operatorToLandmark[op] = &landmark;
+            this->operatorToLandmark[op] = landmarkCopy;
         }
-        if (landmark.size() == 1) {
-            this->singleOperatorLandmarks.push_back(&landmark);
+        if (landmarkCopy->size() == 1) {
+            this->singleOperatorLandmarks.push_back(landmarkCopy);
         }
     }
 }
@@ -134,10 +144,12 @@ bool SearchNode::applyOperatorWithoutUpdate(RelaxedOperator *appliedOp) {
                 // if this was the only operator in the landmark, there cannot be any new landmarks with the same argument as above
                 needsHeuristicUpdate = false;
                 // TODO remove could be replaced by erase if operator to iterator mapping is saved
-                this->singleOperatorLandmarks.remove(containingLM);
+                vector<Landmark *>::iterator newEnd = remove(this->singleOperatorLandmarks.begin(), this->singleOperatorLandmarks.end(), containingLM);
+                this->singleOperatorLandmarks.resize(newEnd - this->singleOperatorLandmarks.begin());
             }
             // TODO remove could be replaced by erase if operator to iterator mapping is saved
-            this->landmarks.remove(*containingLM);
+            vector<Landmark *>::iterator newEnd = remove(this->landmarks.begin(), this->landmarks.end(), containingLM);
+            this->landmarks.resize(newEnd - this->landmarks.begin());
             this->operatorToLandmark.erase(it);
         }
     }
@@ -162,17 +174,17 @@ void SearchNode::updateHeuristicValue() {
         this->singleOperatorLandmarks.clear();
     }
     // run heuristic calculation
-    list<Landmark>::iterator firstAdded;
+    vector<Landmark *>::iterator firstAdded;
     UIntEx lmCutValue = lmCut(this->task, this->currentState, this->operatorCost, this->landmarks, &firstAdded);
     // sort and cross-reference new landmarks
-    for (list<Landmark>::iterator it = firstAdded; it != this->landmarks.end(); ++it) {
-        Landmark &landmark = *it;
-        foreach(Landmark::value_type &entry, landmark) {
+    for (vector<Landmark *>::iterator it = firstAdded; it != this->landmarks.end(); ++it) {
+        Landmark *landmark = *it;
+        foreach(Landmark::value_type &entry, *landmark) {
             RelaxedOperator *op = entry.first;
-            this->operatorToLandmark[op] = &landmark;
+            this->operatorToLandmark[op] = landmark;
         }
-        if (landmark.size() == 1) {
-            this->singleOperatorLandmarks.push_back(&landmark);
+        if (landmark->size() == 1) {
+            this->singleOperatorLandmarks.push_back(landmark);
         }
     }
     this->heuristicValue += lmCutValue;
@@ -194,11 +206,11 @@ void SearchNode::unitPropagation() {
         }
         // try operators in landmarks of size 1
         if (!this->options.autoApplyUnitLandmarks) {
-            list<Landmark *>::iterator it = this->singleOperatorLandmarks.begin();
+            vector<Landmark *>::iterator it = this->singleOperatorLandmarks.begin();
             while (it != this->singleOperatorLandmarks.end()) {
                 // applyOperatorWithoutUpdate() can delete the entry in singleOperatorLandmarks
                 // copy iterator so it can be used for erase without breaking the loop
-                list<Landmark *>::iterator current = it;
+                vector<Landmark *>::iterator current = it;
                 // increment iterator before (!!!) erase
                 ++it;
                 Landmark *unitClause = *current;

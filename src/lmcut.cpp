@@ -22,11 +22,14 @@ UIntEx lmCut(RelaxedTask &task, State &state) {
         operatorCosts[op] = op->baseCost;
     }
     // dummy list to contain the discovered landmark
-    list<Landmark> landmarks;
+    vector<Landmark*> landmarks;
     return lmCut(task, state, operatorCosts, landmarks);
+    foreach(Landmark *landmark, landmarks) {
+        delete landmark;
+    }
 }
 
-UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, list<Landmark> &landmarks, list<Landmark>::iterator *firstAdded) {
+UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, vector<Landmark *> &landmarks, vector<Landmark *>::iterator *firstAdded) {
     // only set firstAdded once and use landmarks.end() as default in case no landmarks are added
     bool isFirst = true;
     if (firstAdded != NULL) {
@@ -41,17 +44,17 @@ UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, list
     int lmcutValue = 0;
     while (hmax_value != 0) {
         // One new landmark is discovered in each iteration until h^max is 0
-        landmarks.push_back(Landmark());
+        landmarks.push_back(new Landmark());
         if (isFirst && (firstAdded != NULL)) {
             *firstAdded = --landmarks.end();
             isFirst = false;
         }
-        Landmark &cut = landmarks.back();
+        Landmark *cut = landmarks.back();
         findCut(task, state, operatorCosts, cut);
-        int landmarkCost = cut.cost;
+        int landmarkCost = cut->cost;
         lmcutValue += landmarkCost;
         // adjust cost function
-        foreach(Landmark::value_type &entry, cut) {
+        foreach(Landmark::value_type &entry, *cut) {
             RelaxedOperator *op = entry.first;
             operatorCosts[op] -= landmarkCost;
         }
@@ -61,7 +64,7 @@ UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, list
     return lmcutValue;
 }
 
-void findCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, Landmark &cut) {
+void findCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, Landmark *cut) {
     // First discover the goal zone by enumerating all variables that allow the goal to be reached with 0-cost.
     // That is, moving backwards from the goal along 0-cost operators from effect to preconditionChoice until no more
     // variables are discovered.
@@ -123,7 +126,7 @@ void findCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, Land
                 foreach(Variable *effect, op->effects) {
                     // add op to cut if it contains an effect that is in the goal zone
                     if (goalZone.contains(effect)){
-                        cut.add(op, operatorCost);
+                        cut->add(op, operatorCost);
                         addedToCut = true;
                         break;
                     }
