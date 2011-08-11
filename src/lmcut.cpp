@@ -18,8 +18,8 @@ UIntEx lmCut(RelaxedTask &task) {
 UIntEx lmCut(RelaxedTask &task, VariableSet &state) {
     // use default operator cost mapping
     OperatorCosts operatorCosts;
-    foreach(RelaxedOperator &op, task.operators) {
-        operatorCosts[&op] = op.baseCost;
+    foreach(RelaxedOperator *op, task.operators) {
+        operatorCosts[op] = op->baseCost;
     }
     // dummy list to contain the discovered landmark
     list<Landmark> landmarks;
@@ -67,8 +67,8 @@ void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
     // variables are discovered.
     VariableSet goalZone;
     vector<Variable *> goalStack;
-    foreach(Variable &var, task.variables) {
-        var.closed = false;
+    foreach(Variable *var, task.variables) {
+        var->closed = false;
     }
     goalStack.push_back(task.goal);
     while (!goalStack.empty()) {
@@ -91,11 +91,11 @@ void findCut(RelaxedTask &task, VariableSet &state, OperatorCosts &operatorCosts
 
     // forward search starting from state (similar to hmax calculation)
     // reset temporary variables.
-    foreach(RelaxedOperator &op, task.operators) {
-        op.unsatisfiedPreconditions = op.preconditions.size();
+    foreach(RelaxedOperator *op, task.operators) {
+        op->unsatisfiedPreconditions = op->preconditions.size();
     }
-    foreach(Variable &var, task.variables) {
-        var.closed = false;
+    foreach(Variable *var, task.variables) {
+        var->closed = false;
     }
 
     stack<Variable *> reachedStack;
