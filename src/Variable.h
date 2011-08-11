@@ -11,6 +11,7 @@
 
 #include "UIntEx.h"
 #include "PointerMap.h"
+#include "foreach.h"
 
 // forward declaration
 class RelaxedOperator;
@@ -35,7 +36,7 @@ public:
 
 /*
  * A set of variables.
- * Wraps vector<int> with 0 at position i iff variable with id == i is in the set
+ * Wraps vector<int> with 1 at position i iff variable with id == i is in the set
  * (this will take up more space than vector<bool> but requires no bit magic)
  * TODO: compare performance with vector<bool> and boost::dynamic_bitset
  */
@@ -108,30 +109,33 @@ public:
     }
 
     void inplaceUnion(const VariableSet &other) {
-        for (int i=0; i < VariableSet::nVariables; ++i) {
-            if (other.containsIndex[i] != 0 && this->containsIndex[i] == 0) {
+        assert(this->containsIndex.size() == other.containsIndex.size());
+        std::vector<int>::iterator end = this->containsIndex.end();
+        std::vector<int>::iterator itThis = this->containsIndex.begin();
+        std::vector<int>::const_iterator itOther = other.containsIndex.begin();
+        while (itThis != end) {
+            if (*itOther != 0 && *itThis == 0) {
                 this->nEntries++;
-                this->containsIndex[i] = 1;
+                *itThis = 1;
             }
+            ++itThis;
+            ++itOther;
         }
     }
 
     void inplaceIntersection(const VariableSet &other) {
-        for (int i=0; i < VariableSet::nVariables; ++i) {
-            if (other.containsIndex[i] == 0 && this->containsIndex[i] != 0) {
+        assert(this->containsIndex.size() == other.containsIndex.size());
+        std::vector<int>::iterator end = this->containsIndex.end();
+        std::vector<int>::iterator itThis = this->containsIndex.begin();
+        std::vector<int>::const_iterator itOther = other.containsIndex.begin();
+        while (itThis != end) {
+            if (*itOther == 0 && *itThis != 0) {
                 this->nEntries--;
-                this->containsIndex[i] = 0;
+                *itThis = 0;
             }
+            ++itThis;
+            ++itOther;
         }
-    }
-
-    bool isDisjointWith(const VariableSet &other) const {
-        for (int i=0; i < VariableSet::nVariables; ++i) {
-            if (other.containsIndex[i] != 0 && this->containsIndex[i] != 0) {
-                return false;
-            }
-        }
-        return true;
     }
 
     bool isSubsetOf(const VariableSet &other) const {
@@ -141,10 +145,16 @@ public:
         if (this->nEntries == 0) {
             return true;
         }
-        for (int i=0; i < VariableSet::nVariables; ++i) {
-            if (other.containsIndex[i] == 0 && this->containsIndex[i] != 0) {
+        assert(this->containsIndex.size() == other.containsIndex.size());
+        std::vector<int>::const_iterator end = this->containsIndex.end();
+        std::vector<int>::const_iterator itThis = this->containsIndex.begin();
+        std::vector<int>::const_iterator itOther = other.containsIndex.begin();
+        while (itThis != end) {
+            if (*itOther == 0 && *itThis != 0) {
                 return false;
             }
+            ++itThis;
+            ++itOther;
         }
         return true;
     }
@@ -154,8 +164,16 @@ public:
     }
 
     void removeIrrelevant(PointerMap<Variable, bool> &relevant) {
+        // TODO this could be more elegant
+        int newSize = 0;
+        typedef PointerMap<Variable, bool>::value_type entry_value_type;
+        foreach(entry_value_type &entry, relevant) {
+            if (entry.second) {
+                newSize++;
+            }
+        }
         std::vector<int> containsRelevantIndex;
-        containsRelevantIndex.reserve(relevant.size());
+        containsRelevantIndex.resize(newSize);
         this->nEntries = 0;
         int relevantIndex = 0;
         for (unsigned index=0; index < this->containsIndex.size(); ++index) {
