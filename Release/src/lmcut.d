@@ -1,6 +1,6 @@
 src/lmcut.d src/lmcut.o: ../src/lmcut.cpp ../src/Options.h ../src/lmcut.h \
  ../src/Landmark.h ../src/PointerMap.h ../src/RelaxedOperator.h \
- ../src/Variable.h ../src/UIntEx.h ../src/RelaxedTask.h ../src/foreach.h \
+ ../src/Variable.h ../src/UIntEx.h ../src/foreach.h ../src/RelaxedTask.h \
  ../src/hmax.h ../src/SearchNode.h
 
 ../src/Options.h:
@@ -17,9 +17,9 @@ src/lmcut.d src/lmcut.o: ../src/lmcut.cpp ../src/Options.h ../src/lmcut.h \
 
 ../src/UIntEx.h:
 
-../src/RelaxedTask.h:
-
 ../src/foreach.h:
+
+../src/RelaxedTask.h:
 
 ../src/hmax.h:
 

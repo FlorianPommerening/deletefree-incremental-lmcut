@@ -8,9 +8,11 @@
 #include <string.h>
 #include <vector>
 #include <algorithm>
+#include <boost/dynamic_bitset.hpp>
 
 #include "UIntEx.h"
 #include "PointerMap.h"
+#include "foreach.h"
 
 // forward declaration
 class RelaxedOperator;
@@ -83,7 +85,7 @@ public:
     typedef VariableSetIterator<Variable *const, const VariableSet> const_iterator;
 
     VariableSet() {
-        this->containsIndex.resize(VariableSet::nVariables);
+        this->containsIndex = boost::dynamic_bitset<>(VariableSet::nVariables);
     }
     VariableSet(const VariableSet &other): containsIndex(other.containsIndex),
                                            nEntries(other.nEntries) {
@@ -92,7 +94,7 @@ public:
     VariableSet& operator =(const VariableSet &other);
 
     void clear() {
-        memset(&(this->containsIndex[0]), 0, sizeof(bool) * this->containsIndex.size());
+        this->containsIndex.reset();
     }
 
     void add(Variable *element) {
@@ -100,53 +102,29 @@ public:
             return;
         }
         this->nEntries++;
-        this->containsIndex[element->id] = true;
+        this->containsIndex.set(element->id);
     }
 
     bool contains(Variable *element) const {
-        return this->containsIndex[element->id];
+        return this->containsIndex.test(element->id);
     }
 
     void inplaceUnion(const VariableSet &other) {
-        for (int i=0; i < VariableSet::nVariables; ++i) {
-            if (other.containsIndex[i] && !this->containsIndex[i]) {
-                this->nEntries++;
-                this->containsIndex[i] = true;
-            }
-        }
+        this->containsIndex |= other.containsIndex;
+        this->nEntries = this->containsIndex.count();
     }
 
     void inplaceIntersection(const VariableSet &other) {
-        for (int i=0; i < VariableSet::nVariables; ++i) {
-            if (!other.containsIndex[i] && this->containsIndex[i]) {
-                this->nEntries--;
-                this->containsIndex[i] = false;
-            }
-        }
+        this->containsIndex &= other.containsIndex;
+        this->nEntries = this->containsIndex.count();
     }
 
     bool isDisjointWith(const VariableSet &other) const {
-        for (int i=0; i < VariableSet::nVariables; ++i) {
-            if (other.containsIndex[i] && this->containsIndex[i]) {
-                return false;
-            }
-        }
-        return true;
+        return (this->containsIndex & other.containsIndex).empty();
     }
 
     bool isSubsetOf(const VariableSet &other) const {
-        if (this->nEntries > other.nEntries) {
-            return false;
-        }
-        if (this->nEntries == 0) {
-            return true;
-        }
-        for (int i=0; i < VariableSet::nVariables; ++i) {
-            if (!other.containsIndex[i] && this->containsIndex[i]) {
-                return false;
-            }
-        }
-        return true;
+        return this->containsIndex.is_subset_of(other.containsIndex);
     }
 
     int size() const {
@@ -154,19 +132,24 @@ public:
     }
 
     void removeIrrelevant(PointerMap<Variable, bool> &relevant) {
-        std::vector<bool> containsRelevantIndex;
-        containsRelevantIndex.reserve(relevant.size());
+        // TODO this could be more elegant
+        int newSize = 0;
+        typedef PointerMap<Variable, bool>::value_type entry_value_type;
+        foreach(entry_value_type &entry, relevant) {
+            if (entry.second) {
+                newSize++;
+            }
+        }
+        boost::dynamic_bitset<> containsRelevantIndex = boost::dynamic_bitset<>(newSize);
         this->nEntries = 0;
         int relevantIndex = 0;
         for (unsigned index=0; index < this->containsIndex.size(); ++index) {
             if (relevant[(*VariableSet::variables)[index]]) {
                 containsRelevantIndex[relevantIndex++] = this->containsIndex[index];
-                if (this->containsIndex[index]) {
-                    this->nEntries++;
-                }
             }
         }
         std::swap(this->containsIndex, containsRelevantIndex);
+        this->nEntries = this->containsIndex.count();
     }
 
     // allow iteration over set
@@ -188,7 +171,7 @@ public:
         VariableSet::nVariables = variables->size();
     }
 private:
-    std::vector<bool> containsIndex;
+    boost::dynamic_bitset<> containsIndex;
     int nEntries;
     static int nVariables;
     static std::vector<Variable *> *variables;
