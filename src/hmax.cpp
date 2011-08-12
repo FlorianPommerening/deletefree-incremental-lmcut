@@ -12,9 +12,9 @@ UIntEx hmax(RelaxedTask &task) {
 
 UIntEx hmax(RelaxedTask &task, State &state) {
     // start calculation for default operator cost function
-    OperatorCosts operatorCosts;
+    OperatorCosts operatorCosts = OperatorCosts(task.operators.size());
     foreach(RelaxedOperator *op, task.operators) {
-        operatorCosts[op] = op->baseCost;
+        operatorCosts[op->id] = op->baseCost;
     }
     return hmax(task, state, operatorCosts);
 }
@@ -45,7 +45,7 @@ UIntEx hmax(RelaxedTask &task, State &state, OperatorCosts &operatorCosts) {
         var->closed = true;
         foreach(RelaxedOperator *op, var->precondition_of) {
             unsigned int operatorCost;
-            if (!operatorCosts[op].hasFiniteValue(operatorCost)) {
+            if (!operatorCosts[op->id].hasFiniteValue(operatorCost)) {
                 // if the operator's cost is infinity his means that the operator was previously forbidden
                 continue;
             }

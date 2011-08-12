@@ -16,8 +16,9 @@ SearchNode::SearchNode(RelaxedTask &task, OptimizationOptions &options):
         options(options) {
     this->currentState.add(task.init);
     // create default cost function
+    this->operatorCost.resize(task.operators.size());
     foreach(RelaxedOperator *op, task.operators) {
-        this->operatorCost[op] = op->baseCost;
+        this->operatorCost[op->id] = op->baseCost;
     }
     this->updateHeuristicValue();
     this->partialPlan.reserve(task.operators.size());
@@ -68,7 +69,7 @@ SearchNode& SearchNode::applyOperator(RelaxedOperator *appliedOp) {
 }
 
 SearchNode& SearchNode::forbidOperator(RelaxedOperator *forbiddenOp) {
-    this->operatorCost[forbiddenOp] = UIntEx::INF;
+    this->operatorCost[forbiddenOp->id] = UIntEx::INF;
     bool needsHeuristicUpdate = true;
     if (this->options.incrementalSearch) {
         PointerMap<RelaxedOperator, Landmark *>::iterator it = this->operatorToLandmark.find(forbiddenOp);
@@ -120,7 +121,7 @@ bool SearchNode::applyOperatorWithoutUpdate(RelaxedOperator *appliedOp) {
     appliedOp->apply(this->currentState);
     partialPlan.push_back(appliedOp);
     this->currentCost += appliedOp->baseCost;
-    this->operatorCost[appliedOp] = UIntEx::INF;
+    this->operatorCost[appliedOp->id] = UIntEx::INF;
     if (this->options.incrementalSearch) {
         PointerMap<RelaxedOperator, Landmark *>::iterator it = this->operatorToLandmark.find(appliedOp);
         if (it == this->operatorToLandmark.end()) {
@@ -137,7 +138,7 @@ bool SearchNode::applyOperatorWithoutUpdate(RelaxedOperator *appliedOp) {
             foreach(Landmark::value_type &entry, *containingLM) {
                 RelaxedOperator *op = entry.first;
                 if (op != appliedOp) {
-                    this->operatorCost[op] += landmarkCost;
+                    this->operatorCost[op->id] += landmarkCost;
                 }
             }
             if (containingLM->size() == 1) {
@@ -158,12 +159,10 @@ bool SearchNode::applyOperatorWithoutUpdate(RelaxedOperator *appliedOp) {
 
 void SearchNode::updateHeuristicValue() {
     if (!this->options.incrementalSearch) {
-        // reset cost mapping. this is just as cheap as recreating it and this way we keep the forbidden ops
-        foreach(OperatorCostEntry &entry, this->operatorCost) {
-            RelaxedOperator *op = entry.first;
-            UIntEx cost = entry.second;
-            if (cost != UIntEx::INF) {
-                entry.second = op->baseCost;
+        // reset cost mapping but keep the forbidden ops.
+        for(unsigned i=0; i < this->task.operators.size(); ++i) {
+            if (this->operatorCost[i] != UIntEx::INF) {
+                this->operatorCost[i] = this->task.operators[i]->baseCost;
             }
         }
         // no previous heuristic value
@@ -222,7 +221,7 @@ void SearchNode::unitPropagation() {
 }
 
 bool SearchNode::tryApplyUnitPropagationOperator(RelaxedOperator *op) {
-    if (op->isApplicable(this->currentState) && this->operatorCost[op] != UIntEx::INF) {
+    if (op->isApplicable(this->currentState) && this->operatorCost[op->id] != UIntEx::INF) {
 #ifdef FULL_DEBUG
         cout << endl << "Operator applied in unit propagation: " << op->name << endl;
 #endif

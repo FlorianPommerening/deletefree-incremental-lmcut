@@ -278,7 +278,7 @@ bool DeleteRelaxer::deleteRelaxation(SASTask &sasTask, RelaxedTask &task) {
     State::setFullVariableSet(&task.variables);
 
     // Operator creating the initial state
-    RelaxedOperator *initOperator = new RelaxedOperator();
+    RelaxedOperator *initOperator = new RelaxedOperator(task.operators.size());
     initOperator->name = "@@init-operator";
     initOperator->baseCost = 0;
     initOperator->preconditions.add(task.init);
@@ -290,7 +290,7 @@ bool DeleteRelaxer::deleteRelaxation(SASTask &sasTask, RelaxedTask &task) {
     task.operators.push_back(initOperator);
 
     // Operator achieving the goal
-    RelaxedOperator *goalOperator = new RelaxedOperator();
+    RelaxedOperator *goalOperator = new RelaxedOperator(task.operators.size());
     goalOperator->name = "@@goal-operator";
     goalOperator->baseCost = 0;
     foreach(SASVariableAssignment &assignment, sasTask.goal) {
@@ -302,7 +302,7 @@ bool DeleteRelaxer::deleteRelaxation(SASTask &sasTask, RelaxedTask &task) {
 
     // Relax operators
     foreach(SASOperator &sasOp, sasTask.operators) {
-        RelaxedOperator *op = new RelaxedOperator();
+        RelaxedOperator *op = new RelaxedOperator(task.operators.size());
         op->name = sasOp.name;
         op->baseCost = sasOp.cost;
         // every prevail condition of the SASOperator is a precondition of the RelaxedOperator

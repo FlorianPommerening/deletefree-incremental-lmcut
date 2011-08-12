@@ -123,13 +123,15 @@ bool RelaxedTask::removeIrrelevantVariables() {
 
 void RelaxedTask::crossreference() {
     this->zeroBaseCostOperators.clear();
-    int i = 0;
+    int varId = 0;
     foreach(Variable *var, this->variables) {
-        var->id = i++;
+        var->id = varId++;
         var->effect_of.clear();
         var->precondition_of.clear();
     }
+    int opId = 0;
     foreach(RelaxedOperator *op, this->operators) {
+        op->id = opId++;
         foreach(Variable *effect, op->effects) {
             effect->effect_of.push_back(op);
         }
@@ -167,7 +169,7 @@ void RelaxedTask::parseTask(ifstream &taskfile) {
     if (!getline(taskfile, line)) { throw "Number of operators expected"; }
     int nOperators = atoi(line.c_str());
     for (int i = 0; i < nOperators; ++i) {
-        RelaxedOperator *op = new RelaxedOperator();
+        RelaxedOperator *op = new RelaxedOperator(i);
         if (!getline(taskfile, line) || line != "Operator") { throw "'Operator' expected"; }
         if (!getline(taskfile, op->name)) { throw "Operator name expected"; }
         if (!getline(taskfile, line)) { throw "Operator cost expected"; }

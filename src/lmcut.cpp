@@ -17,9 +17,9 @@ UIntEx lmCut(RelaxedTask &task) {
 
 UIntEx lmCut(RelaxedTask &task, State &state) {
     // use default operator cost mapping
-    OperatorCosts operatorCosts;
+    OperatorCosts operatorCosts = OperatorCosts(task.operators.size());
     foreach(RelaxedOperator *op, task.operators) {
-        operatorCosts[op] = op->baseCost;
+        operatorCosts[op->id] = op->baseCost;
     }
     // dummy list to contain the discovered landmark
     vector<Landmark*> landmarks;
@@ -47,7 +47,7 @@ UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, vect
         // adjust cost function
         foreach(Landmark::value_type &entry, *cut) {
             RelaxedOperator *op = entry.first;
-            operatorCosts[op] -= landmarkCost;
+            operatorCosts[op->id] -= landmarkCost;
         }
         // recalculate hmax to check if we can discover another landmark
         hmax_value = hmax(task, state, operatorCosts);
@@ -71,7 +71,7 @@ void findCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, Land
         var->closed = true;
         goalZone.add(var);
         foreach(RelaxedOperator *op, var->effect_of) {
-            if (operatorCosts[op] != 0 || op->preconditionChoice == NULL) {
+            if (operatorCosts[op->id] != 0 || op->preconditionChoice == NULL) {
                 // avoid non-zero-cost operator, forbidden operator or unreachable operator
                 // TODO: if there are operators with operatorCosts[op] != UIntEx::INF && op->preconditionChoice == NULL
                 // they could probably be removed
@@ -106,7 +106,7 @@ void findCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, Land
         var->closed = true;
         foreach(RelaxedOperator *op, var->precondition_of) {
             unsigned int operatorCost;
-            if (!operatorCosts[op].hasFiniteValue(operatorCost)) {
+            if (!operatorCosts[op->id].hasFiniteValue(operatorCost)) {
                 // if the operator cost is not finite, the operator was previously forbidden
                 continue;
             }

@@ -15,6 +15,9 @@
  */
 class RelaxedOperator {
 public:
+    RelaxedOperator(): id(-1) {}
+    RelaxedOperator(int id): id(id) {}
+
     std::string name;
     int baseCost;
     Preconditions preconditions;
@@ -23,6 +26,8 @@ public:
     // temporary variable for h^max and h^LM-cut calculation
     Variable *preconditionChoice;
     Effects effects;
+    // values filled by cross-referencing the task
+    int id;
     /*
      * Returns true iff this operator is applicable in 'state'
      */
@@ -41,7 +46,6 @@ public:
 /*
  * Operator costs map each allowed operator to a finite cost and all forbidden operators to infinity.
  */
-typedef PointerMap<RelaxedOperator, UIntEx> OperatorCosts;
-typedef OperatorCosts::value_type OperatorCostEntry;
+typedef std::vector<UIntEx> OperatorCosts;
 
 #endif

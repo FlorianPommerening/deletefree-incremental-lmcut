@@ -28,7 +28,7 @@ void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, UIntEx &co
             }
             foreach(Landmark::value_type &entry, *landmark) {
                 RelaxedOperator *op = entry.first;
-                if (searchNode.operatorCost[op] != UIntEx::INF && op->isApplicable(currentState)) {
+                if (searchNode.operatorCost[op->id] != UIntEx::INF && op->isApplicable(currentState)) {
                     *nextOperator = op;
                     best = landmark->size();
                 }
@@ -40,7 +40,7 @@ void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, UIntEx &co
     }
     // pick first applicable
     foreach(RelaxedOperator *op, searchNode.task.operators) {
-        if (searchNode.operatorCost[op] != UIntEx::INF && op->isApplicable(currentState)) {
+        if (searchNode.operatorCost[op->id] != UIntEx::INF && op->isApplicable(currentState)) {
             *nextOperator = op;
             return;
         }
@@ -84,7 +84,7 @@ void SSCOperatorSelector::select(SearchNode &searchNode, UIntEx &costUpperBound,
     foreach(RelaxedOperator *op, searchNode.task.operators) {
         if (op->isApplicable(currentState)) {
             applicableOperators.push_back(op);
-            operatorCostSCC[op] = UIntEx::INF;
+            operatorCostSCC[op->id] = UIntEx::INF;
         }
     }
     gabowSCC.findSourceConnectedComponents(searchNode.task.variables, operatorCostSCC);
