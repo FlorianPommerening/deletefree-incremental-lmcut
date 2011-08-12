@@ -27,6 +27,7 @@ public:
 };
 
 struct SASVariable {
+    int id;
     std::vector<std::string> values;
     int axiomLayer;
 };

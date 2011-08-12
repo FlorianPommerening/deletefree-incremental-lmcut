@@ -54,27 +54,27 @@ Variable *RelaxedTask::getVariable(const std::string &name) {
 bool RelaxedTask::removeIrrelevantVariables() {
     this->crossreference();
     // The goal is relevant. If an operator adds a relevant variable all its preconditions are relevant
-    PointerMap<Variable, bool> relevant;
+    vector<bool> relevant = vector<bool>(this->variables.size());
     foreach(Variable *var, this->variables) {
-        relevant[var] = false;
+        relevant[var->id] = false;
     }
     queue<Variable *> relevantVariableQueue;
     relevantVariableQueue.push(this->goal);
     while (!relevantVariableQueue.empty()) {
         Variable *var = relevantVariableQueue.front();
         relevantVariableQueue.pop();
-        if (relevant[var]) {
+        if (relevant[var->id]) {
             // we have already seen this variable
             continue;
         }
-        relevant[var] = true;
+        relevant[var->id] = true;
         foreach(RelaxedOperator *op, var->effect_of) {
             foreach(Variable *pre, op->preconditions) {
                 relevantVariableQueue.push(pre);
             }
         }
     }
-    if (!relevant[this->init]) {
+    if (!relevant[this->init->id]) {
         // unsolvable
         return false;
     }
@@ -97,16 +97,16 @@ bool RelaxedTask::removeIrrelevantVariables() {
             op->preconditions.add(dummyPrecondition);
             // if each operator already has a precondition, this might never trigger
             // and the dummy precondition will be removed again
-            relevant[dummyPrecondition] = true;
+            relevant[dummyPrecondition->id] = true;
         }
         ++itOp;
     }
     // remove unnecessary variables
     vector<Variable *> relevantVariables;
     relevantVariables.reserve(relevant.size());
-    for (vector<Variable *>::iterator itVar = this->variables.begin(); itVar != this->variables.end(); ++itVar) {
-        if (relevant[*itVar]) {
-            relevantVariables.push_back(*itVar);
+    foreach(Variable *var, this->variables) {
+        if (relevant[var->id]) {
+            relevantVariables.push_back(var);
         }
     }
     std::swap(this->variables, relevantVariables);

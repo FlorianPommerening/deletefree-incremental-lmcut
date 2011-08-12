@@ -59,7 +59,7 @@ public:
 
     void inplaceIntersection(const Effects &other);
 
-    void removeIrrelevant(PointerMap<Variable, bool> &relevant);
+    void removeIrrelevant(std::vector<bool> &relevant);
 
     iterator begin() {
         return this->entries.begin();
