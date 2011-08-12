@@ -1,8 +1,6 @@
 #ifndef SEARCHNODE_H_
 #define SEARCHNODE_H_
 
-#include <list>
-
 #include "Options.h"
 #include "Landmark.h"
 #include "RelaxedTask.h"

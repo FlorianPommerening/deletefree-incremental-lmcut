@@ -29,12 +29,7 @@ UIntEx lmCut(RelaxedTask &task, State &state) {
     }
 }
 
-UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, vector<Landmark *> &landmarks, vector<Landmark *>::iterator *firstAdded) {
-    // only set firstAdded once and use landmarks.end() as default in case no landmarks are added
-    bool isFirst = true;
-    if (firstAdded != NULL) {
-        *firstAdded = landmarks.end();
-    }
+UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, vector<Landmark *> &landmarks) {
     // calculating h^max also sets all hmax costs of variables and preconditionChoice values of operators
     UIntEx hmax_value = hmax(task, state, operatorCosts);
     if (hmax_value == UIntEx::INF) {
@@ -44,13 +39,9 @@ UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, vect
     int lmcutValue = 0;
     while (hmax_value != 0) {
         // One new landmark is discovered in each iteration until h^max is 0
-        landmarks.push_back(new Landmark());
-        if (isFirst && (firstAdded != NULL)) {
-            *firstAdded = --landmarks.end();
-            isFirst = false;
-        }
-        Landmark *cut = landmarks.back();
+        Landmark *cut = new Landmark();
         findCut(task, state, operatorCosts, cut);
+        landmarks.push_back(cut);
         int landmarkCost = cut->cost;
         lmcutValue += landmarkCost;
         // adjust cost function

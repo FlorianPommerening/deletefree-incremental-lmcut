@@ -174,11 +174,11 @@ void SearchNode::updateHeuristicValue() {
         this->singleOperatorLandmarks.clear();
     }
     // run heuristic calculation
-    vector<Landmark *>::iterator firstAdded;
-    UIntEx lmCutValue = lmCut(this->task, this->currentState, this->operatorCost, this->landmarks, &firstAdded);
+    int firstNewLandmark = this->landmarks.size();
+    UIntEx lmCutValue = lmCut(this->task, this->currentState, this->operatorCost, this->landmarks);
     // sort and cross-reference new landmarks
-    for (vector<Landmark *>::iterator it = firstAdded; it != this->landmarks.end(); ++it) {
-        Landmark *landmark = *it;
+    for (unsigned i=firstNewLandmark; i < this->landmarks.size(); ++i) {
+        Landmark *landmark = this->landmarks[i];
         foreach(Landmark::value_type &entry, *landmark) {
             RelaxedOperator *op = entry.first;
             this->operatorToLandmark[op] = landmark;

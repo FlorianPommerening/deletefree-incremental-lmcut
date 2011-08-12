@@ -1,7 +1,6 @@
 #ifndef RELAXEDTASK_H
 #define RELAXEDTASK_H
 
-#include <list>
 #include <string>
 #include <fstream>
 
