@@ -7,7 +7,6 @@
 
 #include "Variable.h"
 #include "UIntEx.h"
-#include "PointerMap.h"
 
 /*
  * An operator in a delete-free planning task.

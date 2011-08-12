@@ -4,7 +4,6 @@
 #include "Options.h"
 #include "Landmark.h"
 #include "RelaxedTask.h"
-#include "PointerMap.h"
 
 /*
  * Represents one node in the search space of the branch and bound search

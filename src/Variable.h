@@ -10,7 +10,6 @@
 #include <algorithm>
 
 #include "UIntEx.h"
-#include "PointerMap.h"
 #include "foreach.h"
 
 // forward declaration

@@ -6,7 +6,6 @@
 
 #include "SASTask.h"
 #include "foreach.h"
-#include "PointerMap.h"
 
 using namespace std;
 
