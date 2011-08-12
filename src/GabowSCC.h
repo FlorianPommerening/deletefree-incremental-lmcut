@@ -11,8 +11,6 @@
 #include "RelaxedOperator.h"
 #include "PointerMap.h"
 
-#include <list>
-
 
 class GabowSCC {
 public:

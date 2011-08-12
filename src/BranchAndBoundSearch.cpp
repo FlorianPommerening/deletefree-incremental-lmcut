@@ -143,8 +143,8 @@ void printNode(SearchNode &searchNode, UIntEx &upperBound) {
     }
     std::cout << std::endl;
     std::cout << "Landmarks" << std::endl;
-    foreach(Landmark &landmark, searchNode.landmarks) {
-        foreach(Landmark::value_type &entry, landmark) {
+    foreach(Landmark *landmark, searchNode.landmarks) {
+        foreach(Landmark::value_type &entry, *landmark) {
             RelaxedOperator *op = entry.first;
             std::cout << op->name << ", ";
         }

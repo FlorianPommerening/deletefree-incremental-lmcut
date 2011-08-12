@@ -18,7 +18,6 @@
 #include <iostream>
 #include <limits>
 #include <vector>
-#include <list>
 
 using namespace std;
 
@@ -33,6 +32,16 @@ LandmarkCutFloHeuristic::LandmarkCutFloHeuristic(const HeuristicOptions &options
 }
 
 LandmarkCutFloHeuristic::~LandmarkCutFloHeuristic() {
+    for (int var = 0; var < g_variable_domain.size(); var++) {
+        for (int value = 0; value < g_variable_domain[var]; value++) {
+            delete propositions[var][value];
+        }
+    }
+    delete this->dummyPrecondition;
+    delete this->relaxedTask.goal;
+    for (int opId = 0; opId < g_operators.size(); opId++) {
+        delete this->relaxedTask.operators[opId];
+    }
 }
 
 // initialization
@@ -52,16 +61,17 @@ void LandmarkCutFloHeuristic::initialize() {
             char buf[20];
             sprintf(buf, "var%d#%d", var, value);
             string varname = buf;
-            this->relaxedTask.variables.push_back(Variable(varname));
-            propositions[var].push_back(&(this->relaxedTask.variables.back()));
+            Variable *newVar = new Variable(varname);
+            this->relaxedTask.variables.push_back(newVar);
+            propositions[var].push_back(newVar);
         }
     }
 
     // canonicalization (if @@precond is not needed it will be removed by the relevance analysis)
-    this->relaxedTask.variables.push_back(Variable("@@precond"));
-    this->dummyPrecondition = &(this->relaxedTask.variables.back());
-    this->relaxedTask.variables.push_back(Variable("@@goal"));
-    this->relaxedTask.goal = &(this->relaxedTask.variables.back());
+    this->dummyPrecondition = new Variable("@@precond");
+    this->relaxedTask.variables.push_back(this->dummyPrecondition);
+    this->relaxedTask.goal = new Variable("@@goal");
+    this->relaxedTask.variables.push_back(this->relaxedTask.goal);
 
     // initial state is not used/needed as every call to calculate heuristic brings its own state
     // so we can leave out the init operator. This makes the delete relaxation unsolvable, when solved from initial state (which is never done)
@@ -80,15 +90,15 @@ void LandmarkCutFloHeuristic::initialize() {
 //    initOperator.effects.add(this->dummyPrecondition);
 //    this->relaxedTask.operators.push_back(initOperator);
 
-    RelaxedOperator goalOperator;
-    goalOperator.name = "@@goal-operator";
-    goalOperator.baseCost = 0;
+    RelaxedOperator *goalOperator = new RelaxedOperator();
+    goalOperator->name = "@@goal-operator";
+    goalOperator->baseCost = 0;
     for (int i = 0; i < g_goal.size(); i++) {
         int var = g_goal[i].first, val = g_goal[i].second;
         Variable *goalVar = propositions[var][val];
-        goalOperator.preconditions.add(goalVar);
+        goalOperator->preconditions.add(goalVar);
     }
-    goalOperator.effects.add(this->relaxedTask.goal);
+    goalOperator->effects.add(this->relaxedTask.goal);
     this->relaxedTask.operators.push_back(goalOperator);
 
     // Build relaxed operators for operators and axioms.
@@ -96,12 +106,12 @@ void LandmarkCutFloHeuristic::initialize() {
         const Operator &op  = g_operators[opId];
         const vector<Prevail> &prevail = op.get_prevail();
         const vector<PrePost> &pre_post = op.get_pre_post();
-        RelaxedOperator relaxedOp;
-        relaxedOp.baseCost = get_adjusted_cost(op);
-        relaxedOp.name = op.get_name();
+        RelaxedOperator *relaxedOp = new RelaxedOperator();
+        relaxedOp->baseCost = get_adjusted_cost(op);
+        relaxedOp->name = op.get_name();
 
         for (int i = 0; i < prevail.size(); i++) {
-            relaxedOp.preconditions.add(propositions[prevail[i].var][prevail[i].prev]);
+            relaxedOp->preconditions.add(propositions[prevail[i].var][prevail[i].prev]);
         }
 
         for (int i = 0; i < pre_post.size(); i++) {
@@ -122,16 +132,16 @@ void LandmarkCutFloHeuristic::initialize() {
             }
 
             if (pre_post[i].pre != -1) {
-                relaxedOp.preconditions.add(propositions[pre_post[i].var][pre_post[i].pre]);
+                relaxedOp->preconditions.add(propositions[pre_post[i].var][pre_post[i].pre]);
             }
-            relaxedOp.effects.add(propositions[pre_post[i].var][pre_post[i].post]);
+            relaxedOp->effects.add(propositions[pre_post[i].var][pre_post[i].post]);
         }
 
-        if (relaxedOp.preconditions.size() == 0) {
-            relaxedOp.preconditions.add(this->dummyPrecondition);
+        if (relaxedOp->preconditions.size() == 0) {
+            relaxedOp->preconditions.add(this->dummyPrecondition);
         }
         this->relaxedTask.operators.push_back(relaxedOp);
-        this->operatorCosts[&(this->relaxedTask.operators.back())] = relaxedOp.baseCost;
+        this->operatorCosts[relaxedOp] = relaxedOp->baseCost;
     }
     this->relaxedTask.crossreference();
 }
@@ -139,15 +149,17 @@ void LandmarkCutFloHeuristic::initialize() {
 int LandmarkCutFloHeuristic::compute_heuristic(const State &state) {
     // need to copy this, so LM-cut can change the values
     OperatorCosts operatorCostCopy = this->operatorCosts;
-    list<Landmark> landmarks;
-    list<Landmark>::iterator firstAdded;
+    vector<Landmark> landmarks;
     VariableSet convertedState;
     for (int var = 0; var < propositions.size(); var++) {
         Variable *relaxedVar = propositions[var][state[var]];
         convertedState.add(relaxedVar);
     }
     convertedState.add(this->dummyPrecondition);
-    UIntEx heuristic = lmCut(this->relaxedTask, convertedState, operatorCostCopy, landmarks, &firstAdded);
+    UIntEx heuristic = lmCut(this->relaxedTask, convertedState, operatorCostCopy, landmarks);
+    for (int i= 0; i < landmarks.size(); ++i) {
+        delete landmarks[i];
+    }
     unsigned int heuristicValue;
     if (!heuristic.hasFiniteValue(heuristicValue)) {
         return DEAD_END;

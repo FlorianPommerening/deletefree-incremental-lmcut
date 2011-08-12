@@ -1,8 +1,6 @@
 #ifndef SEARCHNODE_H_
 #define SEARCHNODE_H_
 
-#include <list>
-
 #include "Options.h"
 #include "Landmark.h"
 #include "RelaxedTask.h"
@@ -18,6 +16,7 @@ public:
      * been applied or forbidden.
      */
     SearchNode(RelaxedTask &task, OptimizationOptions &options);
+    ~SearchNode();
     /*
      * Copies the node.
      */
@@ -52,7 +51,7 @@ public:
     std::vector<RelaxedOperator *> partialPlan;
     // Valid landmarks in this node, together with their cost partitioning.
     // Has to be a list so pointers stay valid, when removing landmarks.
-    std::list<Landmark> landmarks;
+    std::vector<Landmark *> landmarks;
     // Cost function for the part of the cost partitioning that was not used in landmarks.
     OperatorCosts operatorCost;
     RelaxedTask &task;
@@ -60,7 +59,7 @@ public:
     int unitPropagationCount;
     // maps operators to landmarks (only possible in unit cost tasks)
     PointerMap<RelaxedOperator, Landmark *> operatorToLandmark;
-    std::list<Landmark *> getSingleOperatorLandmarks() {
+    std::vector<Landmark *> getSingleOperatorLandmarks() {
         return this->singleOperatorLandmarks;
     }
 private:
@@ -76,7 +75,7 @@ private:
     // apply operator without update if it is applicable
     bool tryApplyUnitPropagationOperator(RelaxedOperator *op);
     // list of landmarks that could be used for unit propagation
-    std::list<Landmark *> singleOperatorLandmarks;
+    std::vector<Landmark *> singleOperatorLandmarks;
     OptimizationOptions &options;
 };
 

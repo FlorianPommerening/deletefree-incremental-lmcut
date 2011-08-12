@@ -15,22 +15,22 @@ void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, UIntEx &co
     State &currentState = searchNode.currentState;
     if (this->options.selectOperatorInSmallestLandmark) {
         int best = INT_MAX;
-        foreach(Landmark &landmark, searchNode.landmarks) {
+        foreach(Landmark *landmark, searchNode.landmarks) {
             // landmarks of size 1 are handled in unit propagation, but
             // an operator contained in a landmark of size 1 can still be applicable here if the landmark
             // was discovered after the last unit propagation, so do NOT ignore it
             //if (this->options.useUnitPropagation && landmark.size() == 1) {
             //    continue;
             //}
-            if (*nextOperator != NULL && landmark.size() >= best) {
+            if (*nextOperator != NULL && landmark->size() >= best) {
                 // we already know an operator at least as good
                 continue;
             }
-            foreach(Landmark::value_type &entry, landmark) {
+            foreach(Landmark::value_type &entry, *landmark) {
                 RelaxedOperator *op = entry.first;
                 if (searchNode.operatorCost[op] != UIntEx::INF && op->isApplicable(currentState)) {
                     *nextOperator = op;
-                    best = landmark.size();
+                    best = landmark->size();
                 }
             }
         }
