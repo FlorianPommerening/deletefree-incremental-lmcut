@@ -20,6 +20,7 @@ SearchNode::SearchNode(RelaxedTask &task, OptimizationOptions &options):
     foreach(RelaxedOperator *op, task.operators) {
         this->operatorCost[op->id] = op->baseCost;
     }
+    this->operatorToLandmark.resize(task.operators.size());
     this->updateHeuristicValue();
     this->partialPlan.reserve(task.operators.size());
 }
@@ -40,6 +41,7 @@ SearchNode::SearchNode(const SearchNode &other):
                     unitPropagationCount(0),
                     options(other.options) {
     this->landmarks.reserve(other.landmarks.size());
+    this->operatorToLandmark.resize(this->task.operators.size());
     this->singleOperatorLandmarks.reserve(other.singleOperatorLandmarks.size());
     // re-create operator to landmark mapping and list of singleOperatorLandmarks
     foreach(Landmark *landmark, other.landmarks) {
@@ -47,7 +49,7 @@ SearchNode::SearchNode(const SearchNode &other):
         this->landmarks.push_back(landmarkCopy);
         foreach(Landmark::value_type &entry, *landmarkCopy) {
             RelaxedOperator *op = entry.first;
-            this->operatorToLandmark[op] = landmarkCopy;
+            this->operatorToLandmark[op->id] = landmarkCopy;
         }
         if (landmarkCopy->size() == 1) {
             this->singleOperatorLandmarks.push_back(landmarkCopy);
@@ -72,8 +74,8 @@ SearchNode& SearchNode::forbidOperator(RelaxedOperator *forbiddenOp) {
     this->operatorCost[forbiddenOp->id] = UIntEx::INF;
     bool needsHeuristicUpdate = true;
     if (this->options.incrementalSearch) {
-        PointerMap<RelaxedOperator, Landmark *>::iterator it = this->operatorToLandmark.find(forbiddenOp);
-        if (it == this->operatorToLandmark.end()) {
+        Landmark *containingLM = this->operatorToLandmark[forbiddenOp->id];
+        if (containingLM == NULL) {
             // if the operator doesn't occur in a landmark, there will not be any change in the cost function
             // apart from setting this op to infinity.
             // forbidding an operator with baseCost==0 can lead to new landmarks or unsolvable tasks.
@@ -92,11 +94,11 @@ SearchNode& SearchNode::forbidOperator(RelaxedOperator *forbiddenOp) {
                 needsHeuristicUpdate = false;
             }
         } else {
-            Landmark *containingLM = it->second;
             // remove operator from landmark. If it was the only one,
             // the problem becomes unsolvable
             int oldLandmarkCost = containingLM->cost;
             containingLM->remove(forbiddenOp);
+            this->operatorToLandmark[forbiddenOp->id] = NULL;
             int newLandmarkCost = containingLM->cost;
             if (containingLM->size() == 0) {
                 this->heuristicValue = UIntEx::INF;
@@ -123,14 +125,13 @@ bool SearchNode::applyOperatorWithoutUpdate(RelaxedOperator *appliedOp) {
     this->currentCost += appliedOp->baseCost;
     this->operatorCost[appliedOp->id] = UIntEx::INF;
     if (this->options.incrementalSearch) {
-        PointerMap<RelaxedOperator, Landmark *>::iterator it = this->operatorToLandmark.find(appliedOp);
-        if (it == this->operatorToLandmark.end()) {
+        Landmark * containingLM = this->operatorToLandmark[appliedOp->id];
+        if (containingLM == NULL) {
             // the cost function only changes for the applied operator (set to INF)
             // since reapplying this operator doesn't change the state it can't hurt to forbid this operator (i.e. set its cost to INF)
             // without influencing hmax. As hmax was 0 before, it will stay 0, so no new landmarks will be found.
             needsHeuristicUpdate = false;
         } else {
-            Landmark *containingLM = it->second;
             // "undo" this landmark: decrease heuristic value and
             // increase all contained operator's costs by the LM's cost
             int landmarkCost = containingLM->cost;
@@ -140,6 +141,7 @@ bool SearchNode::applyOperatorWithoutUpdate(RelaxedOperator *appliedOp) {
                 if (op != appliedOp) {
                     this->operatorCost[op->id] += landmarkCost;
                 }
+                this->operatorToLandmark[op->id] = NULL;
             }
             if (containingLM->size() == 1) {
                 // if this was the only operator in the landmark, there cannot be any new landmarks with the same argument as above
@@ -151,7 +153,6 @@ bool SearchNode::applyOperatorWithoutUpdate(RelaxedOperator *appliedOp) {
             // TODO remove could be replaced by erase if operator to iterator mapping is saved
             vector<Landmark *>::iterator newEnd = remove(this->landmarks.begin(), this->landmarks.end(), containingLM);
             this->landmarks.resize(newEnd - this->landmarks.begin());
-            this->operatorToLandmark.erase(it);
         }
     }
     return needsHeuristicUpdate;
@@ -170,6 +171,7 @@ void SearchNode::updateHeuristicValue() {
         // no previous landmarks
         this->landmarks.clear();
         this->operatorToLandmark.clear();
+        this->operatorToLandmark.resize(this->task.operators.size());
         this->singleOperatorLandmarks.clear();
     }
     // run heuristic calculation
@@ -180,7 +182,7 @@ void SearchNode::updateHeuristicValue() {
         Landmark *landmark = this->landmarks[i];
         foreach(Landmark::value_type &entry, *landmark) {
             RelaxedOperator *op = entry.first;
-            this->operatorToLandmark[op] = landmark;
+            this->operatorToLandmark[op->id] = landmark;
         }
         if (landmark->size() == 1) {
             this->singleOperatorLandmarks.push_back(landmark);

@@ -57,8 +57,8 @@ public:
     RelaxedTask &task;
     // Number of operators applied in unit propagation in this node.
     int unitPropagationCount;
-    // maps operators to landmarks (only possible in unit cost tasks)
-    PointerMap<RelaxedOperator, Landmark *> operatorToLandmark;
+    // maps operator ids to landmarks (only possible in unit cost tasks)
+    std::vector<Landmark *> operatorToLandmark;
     std::vector<Landmark *> getSingleOperatorLandmarks() {
         return this->singleOperatorLandmarks;
     }

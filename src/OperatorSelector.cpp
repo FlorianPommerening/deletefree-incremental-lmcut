@@ -96,9 +96,9 @@ void SSCOperatorSelector::select(SearchNode &searchNode, UIntEx &costUpperBound,
     foreach(RelaxedOperator *op, applicableOperators) {
         foreach(Variable *v, op->effects) {
             if (gabowSCC.isInSourceComponent(v)) {
-                PointerMap<RelaxedOperator, Landmark *>::iterator itLandmark = searchNode.operatorToLandmark.find(op);
-                if (itLandmark != searchNode.operatorToLandmark.end()) {
-                    if (itLandmark->second->size() < bestLandmarkSize) {
+                Landmark *landmark = searchNode.operatorToLandmark[op->id];
+                if (landmark != NULL) {
+                    if (landmark->size() < bestLandmarkSize) {
                         best = op;
                     }
                 }
