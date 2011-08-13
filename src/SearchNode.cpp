@@ -11,6 +11,7 @@ using namespace std;
 SearchNode::SearchNode(RelaxedTask &task, OptimizationOptions &options):
         heuristicValue(0),
         currentCost(0),
+        landmarkCollection(task.operators),
         task(task),
         unitPropagationCount(0),
         options(options) {
@@ -20,7 +21,6 @@ SearchNode::SearchNode(RelaxedTask &task, OptimizationOptions &options):
     foreach(RelaxedOperator *op, task.operators) {
         this->operatorCost[op->id] = op->baseCost;
     }
-    this->operatorToLandmark.resize(task.operators.size());
     this->updateHeuristicValue();
     this->partialPlan.reserve(task.operators.size());
 }
@@ -36,25 +36,11 @@ SearchNode::SearchNode(const SearchNode &other):
                     currentCost(other.currentCost),
                     currentState(other.currentState),
                     partialPlan(other.partialPlan),
+                    landmarkCollection(other.landmarkCollection),
                     operatorCost(other.operatorCost),
                     task(other.task),
                     unitPropagationCount(0),
                     options(other.options) {
-    this->landmarks.reserve(other.landmarks.size());
-    this->operatorToLandmark.resize(this->task.operators.size());
-    this->singleOperatorLandmarks.reserve(other.singleOperatorLandmarks.size());
-    // re-create operator to landmark mapping and list of singleOperatorLandmarks
-    foreach(Landmark *landmark, other.landmarks) {
-        Landmark *landmarkCopy = new Landmark(*landmark);
-        this->landmarks.push_back(landmarkCopy);
-        foreach(Landmark::value_type &entry, *landmarkCopy) {
-            RelaxedOperator *op = entry.first;
-            this->operatorToLandmark[op->id] = landmarkCopy;
-        }
-        if (landmarkCopy->size() == 1) {
-            this->singleOperatorLandmarks.push_back(landmarkCopy);
-        }
-    }
 }
 
 SearchNode& SearchNode::operator=(const SearchNode& /* rhs */) {
