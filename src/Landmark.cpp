@@ -5,11 +5,15 @@
 using namespace std;
 
 
-UnitCostLandmarkCollection::UnitCostLandmarkCollection(std::vector<RelaxedOperator*> &operators) {
+UnitCostLandmarkCollection::UnitCostLandmarkCollection(std::vector<RelaxedOperator*> &operators):
+                                                                     cost(0),
+                                                                     landmarksDirty(false),
+                                                                     singleOperatorLandmarksDirty(false) {
     this->operatorToLandmark.resize(operators.size(), -1);
 }
 
-UnitCostLandmarkCollection::UnitCostLandmarkCollection(const UnitCostLandmarkCollection &other): cost(other.cost),
+UnitCostLandmarkCollection::UnitCostLandmarkCollection(const UnitCostLandmarkCollection &other):
+                                                                     cost(other.cost),
                                                                      landmarksDirty(other.landmarksDirty),
                                                                      sizes(other.sizes),
                                                                      dirty(other.dirty),
@@ -53,7 +57,7 @@ LandmarkId UnitCostLandmarkCollection::addLandmark(Landmark &landmarkIn) {
     swap(*landmark, landmarkIn);
     LandmarkId landmarkId = this->landmarks.size();
     this->landmarks.push_back(landmark);
-    this->cost++;
+    ++(this->cost);
     int landmarkSize = landmark->size();
     for(int i=0; i != landmarkSize; ++i) {
         this->operatorToLandmark[((*landmark)[i])->id] = landmarkId;
@@ -66,7 +70,7 @@ LandmarkId UnitCostLandmarkCollection::addLandmark(Landmark &landmarkIn) {
     return landmarkId;
 }
 
-LandmarkId UnitCostLandmarkCollection::containingLandmark(RelaxedOperator *op) {
+LandmarkId UnitCostLandmarkCollection::containingLandmark(RelaxedOperator *op) const {
     LandmarkId landmarkId = this->operatorToLandmark[op->id];
     if (landmarkId != -1 && this->landmarks[landmarkId] != NULL) {
         return landmarkId;
@@ -83,12 +87,8 @@ bool UnitCostLandmarkCollection::removeOperatorFromContainingLandmark(RelaxedOpe
         this->singleOperatorLandmarks.push_back((*this->landmarks[landmarkId])[0]);
     }
     else if (this->sizes[landmarkId] == 0) {
-        this->landmarksDirty = true;
         this->singleOperatorLandmarksDirty = true;
-        this->dirty[landmarkId] = false;
-        delete this->landmarks[landmarkId];
-        this->landmarks[landmarkId] = NULL;
-        this->cost--;
+        this->cost = UIntEx::INF;
         return false;
     }
     return true;
@@ -108,25 +108,23 @@ void UnitCostLandmarkCollection::removeLandmark(LandmarkId landmarkId) {
     this->singleOperatorLandmarksDirty = true;
     delete this->landmarks[landmarkId];
     this->landmarks[landmarkId] = NULL;
-    this->cost--;
+    --(this->cost);
 }
 
 Landmark &UnitCostLandmarkCollection::iterateLandmark(LandmarkId landmarkId) {
     Landmark &landmark = *this->landmarks[landmarkId];
     if (this->dirty[landmarkId]) {
-        unsigned lastValid = -1;
+        unsigned nValid = 0;
         for(unsigned current = 0; current < landmark.size(); ++current) {
             RelaxedOperator *op = landmark[current];
             if (this->operatorToLandmark[op->id] == landmarkId) {
-                ++lastValid;
-                if (current != lastValid) {
-                    swap(landmark[current], landmark[lastValid]);
-                }
+                landmark[nValid] = landmark[current];
+                ++nValid;
             }
         }
         // TODO right now add() is not possible after a delete(), if it is, there could be duplicates in the list
         // one way to deal with them is to set all operatorToLandmark[op->id] to -1 the first time they are encountered and reset them in a second run
-        landmark.resize(lastValid + 1);
+        landmark.resize(nValid);
         this->dirty[landmarkId] = false;
     }
     return landmark;
@@ -134,16 +132,21 @@ Landmark &UnitCostLandmarkCollection::iterateLandmark(LandmarkId landmarkId) {
 
 int UnitCostLandmarkCollection::getValidLandmarkIds() {
     if (this->landmarksDirty) {
-        unsigned lastValid = -1;
+        unsigned nValid = 0;
         for(unsigned current = 0; current < this->landmarks.size(); ++current) {
             if (this->landmarks[current] != NULL) {
-                ++lastValid;
-                if (current != lastValid) {
-                    swap(this->landmarks[current], this->landmarks[lastValid]);
+                if (nValid != current) {
+                    this->landmarks[nValid] = this->landmarks[current];
+                    this->sizes[nValid] = this->sizes[current];
+                    this->dirty[nValid] = this->dirty[current];
+                    foreach(RelaxedOperator *op, *this->landmarks[nValid]) {
+                        this->operatorToLandmark[op->id] = nValid;
+                    }
                 }
+                ++nValid;
             }
         }
-        this->landmarks.resize(lastValid + 1);
+        this->landmarks.resize(nValid);
         this->landmarksDirty = false;
     }
     return this->landmarks.size();
@@ -151,17 +154,15 @@ int UnitCostLandmarkCollection::getValidLandmarkIds() {
 
 std::vector<RelaxedOperator*> &UnitCostLandmarkCollection::getSingleOperatorLandmarks() {
     if (this->singleOperatorLandmarksDirty) {
-        unsigned lastValid = -1;
+        unsigned nValid = 0;
         for(unsigned current = 0; current < this->landmarks.size(); ++current) {
             RelaxedOperator *op = this->singleOperatorLandmarks[current];
             if (this->operatorToLandmark[op->id] != -1) {
-                ++lastValid;
-                if (current != lastValid) {
-                    swap(this->singleOperatorLandmarks[current], this->singleOperatorLandmarks[lastValid]);
-                }
+                this->singleOperatorLandmarks[nValid] = this->singleOperatorLandmarks[current];
+                ++nValid;
             }
         }
-        this->singleOperatorLandmarks.resize(lastValid + 1);
+        this->singleOperatorLandmarks.resize(nValid);
         this->singleOperatorLandmarksDirty = false;
     }
     return this->singleOperatorLandmarks;

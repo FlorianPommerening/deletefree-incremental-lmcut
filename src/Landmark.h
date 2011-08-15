@@ -23,7 +23,7 @@ public:
      * Returns the landmarkId for the landmark containing op
      * or -1 if op is not in any landmark.
      */
-    LandmarkId containingLandmark(RelaxedOperator *op);
+    LandmarkId containingLandmark(RelaxedOperator *op) const ;
     /*
      * lazy remove (will not update actual landmark, unless it is removed)
      * Returns true if the landmark didn't become empty by removing op
@@ -35,8 +35,12 @@ public:
      */
     void removeLandmark(LandmarkId landmarkId);
 
-    int getSize(LandmarkId LandmarkId) {
+    int getSize(LandmarkId LandmarkId) const {
         return this->sizes[LandmarkId];
+    }
+
+    UIntEx getCost() const {
+        return cost;
     }
 
     /*
@@ -56,7 +60,7 @@ public:
      */
     std::vector<RelaxedOperator*> &getSingleOperatorLandmarks();
 private:
-    int cost;
+    UIntEx cost;
     std::vector<Landmark*> landmarks;
     bool landmarksDirty;
     std::vector<int> sizes;

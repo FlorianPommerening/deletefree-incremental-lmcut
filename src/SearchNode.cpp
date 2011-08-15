@@ -125,6 +125,7 @@ bool SearchNode::applyOperatorWithoutUpdate(RelaxedOperator *appliedOp) {
                 // if this was the only operator in the landmark, there cannot be any new landmarks with the same argument as above
                 needsHeuristicUpdate = false;
             }
+            this->landmarkCollection.removeLandmark(landmarkId);
         }
     }
     return needsHeuristicUpdate;
@@ -144,8 +145,8 @@ void SearchNode::updateHeuristicValue() {
         this->landmarkCollection.clear();
     }
     // run heuristic calculation
-    UIntEx lmCutValue = lmCut(this->task, this->currentState, this->operatorCost, this->landmarkCollection);
-    this->heuristicValue += lmCutValue;
+    lmCut(this->task, this->currentState, this->operatorCost, this->landmarkCollection);
+    this->heuristicValue = this->landmarkCollection.getCost();
 }
 
 void SearchNode::unitPropagation() {
