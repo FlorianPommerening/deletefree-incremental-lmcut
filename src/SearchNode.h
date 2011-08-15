@@ -49,18 +49,12 @@ public:
     // plan used to reach this state
     std::vector<RelaxedOperator *> partialPlan;
     // Valid landmarks in this node, together with their cost partitioning.
-    // Has to be a list so pointers stay valid, when removing landmarks.
-    std::vector<Landmark *> landmarks;
+    UnitCostLandmarkCollection landmarkCollection;
     // Cost function for the part of the cost partitioning that was not used in landmarks.
     OperatorCosts operatorCost;
     RelaxedTask &task;
     // Number of operators applied in unit propagation in this node.
     int unitPropagationCount;
-    // maps operator ids to landmarks (only possible in unit cost tasks)
-    std::vector<Landmark *> operatorToLandmark;
-    std::vector<Landmark *> getSingleOperatorLandmarks() {
-        return this->singleOperatorLandmarks;
-    }
 private:
     // Applies an operator and changes operator costs and landmarks accordingly
     // but does not update the heuristic value.
@@ -73,8 +67,6 @@ private:
     void unitPropagation();
     // apply operator without update if it is applicable
     bool tryApplyUnitPropagationOperator(RelaxedOperator *op);
-    // list of landmarks that could be used for unit propagation
-    std::vector<Landmark *> singleOperatorLandmarks;
     OptimizationOptions &options;
 };
 

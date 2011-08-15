@@ -117,7 +117,7 @@ public:
             } while(this->set->containsIndex[this->index] == 0);
         }
 
-        Value&dereference() const {
+        Value &dereference() const {
             return (*State::variables)[this->index];
         }
 
