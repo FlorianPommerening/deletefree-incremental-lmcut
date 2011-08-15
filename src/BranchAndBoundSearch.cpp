@@ -11,6 +11,8 @@ using namespace std;
 void printNode(SearchNode &searchNode, UIntEx &upperBound);
 
 BranchAndBoundSearch::BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &operatorSelector, OptimizationOptions &options) :
+    expansionCount(0),
+    unitPropagationCount(0),
     task(task),
     operatorSelector(operatorSelector),
     options(options),

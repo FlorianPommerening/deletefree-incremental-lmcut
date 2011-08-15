@@ -27,7 +27,7 @@ public:
         return this->inSourceComponent[v->id];
     }
 private:
-    GabowSCC() {}
+    GabowSCC(): pre(0), count(0) {}
     GabowSCC(GabowSCC const&);       // Don't Implement! Singleton shouldn't be copied
     void operator=(GabowSCC const&); // Don't implement! Singleton shouldn't be copied
 

@@ -130,11 +130,11 @@ public:
     typedef StateIterator<Variable *, State> iterator;
     typedef StateIterator<Variable *const, const State> const_iterator;
 
-    State() {
+    State(): nEntries(0) {
         this->containsIndex.resize(State::nVariables);
     }
     State(const State &other): containsIndex(other.containsIndex),
-                                           nEntries(other.nEntries) {
+                               nEntries(other.nEntries) {
     }
 
     State& operator =(const State &other);

@@ -5,10 +5,10 @@
 
 using namespace std;
 
-Variable::Variable(string name, int id): name(name), id(id) {
+Variable::Variable(string name, int id): name(name), hmax(0), closed(false), id(id) {
 }
 
-Variable::Variable(): name("@@DUMMY"), id(-1) {
+Variable::Variable(): name("@@DUMMY"), hmax(0), closed(false), id(-1) {
 }
 void Effects::inplaceIntersection(const Effects &other) {
     const vector<Variable *> *smaller = &this->entries;
@@ -40,5 +40,5 @@ void Effects::removeIrrelevant(vector<bool> &relevant) {
 
 
 
-int State::nVariables;
+int State::nVariables = 0;
 vector<Variable *> *State::variables;
