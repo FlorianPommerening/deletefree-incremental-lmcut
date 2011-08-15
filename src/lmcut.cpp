@@ -23,15 +23,16 @@ UIntEx lmCut(RelaxedTask &task, State &state) {
     }
     // dummy list to contain the discovered landmark
     vector<Landmark*> landmarks;
-    return lmCut(task, state, operatorCosts, landmarks);
+    UIntEx result =  lmCut(task, state, operatorCosts, landmarks);
     foreach(Landmark *landmark, landmarks) {
         delete landmark;
     }
+    return result;
 }
 
 UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, vector<Landmark *> &landmarks) {
     // calculating h^max also sets all hmax costs of variables and preconditionChoice values of operators
-    UIntEx hmax_value = hmax(task, state, operatorCosts);
+    UIntEx hmax_value = UnitCostHmax(task, state, operatorCosts);
     if (hmax_value == UIntEx::INF) {
         // unsolvable problem
         return UIntEx::INF;
@@ -50,7 +51,7 @@ UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, vect
             operatorCosts[op->id] -= landmarkCost;
         }
         // recalculate hmax to check if we can discover another landmark
-        hmax_value = hmax(task, state, operatorCosts);
+        hmax_value = UnitCostHmax(task, state, operatorCosts);
     }
     return lmcutValue;
 }

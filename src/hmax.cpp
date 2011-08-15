@@ -3,6 +3,8 @@
 #include "foreach.h"
 #include "PriorityQueue.h"
 
+using namespace std;
+
 UIntEx hmax(RelaxedTask &task) {
     // start calculation for initial state
     State initialState;
@@ -78,3 +80,70 @@ UIntEx hmax(RelaxedTask &task, State &state, OperatorCosts &operatorCosts) {
     }
     return task.goal->hmax;
 }
+
+
+
+void handleOperators(vector<Variable *> &fromQueue, vector<Variable *> &toQueue, OperatorCosts &operatorCosts, int requiredCost);
+
+UIntEx UnitCostHmax(RelaxedTask &task, State &state, OperatorCosts &operatorCosts) {
+    // reset all temporary variables
+    foreach(Variable *var, task.variables) {
+        var->hmax = UIntEx::INF;
+        var->closed = false;
+    }
+    foreach(RelaxedOperator *op, task.operators) {
+        op->preconditionChoice = NULL;
+        op->unsatisfiedPreconditions = op->preconditions.size();
+    }
+    // Initialize the queue with variables contained in the state.
+    vector<Variable *> currentHmaxLevel;
+    currentHmaxLevel.reserve(task.variables.size());
+    vector<Variable *> nextHmaxLevel;
+    nextHmaxLevel.reserve(task.variables.size());
+    foreach(Variable *var, state) {
+        var->hmax = 0;
+        currentHmaxLevel.push_back(var);
+    }
+    while (!currentHmaxLevel.empty()) {
+        handleOperators(currentHmaxLevel, currentHmaxLevel, operatorCosts, 0);
+        handleOperators(currentHmaxLevel, nextHmaxLevel, operatorCosts, 1);
+        swap(currentHmaxLevel, nextHmaxLevel);
+    }
+    return task.goal->hmax;
+}
+
+
+void handleOperators(vector<Variable *> &fromQueue, vector<Variable *> &toQueue, OperatorCosts &operatorCosts, int requiredCost) {
+    unsigned currentId = 0;
+    while (currentId < fromQueue.size()) {
+        Variable *var = fromQueue[currentId];
+        var->closed = true;
+        foreach(RelaxedOperator *op, var->precondition_of) {
+            if (operatorCosts[op->id] != requiredCost) {
+                continue;
+            }
+            op->unsatisfiedPreconditions--;
+            if (op->unsatisfiedPreconditions == 0) {
+                // We discovered all preconditions of this action.
+                // Since preconditions are expanded in order of their hmax-cost,
+                // one of the maximizing preconditions is always expanded last
+                // and we can just choose var as precondition.
+                // We could also iterate over op->preconditions and search for other preconditions
+                // with the same hmax cost.
+                op->preconditionChoice = var;
+                UIntEx successorCost = var->hmax + requiredCost;
+                foreach(Variable *effect, op->effects) {
+                    if (effect->closed) {
+                        // The variable was already discovered with a lower hmax cost.
+                        continue;
+                    }
+                    effect->hmax = successorCost;
+                    toQueue.push_back(effect);
+                }
+            }
+        }
+    }
+}
+
+
+
