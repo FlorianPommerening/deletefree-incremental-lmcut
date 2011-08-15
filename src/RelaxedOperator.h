@@ -14,8 +14,8 @@
  */
 class RelaxedOperator {
 public:
-    RelaxedOperator(): id(-1) {}
-    RelaxedOperator(int id): id(id) {}
+    RelaxedOperator(): baseCost(), unsatisfiedPreconditions(0), id(-1) {}
+    RelaxedOperator(int id): baseCost(), unsatisfiedPreconditions(0), id(id) {}
 
     std::string name;
     int baseCost;
