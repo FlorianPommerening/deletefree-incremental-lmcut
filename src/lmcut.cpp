@@ -24,7 +24,6 @@ UIntEx lmCut(RelaxedTask &task, State &state) {
     // dummy list to contain the discovered landmark
     UnitCostLandmarkCollection landmarkCollection = UnitCostLandmarkCollection(task.operators);
     return lmCut(task, state, operatorCosts, landmarkCollection);
-    return result;
 }
 
 UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, UnitCostLandmarkCollection &landmarkCollection) {
