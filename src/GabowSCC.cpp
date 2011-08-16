@@ -14,7 +14,7 @@ void GabowSCC::findSourceConnectedComponents(vector<Variable *> &variables, Oper
         int componentId = this->componentId[v->id];
         bool inSourceComponent = true;
         foreach(RelaxedOperator *op, v->effect_of) {
-            if (operatorCosts[op->id] == UIntEx::INF) {
+            if (!operatorCosts[op->id].hasFiniteValue()) {
                 continue;
             }
             foreach(Variable *w, op->preconditions) {
@@ -63,7 +63,7 @@ void GabowSCC::gabowDfs(Variable *v, OperatorCosts &operatorCosts) {
     this->notYetAssigned.push_back(v);
     this->maybeDifferent.push_back(v);
     foreach(RelaxedOperator *op, v->precondition_of) {
-        if (operatorCosts[op->id] == UIntEx::INF) {
+        if (!operatorCosts[op->id].hasFiniteValue()) {
             continue;
         }
         foreach(Variable *w, op->effects) {

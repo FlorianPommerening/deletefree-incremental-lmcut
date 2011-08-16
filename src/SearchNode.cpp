@@ -162,7 +162,7 @@ void SearchNode::updateHeuristicValue() {
     if (!this->options.incrementalSearch) {
         // reset cost mapping but keep the forbidden ops.
         for(unsigned i=0; i < this->task.operators.size(); ++i) {
-            if (this->operatorCost[i] != UIntEx::INF) {
+            if (this->operatorCost[i].hasFiniteValue()) {
                 this->operatorCost[i] = this->task.operators[i]->baseCost;
             }
         }
@@ -223,7 +223,7 @@ void SearchNode::unitPropagation() {
 }
 
 bool SearchNode::tryApplyUnitPropagationOperator(RelaxedOperator *op) {
-    if (op->isApplicable(this->currentState) && this->operatorCost[op->id] != UIntEx::INF) {
+    if (op->isApplicable(this->currentState) && this->operatorCost[op->id].hasFiniteValue()) {
 #ifdef FULL_DEBUG
         cout << endl << "Operator applied in unit propagation: " << op->name << endl;
 #endif

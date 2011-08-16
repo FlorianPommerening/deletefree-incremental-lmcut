@@ -33,7 +33,7 @@ UIntEx lmCut(RelaxedTask &task, State &state) {
 UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, vector<Landmark *> &landmarks) {
     // calculating h^max also sets all hmax costs of variables and preconditionChoice values of operators
     UIntEx hmax_value = UnitCostHmax(task, state, operatorCosts);
-    if (hmax_value == UIntEx::INF) {
+    if (!hmax_value.hasFiniteValue()) {
         // unsolvable problem
         return UIntEx::INF;
     }

@@ -66,7 +66,7 @@ UIntEx hmax(RelaxedTask &task, State &state, OperatorCosts &operatorCosts) {
                         continue;
                     }
                     int successorCost = hmax + operatorCost;
-                    if (effect->hmax == UIntEx::INF) {
+                    if (!effect->hmax.hasFiniteValue()) {
                         // This is the first time we discover this variable
                         queue.push(effect, successorCost, depth+1);
                     }

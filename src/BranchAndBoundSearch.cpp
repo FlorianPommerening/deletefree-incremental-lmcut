@@ -100,7 +100,7 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
         // recursively continue the search in depth first manner
         UIntEx planCost = this->recursiveBranchAndBound(*successor);
         // a finite return value means, that a better solution was found in this subtree
-        if (planCost != UIntEx::INF) {
+        if (planCost.hasFiniteValue()) {
             foundBetterPlan = true;
             // When expanding the first successor lead to a solution with the cost previously predicted by the heuristic
             // the second successor cannot yield a better solution. In this case generating the second successor (and
@@ -139,7 +139,7 @@ void printNode(SearchNode &searchNode, UIntEx &upperBound) {
     std::cout << std::endl;
     std::cout << "Forbidden" << std::endl;
     foreach(RelaxedOperator *op, searchNode.task.operators) {
-        if (searchNode.operatorCost[op->id] == UIntEx::INF) {
+        if (!searchNode.operatorCost[op->id].hasFiniteValue()) {
             std::cout << op->name << ", ";
         }
     }
