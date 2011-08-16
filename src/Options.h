@@ -7,6 +7,10 @@
 // TODO use command line options to set these instead of constants
 struct OptimizationOptions {
     /*
+     * Use iterative deepening A* to search for h^+ (default is Branch-and-Bound-Search)
+     */
+    static const bool idaStarSearch = true;
+    /*
      * selectOperatorInSmallestLandmark
      * true: An applicable operator contained a minimal size landmark is chosen in each step
      * false: The first applicable operator that is discovered is chosen in each step.

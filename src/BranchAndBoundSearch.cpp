@@ -21,8 +21,12 @@ BranchAndBoundSearch::BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &
 }
 
 UIntEx BranchAndBoundSearch::run() {
+    return this->run(UIntEx::INF);
+}
+
+UIntEx BranchAndBoundSearch::run(UIntEx initialUpperBound) {
     // reset values
-    this->costUpperBound = UIntEx::INF;
+    this->costUpperBound = initialUpperBound;
     this->expansionCount = 0;
     this->unitPropagationCount = 0;
     // construct search node representing the initial state without any forbidden or applied operators
@@ -41,7 +45,8 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
 #endif
     // The heuristic estimate never overestimates, so in this case the best solution in this subtree can at most be as cheap as the current best.
     // This means there is no _better_ solution in this subtree.
-    if (searchNode.getCostLowerBound() >= this->costUpperBound) {
+    if (searchNode.getCostLowerBound() > this->costUpperBound ||
+        (searchNode.getCostLowerBound() == this->costUpperBound && !this->plan.empty())) {
 #ifdef FULL_DEBUG
         cout << endl << "Exceeded bound (" << searchNode.getCostLowerBound() << " >= " << this->costUpperBound << ")" << endl << endl;
 #endif

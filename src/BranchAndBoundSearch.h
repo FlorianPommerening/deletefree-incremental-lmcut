@@ -23,21 +23,26 @@ public:
      * Runs the branch and bound search and returns the h^+ value of the initial state.
      */
     UIntEx run();
+    /*
+     * Runs the branch and bound search and returns the h^+ value of the initial state if it is lower than initialUpperBound
+     * and infinity in all other cases.
+     */
+    UIntEx run(UIntEx initialUpperBound);
 
-    /*
-     * Always contains the best plan discovered so far. If run() returns, this contains a plan with cost h^+.
-     */
-    std::vector<RelaxedOperator *> plan;
-    /*
-     * Number of nodes expanded during the search. A node counts as expanded, when at least one of its successors was generated.
-     */
-    int expansionCount;
-    /*
-     * Number of operators applied in unit propagation steps during the search.
-     */
-    int unitPropagationCount;
     UIntEx getCostUpperBound() {
         return this->costUpperBound;
+    }
+
+    std::vector<RelaxedOperator *> &getPlan() {
+        return this->plan;
+    }
+
+    int getExpansionCount() {
+        return this->expansionCount;
+    }
+
+    int getUnitPropagationCount() {
+        return this->unitPropagationCount;
     }
 private:
     RelaxedTask &task;
@@ -53,6 +58,19 @@ private:
      * are only valid for the subtree rooted in the search node.
      */
     UIntEx costLowerBound;
+    /*
+     * Always contains the best plan discovered so far. If run() returns, this contains a plan with cost h^+.
+     */
+    std::vector<RelaxedOperator *> plan;
+    /*
+     * Number of nodes expanded during the search. A node counts as expanded, when at least one of its successors was generated.
+     */
+    int expansionCount;
+    /*
+     * Number of operators applied in unit propagation steps during the search.
+     */
+    int unitPropagationCount;
+
     /*
      * Returns the value of the best solution in the subtree starting in searchNode if it is cheaper than the current upper bound
      * or infinity if there is no (cheaper) solution in this subtree.

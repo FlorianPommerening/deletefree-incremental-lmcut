@@ -17,6 +17,7 @@
 #include "foreach.h"
 #include "Timer.h"
 #include "BranchAndBoundSearch.h"
+#include "IDAStarSearch.h"
 
 using namespace std;
 using namespace boost::filesystem;
@@ -28,6 +29,9 @@ typedef map<string, string> Results;
 const string RESULTS_DIR = "../../results/";
 const string TRANSLATIONS_DIR = "../../translations/";
 const string TRANSLATE_CMD = "../translate/translate-relaxed.py";
+
+template<class SearchClass, class OperatorSelectorClass>
+void runSearch(RelaxedTask &task, Results &results, OptimizationOptions &options);
 
 int main(int argc, char *argv[]) {
     // Parse command line arguments.
@@ -214,22 +218,11 @@ int main(int argc, char *argv[]) {
         /**/
 
         if (solvable) {
-            cout << "Calculating h^+ ... " << endl << flush;
-            cpuTimer.restart();
-            AchieveLandmarksTryGoalOperatorSelector opSelector(options);
-            BranchAndBoundSearch search = BranchAndBoundSearch(translatedTask, opSelector, options);
-            UIntEx h_plus_value = search.run();
-            results["h_plus_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
-            results["h_plus"] = h_plus_value.toString();
-            results["bnb_expansions"] = boost::lexical_cast<string>(search.expansionCount);
-            results["bnb_unit_propagations"] = boost::lexical_cast<string>(search.unitPropagationCount);
-            ostringstream planstring;
-            foreach(RelaxedOperator *op, search.plan) {
-                planstring << op->name << ", ";
+            if (options.idaStarSearch) {
+                runSearch<IDAStarSearch, AchieveLandmarksTryGoalOperatorSelector>(translatedTask, results, options);
+            } else {
+                runSearch<BranchAndBoundSearch, AchieveLandmarksTryGoalOperatorSelector>(translatedTask, results, options);
             }
-            results["plan"] = planstring.str();
-            cout << "done (" << h_plus_value << ") " << results["bnb_expansions"] << " expansions " << results["bnb_unit_propagations"] << " unit propagations " << results["h_plus_time"] << endl;
-            cout << "    With plan: " << results["plan"] << endl;
         } else {
             cout << "Unsolvable task." << endl;
             results["h_max_time"] = "0";
@@ -263,3 +256,25 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+template<class SearchClass, class OperatorSelectorClass>
+void runSearch(RelaxedTask &task, Results &results, OptimizationOptions &options) {
+    Timer cpuTimer(CPU_TIME);
+    cout << "Calculating h^+ ... " << endl << flush;
+    cpuTimer.restart();
+    OperatorSelectorClass opSelector = OperatorSelectorClass(options);
+    SearchClass search = SearchClass(task, opSelector, options);
+    UIntEx h_plus_value = search.run();
+    results["h_plus_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
+    results["h_plus"] = h_plus_value.toString();
+    results["bnb_expansions"] = boost::lexical_cast<string>(search.getExpansionCount());
+    results["bnb_unit_propagations"] = boost::lexical_cast<string>(search.getUnitPropagationCount());
+    ostringstream planstring;
+    foreach(RelaxedOperator *op, search.getPlan()) {
+        planstring << op->name << ", ";
+    }
+    results["plan"] = planstring.str();
+    cout << "done (" << h_plus_value << ") " << results["bnb_expansions"] << " expansions " << results["bnb_unit_propagations"] << " unit propagations " << results["h_plus_time"] << endl;
+    cout << "    With plan: " << results["plan"] << endl;
+}
+
