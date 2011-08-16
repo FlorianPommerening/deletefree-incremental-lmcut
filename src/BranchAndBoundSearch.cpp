@@ -145,9 +145,9 @@ void printNode(SearchNode &searchNode, UIntEx &upperBound) {
     }
     std::cout << std::endl;
     std::cout << "Landmarks" << std::endl;
-    foreach(Landmark *landmark, searchNode.landmarks) {
-        foreach(Landmark::value_type &entry, *landmark) {
-            RelaxedOperator *op = entry.first;
+    int nLandmarks = searchNode.landmarkCollection.getValidLandmarkIds();
+    for(LandmarkId landmarkId=0; landmarkId < nLandmarks; ++landmarkId) {
+        foreach(RelaxedOperator *op, searchNode.landmarkCollection.iterateLandmark(landmarkId)) {
             std::cout << op->name << ", ";
         }
         std::cout << std::endl;

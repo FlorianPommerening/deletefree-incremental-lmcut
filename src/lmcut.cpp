@@ -22,15 +22,12 @@ UIntEx lmCut(RelaxedTask &task, State &state) {
         operatorCosts[op->id] = op->baseCost;
     }
     // dummy list to contain the discovered landmark
-    vector<Landmark*> landmarks;
-    UIntEx result =  lmCut(task, state, operatorCosts, landmarks);
-    foreach(Landmark *landmark, landmarks) {
-        delete landmark;
-    }
+    UnitCostLandmarkCollection landmarkCollection = UnitCostLandmarkCollection(task.operators);
+    return lmCut(task, state, operatorCosts, landmarkCollection);
     return result;
 }
 
-UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, vector<Landmark *> &landmarks) {
+UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, UnitCostLandmarkCollection &landmarkCollection) {
     // calculating h^max also sets all hmax costs of variables and preconditionChoice values of operators
     UIntEx hmax_value = UnitCostHmax(task, state, operatorCosts);
     if (!hmax_value.hasFiniteValue()) {
@@ -38,16 +35,17 @@ UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, vect
         return UIntEx::INF;
     }
     int lmcutValue = 0;
+    // One new landmark is discovered in each iteration until h^max is 0
+    Landmark cut;
     while (hmax_value != 0) {
-        // One new landmark is discovered in each iteration until h^max is 0
-        Landmark *cut = new Landmark();
-        findCut(task, state, operatorCosts, cut);
-        landmarks.push_back(cut);
-        int landmarkCost = cut->cost;
+        cut.clear();
+        findCut(task, state, operatorCosts, &cut);
+        LandmarkId landmarkId = landmarkCollection.addLandmark(cut);
+        // in unit cost setting all landmark costs are 1
+        const int landmarkCost = 1;
         lmcutValue += landmarkCost;
         // adjust cost function
-        foreach(Landmark::value_type &entry, *cut) {
-            RelaxedOperator *op = entry.first;
+        foreach(RelaxedOperator *op, landmarkCollection.iterateLandmark(landmarkId)) {
             operatorCosts[op->id] -= landmarkCost;
         }
         // recalculate hmax to check if we can discover another landmark
@@ -118,7 +116,7 @@ void findCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, Land
                 foreach(Variable *effect, op->effects) {
                     // add op to cut if it contains an effect that is in the goal zone
                     if (goalZone.contains(effect)){
-                        cut->add(op, operatorCost);
+                        cut->push_back(op);
                         addedToCut = true;
                         break;
                     }

@@ -24,7 +24,7 @@ UIntEx lmCut(RelaxedTask &task, State &state);
  * The cost function 'operatorCosts' will be adjusted for each discovered landmark, by decreasing the cost
  * of each operator in the landmark by the cost of the landmark
  */
-UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, std::vector<Landmark *> &landmarks);
+UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, UnitCostLandmarkCollection &landmarkCollection);
 /*
  * Discovers a cut in the justification graph, i.e. a set of operators, whose precondition choice can be reached
  * from the initial state without reaching a variable in the goal zone, and whose effects contain a variable in the goal zone.
