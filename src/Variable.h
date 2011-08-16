@@ -1,8 +1,6 @@
 #ifndef VARIABLE_H
 #define VARIABLE_H
 
-#include <google/dense_hash_set>
-#include <boost/functional/hash.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <string>
 #include <string.h>
@@ -94,9 +92,9 @@ public:
                                                        Value,
                                                        boost::forward_traversal_tag> {
     public:
-        StateIterator(): set(NULL), index(0) {}
-        StateIterator(StateClass *set, int index): set(set), index(index) {
-            if (this->set->containsIndex[this->index] == 0) {
+        StateIterator(): state(NULL), index(0) {}
+        StateIterator(StateClass *state, int index): state(state), index(index) {
+            if (this->state->containsIndex[this->index] == 0) {
                 this->increment();
             }
         }
@@ -104,7 +102,7 @@ public:
         friend class boost::iterator_core_access;
 
         bool equal(const State::StateIterator<Value, StateClass>& other) const {
-            return (this->index == other.index && this->set == other.set);
+            return (this->index == other.index && this->state == other.state);
         }
 
         void increment() {
@@ -114,7 +112,7 @@ public:
                     this->index = State::nVariables;
                     break;
                 }
-            } while(this->set->containsIndex[this->index] == 0);
+            } while(this->state->containsIndex[this->index] == 0);
         }
 
         Value&dereference() const {
@@ -122,7 +120,7 @@ public:
         }
 
     private:
-        StateClass *set;
+        StateClass *state;
         int index;
     };
 public:
