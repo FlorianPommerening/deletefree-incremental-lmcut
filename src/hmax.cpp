@@ -102,12 +102,14 @@ UIntEx UnitCostHmax(RelaxedTask &task, State &state, OperatorCosts &operatorCost
     nextHmaxLevel.reserve(task.variables.size());
     foreach(Variable *var, state) {
         var->hmax = 0;
+        var->closed = true;
         currentHmaxLevel.push_back(var);
     }
     while (!currentHmaxLevel.empty()) {
         handleOperators(currentHmaxLevel, currentHmaxLevel, operatorCosts, 0);
         handleOperators(currentHmaxLevel, nextHmaxLevel, operatorCosts, 1);
         swap(currentHmaxLevel, nextHmaxLevel);
+        nextHmaxLevel.clear();
     }
     return task.goal->hmax;
 }
@@ -116,8 +118,7 @@ UIntEx UnitCostHmax(RelaxedTask &task, State &state, OperatorCosts &operatorCost
 void handleOperators(vector<Variable *> &fromQueue, vector<Variable *> &toQueue, OperatorCosts &operatorCosts, int requiredCost) {
     unsigned currentId = 0;
     while (currentId < fromQueue.size()) {
-        Variable *var = fromQueue[currentId];
-        var->closed = true;
+        Variable *var = fromQueue[currentId++];
         foreach(RelaxedOperator *op, var->precondition_of) {
             if (operatorCosts[op->id] != requiredCost) {
                 continue;
@@ -138,6 +139,7 @@ void handleOperators(vector<Variable *> &fromQueue, vector<Variable *> &toQueue,
                         continue;
                     }
                     effect->hmax = successorCost;
+                    effect->closed = true;
                     toQueue.push_back(effect);
                 }
             }
