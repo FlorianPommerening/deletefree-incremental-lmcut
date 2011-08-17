@@ -24,10 +24,10 @@ public:
      */
     UIntEx run();
     /*
-     * Runs the branch and bound search and returns the h^+ value of the initial state if it is lower than initialUpperBound
+     * Runs the branch and bound search and returns the h^+ value of the initial state if it is between initialLowerBound and initialUpperBound
      * and infinity in all other cases.
      */
-    UIntEx run(UIntEx initialUpperBound);
+    UIntEx run(int initialLowerBound, UIntEx initialUpperBound);
 
     UIntEx getCostUpperBound() {
         return this->costUpperBound;
@@ -44,6 +44,14 @@ public:
     int getUnitPropagationCount() {
         return this->unitPropagationCount;
     }
+
+    bool boundsOverlap(SearchNode searchNode) {
+        UIntEx costLowerBound = searchNode.getCostLowerBound();
+        if (costLowerBound < this->costLowerBound) {
+            costLowerBound = this->costLowerBound;
+        }
+        return (costLowerBound > this->costUpperBound || (costLowerBound == this->costUpperBound && !this->plan.empty()));
+    }
 private:
     RelaxedTask &task;
     OperatorSelector &operatorSelector;
@@ -56,6 +64,7 @@ private:
      * Best proven approximation to h^+ from below. Currently the only time we can prove a lower
      * bound for the whole task is in the initial node. For all other search nodes, lower bounds
      * are only valid for the subtree rooted in the search node.
+     * It is also possible to insert a lower bound at the start of the search to only look for solution in a specific range.
      */
     UIntEx costLowerBound;
     /*

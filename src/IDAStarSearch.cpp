@@ -11,15 +11,16 @@ IDAStarSearch::IDAStarSearch(RelaxedTask &task, OperatorSelector &operatorSelect
 }
 
 UIntEx IDAStarSearch::run() {
-    UIntEx currentBound = lmCut(this->task);
-    if (!currentBound.hasFiniteValue()) {
+    UIntEx initialBound = lmCut(this->task);
+    unsigned int currentBound;
+    if (!initialBound.hasFiniteValue(currentBound)) {
         return UIntEx::INF;
     }
     while (true) {
-        cout << "Trying to find a solution with " << endl;
+        cout << "Trying to find a solution with length " << currentBound << endl;
         // TODO: If there is a good way to get a lower bound from BnB Search (apart from h^lm-cut(init), obviously)
         // this could be used to skip some bounds in the loop
-        UIntEx solution = this->bnbSearch.run(currentBound);
+        UIntEx solution = this->bnbSearch.run(currentBound, currentBound);
         if (solution.hasFiniteValue()) {
             return solution;
         }

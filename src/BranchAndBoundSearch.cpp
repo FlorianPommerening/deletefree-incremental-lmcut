@@ -21,17 +21,20 @@ BranchAndBoundSearch::BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &
 }
 
 UIntEx BranchAndBoundSearch::run() {
-    return this->run(UIntEx::INF);
+    return this->run(0, UIntEx::INF);
 }
 
-UIntEx BranchAndBoundSearch::run(UIntEx initialUpperBound) {
+UIntEx BranchAndBoundSearch::run(int initialLowerBound, UIntEx initialUpperBound) {
     // reset values
     this->costUpperBound = initialUpperBound;
+    this->costLowerBound = initialLowerBound;
     this->expansionCount = 0;
     this->unitPropagationCount = 0;
     // construct search node representing the initial state without any forbidden or applied operators
     SearchNode initialNode = SearchNode(this->task, this->options);
-    this->costLowerBound = initialNode.heuristicValue;
+    if (this->costLowerBound < initialNode.heuristicValue) {
+        this->costLowerBound = initialNode.heuristicValue;
+    }
     cout << "    Starting with bounds (" << this->costLowerBound << "-" << this->costUpperBound << ")" << endl;
     return this->recursiveBranchAndBound(initialNode);
 }
@@ -55,7 +58,6 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
 
     // Have we reached the goal? If so, update the current best solution and return with its cost.
     // Test on heuristic == 0 is faster than subset test and should filter out most of the nodes during the search.
-    // TODO could optimize this by saving goal in every VariableSet and setting a flag as soon as goal is added
     if (searchNode.heuristicValue == 0 && searchNode.currentState.contains(this->task.goal)) {
         this->costUpperBound = searchNode.currentCost;
         this->plan.clear();
@@ -110,7 +112,7 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
             // When expanding the first successor lead to a solution with the cost previously predicted by the heuristic
             // the second successor cannot yield a better solution. In this case generating the second successor (and
             // possibly calculating LM-cut for it) can be avoided.
-            if (this->options.avoidExpandingSecondSuccessor && searchNode.getCostLowerBound() >= this->costUpperBound) {
+            if (this->options.avoidExpandingSecondSuccessor && this->boundsOverlap(searchNode)) {
 #ifdef FULL_DEBUG
                 cout << endl << "Found perfect solution for this subtree, ignoring second successor" << endl;
 #endif
