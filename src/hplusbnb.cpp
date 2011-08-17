@@ -25,7 +25,7 @@ using namespace boost::filesystem;
 typedef map<string, string> Results;
 
 // TODO: stop hard coding directory names
-const string RESULTS_DIR = "../../results/";
+const string RESULTS_DIR = "./results/";
 const string TRANSLATIONS_DIR = "../../translations/";
 const string TRANSLATE_CMD = "../translate/translate-relaxed.py";
 
@@ -43,6 +43,7 @@ int main(int argc, char *argv[]) {
     string domainFilename = argv[2];
     string problemName = basename(problemFilename);
     string domainName = path(domainFilename).parent_path().leaf();
+    create_directory(RESULTS_DIR);
     path translationPath = path(TRANSLATIONS_DIR) / domainName / problemName;
     path taskTranslationPath = translationPath / "output.sas";
     path translationKeyPath = translationPath / "test.groups";

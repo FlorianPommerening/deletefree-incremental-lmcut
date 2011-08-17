@@ -15,7 +15,7 @@ void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, UIntEx &co
     State &currentState = searchNode.currentState;
     if (this->options.selectOperatorInSmallestLandmark) {
         int best = INT_MAX;
-        unsigned nLandmarks = searchNode.landmarkCollection.getValidLandmarkIds();
+        int nLandmarks = searchNode.landmarkCollection.getValidLandmarkIds();
         for(LandmarkId landmarkId=0; landmarkId < nLandmarks; ++landmarkId) {
             // landmarks of size 1 are handled in unit propagation, but
             // an operator contained in a landmark of size 1 can still be applicable here if the landmark
