@@ -9,10 +9,10 @@
 
 using namespace std;
 
-void AchieveLandmarksOperatorSelector::select(SearchNode &searchNode, UIntEx &costUpperBound, RelaxedOperator **nextOperator, bool *addFirst) {
+void AchieveLandmarksOperatorSelector::select(const SearchNode &searchNode, const UIntEx &costUpperBound, RelaxedOperator **nextOperator, bool *addFirst) const {
     *addFirst = true;
     *nextOperator = NULL;
-    State &currentState = searchNode.currentState;
+    const State &currentState = searchNode.currentState;
     if (this->options.selectOperatorInSmallestLandmark) {
         int best = INT_MAX;
         int nLandmarks = searchNode.landmarkCollection.getValidLandmarkIds();

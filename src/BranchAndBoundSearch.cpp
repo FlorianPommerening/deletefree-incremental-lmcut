@@ -8,9 +8,9 @@ using namespace std;
 /*
  * Only used in full debug mode. Outputs the node with all details to stdout
  */
-void printNode(SearchNode &searchNode, UIntEx &upperBound);
+void printNode(const SearchNode &searchNode, const UIntEx &upperBound);
 
-BranchAndBoundSearch::BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &operatorSelector, OptimizationOptions &options) :
+BranchAndBoundSearch::BranchAndBoundSearch(const RelaxedTask &task, const OperatorSelector &operatorSelector, const OptimizationOptions &options) :
     task(task),
     operatorSelector(operatorSelector),
     options(options),
@@ -24,7 +24,7 @@ UIntEx BranchAndBoundSearch::run() {
     return this->run(0, UIntEx::INF);
 }
 
-UIntEx BranchAndBoundSearch::run(int initialLowerBound, UIntEx initialUpperBound) {
+UIntEx BranchAndBoundSearch::run(const int initialLowerBound, const UIntEx initialUpperBound) {
     // reset values
     this->costUpperBound = initialUpperBound;
     this->costLowerBound = initialLowerBound;
@@ -39,7 +39,7 @@ UIntEx BranchAndBoundSearch::run(int initialLowerBound, UIntEx initialUpperBound
     return this->recursiveBranchAndBound(initialNode);
 }
 
-UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
+UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNode) {
     if (this->options.breakOnFirstSolution && this->plan.size() > 0) {
         return UIntEx::INF;
     }
@@ -136,11 +136,11 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(SearchNode &searchNode) {
     return UIntEx::INF;
 }
 
-void printNode(SearchNode &searchNode, UIntEx &upperBound) {
+void printNode(const SearchNode &searchNode, const UIntEx &upperBound) {
     std::cout << std::endl;
     std::cout << "BEGIN NODE (" << searchNode.currentCost << " + " << searchNode.heuristicValue << " = " << searchNode.getCostLowerBound() << " <= X <= " << upperBound << ")" << std::endl;
     std::cout << "Plan" << std::endl;
-    foreach(RelaxedOperator *op, searchNode.partialPlan) {
+    foreach(const RelaxedOperator *op, searchNode.partialPlan) {
         std::cout << op->name << ", ";
     }
     std::cout << std::endl;

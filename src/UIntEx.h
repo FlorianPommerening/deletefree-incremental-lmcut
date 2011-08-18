@@ -20,10 +20,10 @@ public:
         SubtractedInfinity(const std::string& what_arg) : std::underflow_error(what_arg) {}
     };
 
-    UIntEx()                         : isFinite(true),           value(0) { }
-    UIntEx(int value)                : isFinite(true),           value(value) { }
-    UIntEx(int value, bool isFinite) : isFinite(isFinite),       value(value) { }
-    UIntEx(const UIntEx &other)      : isFinite(other.isFinite), value(other.value) { }
+    UIntEx()                                     : isFinite(true),           value(0) { }
+    UIntEx(const int value)                      : isFinite(true),           value(value) { }
+    UIntEx(const int value, const bool isFinite) : isFinite(isFinite),       value(value) { }
+    UIntEx(const UIntEx &other)                  : isFinite(other.isFinite), value(other.value) { }
 
     // cannot call this INFINITY because there is a #define for that in <math.h>
     static const UIntEx INF;

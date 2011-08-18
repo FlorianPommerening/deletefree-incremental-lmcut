@@ -27,7 +27,7 @@ void Effects::inplaceIntersection(const Effects &other) {
     swap(this->entries, intersection);
 }
 
-void Effects::removeIrrelevant(vector<bool> &relevant) {
+void Effects::removeIrrelevant(const vector<bool> &relevant) {
     vector<Variable *> relevantSubset;
     relevantSubset.reserve(this->entries.size());
     foreach(Variable *v, this->entries) {

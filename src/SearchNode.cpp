@@ -8,7 +8,7 @@
 
 using namespace std;
 
-SearchNode::SearchNode(RelaxedTask &task, OptimizationOptions &options):
+SearchNode::SearchNode(const RelaxedTask &task, const OptimizationOptions &options):
         heuristicValue(0),
         currentCost(0),
         landmarkCollection(task.operators),
@@ -44,7 +44,7 @@ SearchNode& SearchNode::operator=(const SearchNode& /* rhs */) {
     throw "Assignment operator should not be used for SearchNode";
 }
 
-SearchNode& SearchNode::applyOperator(RelaxedOperator *appliedOp) {
+SearchNode& SearchNode::applyOperator(const RelaxedOperator *appliedOp) {
     bool needsHeuristicUpdate = this->applyOperatorWithoutUpdate(appliedOp);
     this->unitPropagation();
     if (needsHeuristicUpdate) {
@@ -53,7 +53,7 @@ SearchNode& SearchNode::applyOperator(RelaxedOperator *appliedOp) {
     return *this;
 }
 
-SearchNode& SearchNode::forbidOperator(RelaxedOperator *forbiddenOp) {
+SearchNode& SearchNode::forbidOperator(const RelaxedOperator *forbiddenOp) {
     this->operatorCost[forbiddenOp->id] = UIntEx::INF;
     bool needsHeuristicUpdate = true;
     if (this->options.incrementalSearch) {
@@ -97,7 +97,7 @@ SearchNode& SearchNode::forbidOperator(RelaxedOperator *forbiddenOp) {
 }
 
 
-bool SearchNode::applyOperatorWithoutUpdate(RelaxedOperator *appliedOp) {
+bool SearchNode::applyOperatorWithoutUpdate(const RelaxedOperator *appliedOp) {
     bool needsHeuristicUpdate = true;
     appliedOp->apply(this->currentState);
     partialPlan.push_back(appliedOp);
@@ -173,7 +173,7 @@ void SearchNode::unitPropagation() {
     }
 }
 
-bool SearchNode::tryApplyUnitPropagationOperator(RelaxedOperator *op) {
+bool SearchNode::tryApplyUnitPropagationOperator(const RelaxedOperator *op) {
     if (op->isApplicable(this->currentState) && this->operatorCost[op->id].hasFiniteValue()) {
 #ifdef FULL_DEBUG
         cout << endl << "Operator applied in unit propagation: " << op->name << endl;

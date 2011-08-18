@@ -16,20 +16,20 @@ public:
     /*
      * Timer automatically starts on creation, but can be reset any time.
      */
-    Timer(clockid_t clockId): clockId(clockId) {
+    Timer(const clockid_t clockId): clockId(clockId) {
         restart();
     }
-    float elapsed() {
+    float elapsed() const {
         timespec endTime;
         clock_gettime(this->clockId, &endTime);
         return (endTime.tv_sec - this->startTime.tv_sec) + (endTime.tv_nsec - this->startTime.tv_nsec) / 1000000000.0;
     }
-    void restart(){
+    void restart() {
         clock_gettime(this->clockId, &this->startTime);
     }
 private:
     timespec startTime;
-    clockid_t clockId;
+    const clockid_t clockId;
 };
 
 #endif /* TIMER_H_ */

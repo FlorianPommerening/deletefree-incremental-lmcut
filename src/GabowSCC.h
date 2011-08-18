@@ -19,11 +19,11 @@ public:
       return instance;
     }
 
-    void findSourceConnectedComponents(std::vector<Variable *> &variables, OperatorCosts &operatorCosts);
-    int getComponent(Variable *v) {
+    void findSourceConnectedComponents(const std::vector<Variable *> &variables, const OperatorCosts &operatorCosts);
+    int getComponent(const Variable *v) const {
         return this->componentId[v->id];
     }
-    bool isInSourceComponent(Variable *v) {
+    bool isInSourceComponent(const Variable *v) const {
         return this->inSourceComponent[v->id];
     }
 private:
@@ -39,8 +39,8 @@ private:
     // should be stacks but those have no clear()
     std::vector<Variable *> notYetAssigned;
     std::vector<Variable *> maybeDifferent;
-    void findConnectedComponents(std::vector<Variable *> &variables, OperatorCosts &operatorCosts);
-    void gabowDfs(Variable *v, OperatorCosts &operatorCosts);
+    void findConnectedComponents(const std::vector<Variable *> &variables, const OperatorCosts &operatorCosts);
+    void gabowDfs(Variable *v, const OperatorCosts &operatorCosts);
 };
 
 #endif

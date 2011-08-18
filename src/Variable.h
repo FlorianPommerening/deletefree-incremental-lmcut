@@ -50,13 +50,13 @@ public:
         this->entries.push_back(element);
     }
 
-    int size() {
+    int size() const {
         return this->entries.size();
     }
 
     void inplaceIntersection(const Effects &other);
 
-    void removeIrrelevant(std::vector<bool> &relevant);
+    void removeIrrelevant(const std::vector<bool> &relevant);
 
     iterator begin() {
         return this->entries.begin();

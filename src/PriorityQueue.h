@@ -17,19 +17,19 @@ typedef std::greater<QueueEntry> EntryGreater;
  */
 class PriorityQueue {
 public:
-    bool empty();
-    void push(Variable* value, int hmax, int depth);
+    bool empty() const;
+    void push(Variable* value, const int hmax, const int depth);
     Variable *pop(int &hmax, int &depth);
-    void decreaseKey(Variable* value, int hmax, int depth);
+    void decreaseKey(Variable* value, const int hmax, const int depth);
 private:
     std::priority_queue<QueueEntry, std::vector<QueueEntry>, EntryGreater> queue;
 };
 
-inline bool PriorityQueue::empty() {
+inline bool PriorityQueue::empty() const {
     return this->queue.empty();
 }
 
-inline void PriorityQueue::push(Variable* value, int hmax, int depth) {
+inline void PriorityQueue::push(Variable* value, const int hmax, const int depth) {
     // hmax always saves the last (best) hmax value this variable was pushed with
     value->hmax = hmax;
     this->queue.push(std::make_pair(std::make_pair(hmax, depth), value));
@@ -54,7 +54,7 @@ inline Variable *PriorityQueue::pop(int &hmax, int &depth) {
     return NULL;
 }
 
-inline void PriorityQueue::decreaseKey(Variable* value, int hmax, int depth) {
+inline void PriorityQueue::decreaseKey(Variable* value, const int hmax, const int depth) {
     // in this heap based approach duplicates are added and all previously pushed entries are ignored during pop
     this->push(value, hmax, depth);
 }

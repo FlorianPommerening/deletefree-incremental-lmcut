@@ -4,7 +4,7 @@
 
 using namespace std;
 
-void GabowSCC::findSourceConnectedComponents(vector<Variable *> &variables, OperatorCosts &operatorCosts) {
+void GabowSCC::findSourceConnectedComponents(const vector<Variable *> &variables, const OperatorCosts &operatorCosts) {
     this->inSourceComponent.resize(variables.size());
     this->inSourceComponent.clear();
 
@@ -31,7 +31,7 @@ void GabowSCC::findSourceConnectedComponents(vector<Variable *> &variables, Oper
     }
 }
 
-void GabowSCC::findConnectedComponents(vector<Variable *> &variables, OperatorCosts &operatorCosts) {
+void GabowSCC::findConnectedComponents(const vector<Variable *> &variables, const OperatorCosts &operatorCosts) {
     // reset everything
     this->componentId.resize(variables.size());
     this->componentId.clear();
@@ -57,7 +57,7 @@ void GabowSCC::findConnectedComponents(vector<Variable *> &variables, OperatorCo
     }
 }
 
-void GabowSCC::gabowDfs(Variable *v, OperatorCosts &operatorCosts) {
+void GabowSCC::gabowDfs(Variable *v, const OperatorCosts &operatorCosts) {
     v->closed = true;
     this->preorder[v->id] = this->pre++;
     this->notYetAssigned.push_back(v);

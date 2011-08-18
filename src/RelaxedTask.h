@@ -37,13 +37,13 @@ public:
 
     void parseFile(const char *filename);
     // find a variable with that name and return its address
-    Variable *getVariable(const std::string &name);
+    Variable *getVariable(const std::string &name) const;
     // relevance analysis
     bool removeIrrelevantVariables();
     // creates mappings from effect to operator and from precondition to operator
     void crossreference();
 
-    void printReadable();
+    void printReadable() const;
 
 private:
     void parseTask(std::ifstream &taskfile);

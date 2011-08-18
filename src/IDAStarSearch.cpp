@@ -5,7 +5,7 @@
 
 using namespace std;
 
-IDAStarSearch::IDAStarSearch(RelaxedTask &task, OperatorSelector &operatorSelector, OptimizationOptions &options):
+IDAStarSearch::IDAStarSearch(const RelaxedTask &task, const OperatorSelector &operatorSelector, const OptimizationOptions &options):
                                             task(task),
                                             bnbSearch(task, operatorSelector, options) {
 }

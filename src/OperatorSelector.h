@@ -14,15 +14,15 @@ class BranchAndBoundSearch;
  */
 class OperatorSelector {
 public:
-    OperatorSelector(OptimizationOptions &options): options(options) {}
+    OperatorSelector(const OptimizationOptions &options): options(options) {}
     /*
      * A valid select method sets nextOperator to an operator applicable in searchNode.currentState or to NULL if there is no
      * choice that can lead to plan that reaches the goal with cost < costUpperBound.
      * addFirst defaults to true, but can be set to false if the successor where the operator is forbidden should be tried first.
      */
-    virtual void select(SearchNode &searchNode, UIntEx &costUpperBound, RelaxedOperator **nextOperator, bool *addFirst) =0;
+    virtual void select(const SearchNode &searchNode, const UIntEx &costUpperBound, RelaxedOperator **nextOperator, bool *addFirst) const =0;
 protected:
-    OptimizationOptions &options;
+    const OptimizationOptions &options;
 };
 
 /*
@@ -33,7 +33,7 @@ protected:
 class AchieveLandmarksOperatorSelector: public OperatorSelector {
 public:
     AchieveLandmarksOperatorSelector(OptimizationOptions &options): OperatorSelector(options) {}
-    void select(SearchNode &searchNode, UIntEx &costUpperBound, RelaxedOperator **nextOperator, bool *addFirst);
+    void select(const SearchNode &searchNode, const UIntEx &costUpperBound, RelaxedOperator **nextOperator, bool *addFirst) const;
 };
 
 /*

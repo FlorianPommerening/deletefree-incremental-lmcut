@@ -8,14 +8,14 @@
 
 using namespace std;
 
-UIntEx lmCut(RelaxedTask &task) {
+UIntEx lmCut(const RelaxedTask &task) {
     // TODO: change this to call lmCut(task, VariableSet(task->initialState))
     OptimizationOptions options;
     SearchNode initialNode = SearchNode(task, options);
     return initialNode.heuristicValue;
 }
 
-UIntEx lmCut(RelaxedTask &task, State &state) {
+UIntEx lmCut(const RelaxedTask &task, const State &state) {
     // use default operator cost mapping
     OperatorCosts operatorCosts = OperatorCosts(task.operators.size());
     foreach(RelaxedOperator *op, task.operators) {
@@ -26,7 +26,7 @@ UIntEx lmCut(RelaxedTask &task, State &state) {
     return lmCut(task, state, operatorCosts, landmarkCollection);
 }
 
-UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, UnitCostLandmarkCollection &landmarkCollection) {
+UIntEx lmCut(const RelaxedTask &task, const State &state, OperatorCosts &operatorCosts, UnitCostLandmarkCollection &landmarkCollection) {
     // calculating h^max also sets all hmax costs of variables and preconditionChoice values of operators
     UIntEx hmax_value = UnitCostHmax(task, state, operatorCosts);
     if (!hmax_value.hasFiniteValue()) {
@@ -53,7 +53,7 @@ UIntEx lmCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, Unit
     return lmcutValue;
 }
 
-void findCut(RelaxedTask &task, State &state, OperatorCosts &operatorCosts, Landmark *cut) {
+void findCut(const RelaxedTask &task, const State &state, const OperatorCosts &operatorCosts, Landmark *cut) {
     // First discover the goal zone by enumerating all variables that allow the goal to be reached with 0-cost.
     // That is, moving backwards from the goal along 0-cost operators from effect to preconditionChoice until no more
     // variables are discovered.

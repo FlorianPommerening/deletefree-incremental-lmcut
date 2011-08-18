@@ -18,7 +18,7 @@ public:
      * operatorSelector: Determines which operator is chosen in each step of the search an whether it is applied first or forbidden first
      * options: allow to toggle some optimizations such as incremental computation of LM-cut.
      */
-    BranchAndBoundSearch(RelaxedTask &task, OperatorSelector &operatorSelector, OptimizationOptions &options);
+    BranchAndBoundSearch(const RelaxedTask &task, const OperatorSelector &operatorSelector, const OptimizationOptions &options);
     /*
      * Runs the branch and bound search and returns the h^+ value of the initial state.
      */
@@ -27,25 +27,25 @@ public:
      * Runs the branch and bound search and returns the h^+ value of the initial state if it is between initialLowerBound and initialUpperBound
      * and infinity in all other cases.
      */
-    UIntEx run(int initialLowerBound, UIntEx initialUpperBound);
+    UIntEx run(const int initialLowerBound, const UIntEx initialUpperBound);
 
-    UIntEx getCostUpperBound() {
+    UIntEx getCostUpperBound() const {
         return this->costUpperBound;
     }
 
-    std::vector<RelaxedOperator *> &getPlan() {
+    const std::vector<const RelaxedOperator *> &getPlan() const {
         return this->plan;
     }
 
-    int getExpansionCount() {
+    int getExpansionCount() const {
         return this->expansionCount;
     }
 
-    int getUnitPropagationCount() {
+    int getUnitPropagationCount() const {
         return this->unitPropagationCount;
     }
 
-    bool boundsOverlap(SearchNode searchNode) {
+    bool boundsOverlap(const SearchNode searchNode) const {
         UIntEx costLowerBound = searchNode.getCostLowerBound();
         if (costLowerBound < this->costLowerBound) {
             costLowerBound = this->costLowerBound;
@@ -53,9 +53,9 @@ public:
         return (costLowerBound > this->costUpperBound || (costLowerBound == this->costUpperBound && !this->plan.empty()));
     }
 private:
-    RelaxedTask &task;
-    OperatorSelector &operatorSelector;
-    OptimizationOptions &options;
+    const RelaxedTask &task;
+    const OperatorSelector &operatorSelector;
+    const OptimizationOptions &options;
     /*
      * Cost of the currently best solution or infinity if no solution was found yet.
      */
@@ -70,7 +70,7 @@ private:
     /*
      * Always contains the best plan discovered so far. If run() returns, this contains a plan with cost h^+.
      */
-    std::vector<RelaxedOperator *> plan;
+    std::vector<const RelaxedOperator *> plan;
     /*
      * Number of nodes expanded during the search. A node counts as expanded, when at least one of its successors was generated.
      */
@@ -84,7 +84,7 @@ private:
      * Returns the value of the best solution in the subtree starting in searchNode if it is cheaper than the current upper bound
      * or infinity if there is no (cheaper) solution in this subtree.
      */
-    UIntEx recursiveBranchAndBound(SearchNode &searchNode);
+    UIntEx recursiveBranchAndBound(const SearchNode &searchNode);
 };
 
 #endif /* BRANCHANDBOUNDSEARCH_H_ */

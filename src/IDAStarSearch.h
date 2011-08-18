@@ -18,29 +18,29 @@ public:
      * operatorSelector: Determines which operator is chosen in each step of the search an whether it is applied first or forbidden first
      * options: allow to toggle some optimizations such as incremental computation of LM-cut.
      */
-    IDAStarSearch(RelaxedTask &task, OperatorSelector &operatorSelector, OptimizationOptions &options);
+    IDAStarSearch(const RelaxedTask &task, const OperatorSelector &operatorSelector, const OptimizationOptions &options);
     /*
      * Runs the ID-A* search and returns the h^+ value of the initial state.
      */
     UIntEx run();
 
-    UIntEx getCostUpperBound() {
+    UIntEx getCostUpperBound() const {
         return this->bnbSearch.getCostUpperBound();
     }
 
-    std::vector<RelaxedOperator *> &getPlan() {
+    const std::vector<const RelaxedOperator *> &getPlan() const {
         return this->bnbSearch.getPlan();
     }
 
-    int getExpansionCount() {
+    int getExpansionCount() const {
         return this->expansionCount;
     }
 
-    int getUnitPropagationCount() {
+    int getUnitPropagationCount() const {
         return this->unitPropagationCount;
     }
 private:
-    RelaxedTask &task;
+    const RelaxedTask &task;
     BranchAndBoundSearch bnbSearch;
     int expansionCount;
     int unitPropagationCount;

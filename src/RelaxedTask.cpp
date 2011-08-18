@@ -41,7 +41,7 @@ void RelaxedTask::parseFile(const char *filename) {
     taskfile.close();
 }
 
-Variable *RelaxedTask::getVariable(const std::string &name) {
+Variable *RelaxedTask::getVariable(const std::string &name) const {
     foreach(Variable *var, this->variables) {
         if (var->name == name) {
             return var;
@@ -190,7 +190,7 @@ void RelaxedTask::parseVariableSet(ifstream &taskfile, VariableSet &set) {
     }
 }
 
-void RelaxedTask::printReadable() {
+void RelaxedTask::printReadable() const {
     cout << "BEGIN TASK" << endl;
     cout << "  " << this->variables.size() << " Variables" << endl;
     foreach(Variable *var, this->variables) {

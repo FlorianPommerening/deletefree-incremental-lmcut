@@ -5,7 +5,7 @@
 using namespace std;
 
 
-UnitCostLandmarkCollection::UnitCostLandmarkCollection(std::vector<RelaxedOperator*> &operators):
+UnitCostLandmarkCollection::UnitCostLandmarkCollection(const std::vector<RelaxedOperator*> &operators):
                                                                      cost(0),
                                                                      landmarksDirty(false),
                                                                      singleOperatorLandmarksDirty(false) {
@@ -70,7 +70,7 @@ LandmarkId UnitCostLandmarkCollection::addLandmark(Landmark &landmarkIn) {
     return landmarkId;
 }
 
-LandmarkId UnitCostLandmarkCollection::containingLandmark(RelaxedOperator *op) const {
+LandmarkId UnitCostLandmarkCollection::containingLandmark(const RelaxedOperator *op) const {
     LandmarkId landmarkId = this->operatorToLandmark[op->id];
     if (landmarkId != -1 && this->landmarks[landmarkId] != NULL) {
         return landmarkId;
@@ -78,7 +78,7 @@ LandmarkId UnitCostLandmarkCollection::containingLandmark(RelaxedOperator *op) c
     return -1;
 }
 
-bool UnitCostLandmarkCollection::removeOperatorFromContainingLandmark(RelaxedOperator *op) {
+bool UnitCostLandmarkCollection::removeOperatorFromContainingLandmark(const RelaxedOperator *op) {
     LandmarkId landmarkId = this->operatorToLandmark[op->id];
     this->operatorToLandmark[op->id] = -1;
     this->sizes[landmarkId]--;
@@ -94,7 +94,7 @@ bool UnitCostLandmarkCollection::removeOperatorFromContainingLandmark(RelaxedOpe
     return true;
 }
 
-void UnitCostLandmarkCollection::removeLandmark(LandmarkId landmarkId) {
+void UnitCostLandmarkCollection::removeLandmark(const LandmarkId landmarkId) {
     Landmark &landmark = *(this->landmarks[landmarkId]);
     // TODO
     // should use loop over valid operators in landmark instead
@@ -111,7 +111,7 @@ void UnitCostLandmarkCollection::removeLandmark(LandmarkId landmarkId) {
     --(this->cost);
 }
 
-Landmark &UnitCostLandmarkCollection::iterateLandmark(LandmarkId landmarkId) {
+Landmark &UnitCostLandmarkCollection::iterateLandmark(const LandmarkId landmarkId) const {
     Landmark &landmark = *this->landmarks[landmarkId];
     if (this->dirty[landmarkId]) {
         unsigned nValid = 0;
@@ -130,7 +130,7 @@ Landmark &UnitCostLandmarkCollection::iterateLandmark(LandmarkId landmarkId) {
     return landmark;
 }
 
-int UnitCostLandmarkCollection::getValidLandmarkIds() {
+int UnitCostLandmarkCollection::getValidLandmarkIds() const {
     if (this->landmarksDirty) {
         unsigned nValid = 0;
         for(unsigned current = 0; current < this->landmarks.size(); ++current) {
@@ -152,7 +152,7 @@ int UnitCostLandmarkCollection::getValidLandmarkIds() {
     return this->landmarks.size();
 }
 
-std::vector<RelaxedOperator*> &UnitCostLandmarkCollection::getSingleOperatorLandmarks() {
+std::vector<RelaxedOperator*> &UnitCostLandmarkCollection::getSingleOperatorLandmarks() const {
     if (this->singleOperatorLandmarksDirty) {
         unsigned nValid = 0;
         for(unsigned current = 0; current < this->landmarks.size(); ++current) {

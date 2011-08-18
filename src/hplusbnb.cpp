@@ -271,7 +271,7 @@ void runSearch(RelaxedTask &task, Results &results, OptimizationOptions &options
     results["bnb_expansions"] = boost::lexical_cast<string>(search.getExpansionCount());
     results["bnb_unit_propagations"] = boost::lexical_cast<string>(search.getUnitPropagationCount());
     ostringstream planstring;
-    foreach(RelaxedOperator *op, search.getPlan()) {
+    foreach(const RelaxedOperator *op, search.getPlan()) {
         planstring << op->name << ", ";
     }
     results["plan"] = planstring.str();

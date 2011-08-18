@@ -5,14 +5,14 @@
 
 using namespace std;
 
-UIntEx hmax(RelaxedTask &task) {
+UIntEx hmax(const RelaxedTask &task) {
     // start calculation for initial state
     State initialState;
     initialState.add(task.init);
     return hmax(task, initialState);
 }
 
-UIntEx hmax(RelaxedTask &task, State &state) {
+UIntEx hmax(const RelaxedTask &task, const State &state) {
     // start calculation for default operator cost function
     OperatorCosts operatorCosts = OperatorCosts(task.operators.size());
     foreach(RelaxedOperator *op, task.operators) {
@@ -21,7 +21,7 @@ UIntEx hmax(RelaxedTask &task, State &state) {
     return hmax(task, state, operatorCosts);
 }
 
-UIntEx hmax(RelaxedTask &task, State &state, OperatorCosts &operatorCosts) {
+UIntEx hmax(const RelaxedTask &task, const State &state, const OperatorCosts &operatorCosts) {
     // reset all temporary variables
     foreach(Variable *var, task.variables) {
         var->hmax = UIntEx::INF;
@@ -83,9 +83,9 @@ UIntEx hmax(RelaxedTask &task, State &state, OperatorCosts &operatorCosts) {
 
 
 
-void handleOperators(vector<Variable *> &fromQueue, vector<Variable *> &toQueue, OperatorCosts &operatorCosts, int requiredCost);
+void handleOperators(vector<Variable *> &fromQueue, vector<Variable *> &toQueue, const OperatorCosts &operatorCosts, const int requiredCost);
 
-UIntEx UnitCostHmax(RelaxedTask &task, State &state, OperatorCosts &operatorCosts) {
+UIntEx UnitCostHmax(const RelaxedTask &task, const State &state, const OperatorCosts &operatorCosts) {
     // reset all temporary variables
     foreach(Variable *var, task.variables) {
         var->hmax = UIntEx::INF;
@@ -115,7 +115,7 @@ UIntEx UnitCostHmax(RelaxedTask &task, State &state, OperatorCosts &operatorCost
 }
 
 
-void handleOperators(vector<Variable *> &fromQueue, vector<Variable *> &toQueue, OperatorCosts &operatorCosts, int requiredCost) {
+void handleOperators(vector<Variable *> &fromQueue, vector<Variable *> &toQueue, const OperatorCosts &operatorCosts, const int requiredCost) {
     unsigned currentId = 0;
     while (currentId < fromQueue.size()) {
         Variable *var = fromQueue[currentId++];
