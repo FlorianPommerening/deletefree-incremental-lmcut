@@ -33,15 +33,17 @@ public:
     }
 
     int getExpansionCount() {
-        return this->bnbSearch.getExpansionCount();
+        return this->expansionCount;
     }
 
     int getUnitPropagationCount() {
-        return this->bnbSearch.getUnitPropagationCount();
+        return this->unitPropagationCount;
     }
 private:
     RelaxedTask &task;
     BranchAndBoundSearch bnbSearch;
+    int expansionCount;
+    int unitPropagationCount;
 };
 
 
