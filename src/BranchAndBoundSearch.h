@@ -41,6 +41,11 @@ public:
         return this->expansionCount;
     }
 
+    // this is used by IDA* and is only here to satisfy the interface. all expansions are in the last layer for BnB
+    int getExpansionCountLastLayer() const {
+        return this->expansionCount;
+    }
+
     int getUnitPropagationCount() const {
         return this->unitPropagationCount;
     }

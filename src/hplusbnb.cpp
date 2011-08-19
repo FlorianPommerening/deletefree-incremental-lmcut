@@ -269,6 +269,7 @@ void runSearch(RelaxedTask &task, Results &results, OptimizationOptions &options
     results["h_plus_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
     results["h_plus"] = h_plus_value.toString();
     results["bnb_expansions"] = boost::lexical_cast<string>(search.getExpansionCount());
+    results["bnb_expansions_last_layer"] = boost::lexical_cast<string>(search.getExpansionCountLastLayer());
     results["bnb_unit_propagations"] = boost::lexical_cast<string>(search.getUnitPropagationCount());
     ostringstream planstring;
     foreach(const RelaxedOperator *op, search.getPlan()) {

@@ -36,6 +36,10 @@ public:
         return this->expansionCount;
     }
 
+    int getExpansionCountLastLayer() const {
+        return this->bnbSearch.getExpansionCount();
+    }
+
     int getUnitPropagationCount() const {
         return this->unitPropagationCount;
     }
