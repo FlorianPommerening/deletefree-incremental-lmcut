@@ -29,12 +29,12 @@ public:
      * applies the operator to the current state and updates the search node.
      * This should be done after copying the parent node.
      */
-    SearchNode& applyOperator(const RelaxedOperator *appliedOp);
+    SearchNode& applyOperator(const RelaxedOperator *const appliedOp);
     /*
      * forbids the operator in the subtree following this node and updates the search node.
      * This should be done after copying the parent node.
      */
-    SearchNode& forbidOperator(const RelaxedOperator *forbiddenOp);
+    SearchNode& forbidOperator(RelaxedOperator *const forbiddenOp);
     /*
      * The lower bound consists of the cost to reach this node and the
      * heuristic estimate for the goal distance

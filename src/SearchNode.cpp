@@ -44,7 +44,7 @@ SearchNode& SearchNode::operator=(const SearchNode& /* rhs */) {
     throw "Assignment operator should not be used for SearchNode";
 }
 
-SearchNode& SearchNode::applyOperator(const RelaxedOperator *appliedOp) {
+SearchNode& SearchNode::applyOperator(const RelaxedOperator *const appliedOp) {
     bool needsHeuristicUpdate = this->applyOperatorWithoutUpdate(appliedOp);
     this->unitPropagation();
     if (needsHeuristicUpdate) {
@@ -53,7 +53,7 @@ SearchNode& SearchNode::applyOperator(const RelaxedOperator *appliedOp) {
     return *this;
 }
 
-SearchNode& SearchNode::forbidOperator(const RelaxedOperator *forbiddenOp) {
+SearchNode& SearchNode::forbidOperator(RelaxedOperator *const forbiddenOp) {
     this->operatorCost[forbiddenOp->id] = UIntEx::INF;
     bool needsHeuristicUpdate = true;
     if (this->options.incrementalSearch) {

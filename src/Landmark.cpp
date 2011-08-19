@@ -15,8 +15,6 @@ UnitCostLandmarkCollection::UnitCostLandmarkCollection(const std::vector<Relaxed
 UnitCostLandmarkCollection::UnitCostLandmarkCollection(const UnitCostLandmarkCollection &other):
                                                                      cost(other.cost),
                                                                      landmarksDirty(other.landmarksDirty),
-                                                                     sizes(other.sizes),
-                                                                     dirty(other.dirty),
                                                                      singleOperatorLandmarks(other.singleOperatorLandmarks),
                                                                      singleOperatorLandmarksDirty(other.singleOperatorLandmarksDirty),
                                                                      operatorToLandmark(other.operatorToLandmark) {
@@ -42,8 +40,6 @@ void UnitCostLandmarkCollection::clear() {
     }
     this->landmarks.clear();
     this->landmarksDirty = false;
-    this->sizes.clear();
-    this->dirty.clear();
     this->singleOperatorLandmarks.clear();
     this->singleOperatorLandmarksDirty = false;
     this->cost = 0;
@@ -58,19 +54,16 @@ LandmarkId UnitCostLandmarkCollection::addLandmark(Landmark &landmarkIn) {
     LandmarkId landmarkId = this->landmarks.size();
     this->landmarks.push_back(landmark);
     ++(this->cost);
-    int landmarkSize = landmark->size();
-    for(int i=0; i != landmarkSize; ++i) {
-        this->operatorToLandmark[((*landmark)[i])->id] = landmarkId;
+    foreach(RelaxedOperator *op, *landmark) {
+        this->operatorToLandmark[op->id] = landmarkId;
     }
-    this->sizes.push_back(landmarkSize);
-    this->dirty.push_back(false);
-    if (landmarkSize == 1) {
-        this->singleOperatorLandmarks.push_back((*landmark)[0]);
+    if (landmark->size() == 1) {
+        this->singleOperatorLandmarks.push_back(*landmark->begin());
     }
     return landmarkId;
 }
 
-LandmarkId UnitCostLandmarkCollection::containingLandmark(const RelaxedOperator *op) const {
+LandmarkId UnitCostLandmarkCollection::containingLandmark(const RelaxedOperator *const op) const {
     LandmarkId landmarkId = this->operatorToLandmark[op->id];
     if (landmarkId != -1 && this->landmarks[landmarkId] != NULL) {
         return landmarkId;
@@ -78,15 +71,15 @@ LandmarkId UnitCostLandmarkCollection::containingLandmark(const RelaxedOperator 
     return -1;
 }
 
-bool UnitCostLandmarkCollection::removeOperatorFromContainingLandmark(const RelaxedOperator *op) {
+bool UnitCostLandmarkCollection::removeOperatorFromContainingLandmark(RelaxedOperator *const op) {
     LandmarkId landmarkId = this->operatorToLandmark[op->id];
+    Landmark &containingLM = *this->landmarks[landmarkId];
+    containingLM.erase(op);
     this->operatorToLandmark[op->id] = -1;
-    this->sizes[landmarkId]--;
-    this->dirty[landmarkId] = true;
-    if (this->sizes[landmarkId] == 1) {
-        this->singleOperatorLandmarks.push_back((*this->landmarks[landmarkId])[0]);
+    if (containingLM.size() == 1) {
+        this->singleOperatorLandmarks.push_back(*containingLM.begin());
     }
-    else if (this->sizes[landmarkId] == 0) {
+    else if (containingLM.size() == 0) {
         this->singleOperatorLandmarksDirty = true;
         this->cost = UIntEx::INF;
         return false;
@@ -99,35 +92,14 @@ void UnitCostLandmarkCollection::removeLandmark(const LandmarkId landmarkId) {
     // TODO
     // should use loop over valid operators in landmark instead
     // maybe it is even enough to only update sizes
-    for (unsigned i=0; i != landmark.size(); ++i) {
-        this->operatorToLandmark[landmark[i]->id] = -1;
+    foreach(RelaxedOperator *op, landmark) {
+        this->operatorToLandmark[op->id] = -1;
     }
-    this->sizes[landmarkId] = 0;
-    this->dirty[landmarkId] = false;
     this->landmarksDirty = true;
     this->singleOperatorLandmarksDirty = true;
     delete this->landmarks[landmarkId];
     this->landmarks[landmarkId] = NULL;
     --(this->cost);
-}
-
-Landmark &UnitCostLandmarkCollection::iterateLandmark(const LandmarkId landmarkId) const {
-    Landmark &landmark = *this->landmarks[landmarkId];
-    if (this->dirty[landmarkId]) {
-        unsigned nValid = 0;
-        for(unsigned current = 0; current < landmark.size(); ++current) {
-            RelaxedOperator *op = landmark[current];
-            if (this->operatorToLandmark[op->id] == landmarkId) {
-                landmark[nValid] = landmark[current];
-                ++nValid;
-            }
-        }
-        // TODO right now add() is not possible after a delete(), if it is, there could be duplicates in the list
-        // one way to deal with them is to set all operatorToLandmark[op->id] to -1 the first time they are encountered and reset them in a second run
-        landmark.resize(nValid);
-        this->dirty[landmarkId] = false;
-    }
-    return landmark;
 }
 
 int UnitCostLandmarkCollection::getValidLandmarkIds() const {
@@ -137,8 +109,6 @@ int UnitCostLandmarkCollection::getValidLandmarkIds() const {
             if (this->landmarks[current] != NULL) {
                 if (nValid != current) {
                     this->landmarks[nValid] = this->landmarks[current];
-                    this->sizes[nValid] = this->sizes[current];
-                    this->dirty[nValid] = this->dirty[current];
                     foreach(RelaxedOperator *op, *this->landmarks[nValid]) {
                         this->operatorToLandmark[op->id] = nValid;
                     }
