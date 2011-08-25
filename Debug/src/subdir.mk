@@ -6,6 +6,7 @@
 CPP_SRCS += \
 ../src/BranchAndBoundSearch.cpp \
 ../src/GabowSCC.cpp \
+../src/IDAStarSearch.cpp \
 ../src/Landmark.cpp \
 ../src/OperatorSelector.cpp \
 ../src/RelaxedTask.cpp \
@@ -15,11 +16,13 @@ CPP_SRCS += \
 ../src/Variable.cpp \
 ../src/hmax.cpp \
 ../src/hplusbnb.cpp \
-../src/lmcut.cpp 
+../src/lmcut.cpp \
+../src/steinertreeImprove.cpp 
 
 OBJS += \
 ./src/BranchAndBoundSearch.o \
 ./src/GabowSCC.o \
+./src/IDAStarSearch.o \
 ./src/Landmark.o \
 ./src/OperatorSelector.o \
 ./src/RelaxedTask.o \
@@ -29,11 +32,13 @@ OBJS += \
 ./src/Variable.o \
 ./src/hmax.o \
 ./src/hplusbnb.o \
-./src/lmcut.o 
+./src/lmcut.o \
+./src/steinertreeImprove.o 
 
 CPP_DEPS += \
 ./src/BranchAndBoundSearch.d \
 ./src/GabowSCC.d \
+./src/IDAStarSearch.d \
 ./src/Landmark.d \
 ./src/OperatorSelector.d \
 ./src/RelaxedTask.d \
@@ -43,7 +48,8 @@ CPP_DEPS += \
 ./src/Variable.d \
 ./src/hmax.d \
 ./src/hplusbnb.d \
-./src/lmcut.d 
+./src/lmcut.d \
+./src/steinertreeImprove.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
