@@ -31,7 +31,7 @@ const string TRANSLATIONS_DIR = "../../translations/";
 const string TRANSLATE_CMD = "../translate/translate-relaxed.py";
 
 template<class SearchClass, class OperatorSelectorClass>
-void runSearch(RelaxedTask &task, Results &results, OptimizationOptions &options);
+SearchClass runSearch(RelaxedTask &task, Results &results, OptimizationOptions &options);
 
 int main(int argc, char *argv[]) {
     // Parse command line arguments.
@@ -220,9 +220,20 @@ int main(int argc, char *argv[]) {
 
         if (solvable) {
             if (options.idaStarSearch) {
-                runSearch<IDAStarSearch, AchieveLandmarksTryGoalOperatorSelector>(translatedTask, results, options);
+                IDAStarSearch search = runSearch<IDAStarSearch, AchieveLandmarksTryGoalOperatorSelector>(translatedTask, results, options);
+                results["bnb_expansions_last_layer"] = boost::lexical_cast<string>(search.getExpansionCountLastLayer());
             } else {
-                runSearch<BranchAndBoundSearch, AchieveLandmarksTryGoalOperatorSelector>(translatedTask, results, options);
+                BranchAndBoundSearch search = runSearch<BranchAndBoundSearch, AchieveLandmarksTryGoalOperatorSelector>(translatedTask, results, options);
+                if (options.initialUpperBound) {
+                    if (search.getInitialPlanCost() != 0) {
+                        results["initial_plan_cost"] = boost::lexical_cast<string>(search.getInitialPlanCost());
+                        results["initial_plan_time"] = boost::lexical_cast<string>(search.getInitialPlanTime());
+                    }
+                    if (search.getOptimizedInitialPlanCost() != 0) {
+                        results["optimized_initial_plan_cost"] = boost::lexical_cast<string>(search.getOptimizedInitialPlanCost());
+                        results["optimized_initial_plan_time"] = boost::lexical_cast<string>(search.getOptimizedInitialPlanTime());
+                    }
+                }
             }
         } else {
             cout << "Unsolvable task." << endl;
@@ -259,7 +270,7 @@ int main(int argc, char *argv[]) {
 }
 
 template<class SearchClass, class OperatorSelectorClass>
-void runSearch(RelaxedTask &task, Results &results, OptimizationOptions &options) {
+SearchClass runSearch(RelaxedTask &task, Results &results, OptimizationOptions &options) {
     Timer cpuTimer(CPU_TIME);
     cout << "Calculating h^+ ... " << endl << flush;
     cpuTimer.restart();
@@ -269,7 +280,6 @@ void runSearch(RelaxedTask &task, Results &results, OptimizationOptions &options
     results["h_plus_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
     results["h_plus"] = h_plus_value.toString();
     results["bnb_expansions"] = boost::lexical_cast<string>(search.getExpansionCount());
-    results["bnb_expansions_last_layer"] = boost::lexical_cast<string>(search.getExpansionCountLastLayer());
     results["bnb_unit_propagations"] = boost::lexical_cast<string>(search.getUnitPropagationCount());
     ostringstream planstring;
     foreach(const RelaxedOperator *op, search.getPlan()) {
@@ -278,5 +288,6 @@ void runSearch(RelaxedTask &task, Results &results, OptimizationOptions &options
     results["plan"] = planstring.str();
     cout << "done (" << h_plus_value << ") " << results["bnb_expansions"] << " expansions " << results["bnb_unit_propagations"] << " unit propagations " << results["h_plus_time"] << endl;
     cout << "    With plan: " << results["plan"] << endl;
+    return search;
 }
 

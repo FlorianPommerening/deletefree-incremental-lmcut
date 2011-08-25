@@ -7,9 +7,13 @@
 // TODO use command line options to set these instead of constants
 struct OptimizationOptions {
     /*
+     * Use the Steiner tree plan improvement procedure to calculate an initial upper bound
+     */
+    static const bool initialUpperBound = true;
+    /*
      * Use iterative deepening A* to search for h^+ (default is Branch-and-Bound-Search)
      */
-    static const bool idaStarSearch = true;
+    static const bool idaStarSearch = false;
     /*
      * selectOperatorInSmallestLandmark
      * true: An applicable operator contained a minimal size landmark is chosen in each step

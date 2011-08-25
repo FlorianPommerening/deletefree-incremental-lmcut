@@ -41,13 +41,24 @@ public:
         return this->expansionCount;
     }
 
-    // this is used by IDA* and is only here to satisfy the interface. all expansions are in the last layer for BnB
-    int getExpansionCountLastLayer() const {
-        return this->expansionCount;
-    }
-
     int getUnitPropagationCount() const {
         return this->unitPropagationCount;
+    }
+
+    int getInitialPlanCost() const {
+        return this->initialPlanCost;
+    }
+
+    float getInitialPlanTime() const {
+        return this->initialPlanTime;
+    }
+
+    int getOptimizedInitialPlanCost() const {
+        return this->optimizedInitialPlanCost;
+    }
+
+    float getOptimizedInitialPlanTime() const {
+        return this->optimizedInitialPlanTime;
     }
 
     bool boundsOverlap(const SearchNode searchNode) const {
@@ -84,6 +95,23 @@ private:
      * Number of operators applied in unit propagation steps during the search.
      */
     int unitPropagationCount;
+
+    /*
+     * Initial upper bound found by Steiner tree improvement before optimization
+     */
+    int initialPlanCost;
+    /*
+     * Time used to calculate the initialPlan
+     */
+    float initialPlanTime;
+    /*
+     * Initial upper bound found by Steiner tree improvement after optimization
+     */
+    int optimizedInitialPlanCost;
+    /*
+     * Time used to optimize the initialPlan
+     */
+    float optimizedInitialPlanTime;
 
     /*
      * Returns the value of the best solution in the subtree starting in searchNode if it is cheaper than the current upper bound

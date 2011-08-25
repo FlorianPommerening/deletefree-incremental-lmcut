@@ -1,6 +1,9 @@
 #include "BranchAndBoundSearch.h"
 
 #include "foreach.h"
+#include "Timer.h"
+#include "steinertreeImprove.h"
+
 #include <iostream>
 
 using namespace std;
@@ -17,7 +20,11 @@ BranchAndBoundSearch::BranchAndBoundSearch(const RelaxedTask &task, const Operat
     costUpperBound(UIntEx::INF),
     costLowerBound(0),
     expansionCount(0),
-    unitPropagationCount(0) {
+    unitPropagationCount(0),
+    initialPlanCost(0),
+    initialPlanTime(0),
+    optimizedInitialPlanCost(0),
+    optimizedInitialPlanTime(0) {
 }
 
 UIntEx BranchAndBoundSearch::run() {
@@ -35,8 +42,47 @@ UIntEx BranchAndBoundSearch::run(const int initialLowerBound, const UIntEx initi
     if (this->costLowerBound < initialNode.heuristicValue) {
         this->costLowerBound = initialNode.heuristicValue;
     }
+
+    if (this->options.initialUpperBound) {
+        cout << "    Discovering initial bound ... " << flush;
+        Timer cpuTimer(CPU_TIME);
+        // try to get better initial upper bound by using Steiner tree improvement
+        vector<RelaxedOperator *> hAddAchiever;
+        hAddAchiever.resize(this->task.variables.size());
+        PlanSet initialPlanSet = discoverPlan(this->task, hAddAchiever);
+        this->initialPlanCost = planCost(initialPlanSet);
+        this->initialPlanTime = cpuTimer.elapsed();
+        cout << "done (" << this->initialPlanCost << ") " << this->initialPlanTime << endl;
+        if (this->costLowerBound == this->initialPlanCost) {
+            cout << "    Initial solution was perfect" << endl;
+            Plan serializedPlan = serializePlan(initialPlanSet, initialNode.currentState);
+            this->plan.assign(serializedPlan.begin(), serializedPlan.end());
+            return this->initialPlanCost;
+        }
+        cout << "    Trying to improve initial solution ... " << endl << flush;
+        cpuTimer.restart();
+        PlanSet optimizedInitialPlanSet = optimizePlan(this->task, initialPlanSet, hAddAchiever);
+        this->optimizedInitialPlanCost = planCost(optimizedInitialPlanSet);
+        this->optimizedInitialPlanTime = cpuTimer.elapsed();
+        cout << "      done (" << this->optimizedInitialPlanCost << ") " << this->optimizedInitialPlanTime << endl;
+        Plan serializedPlan = serializePlan(optimizedInitialPlanSet, initialNode.currentState);
+        this->plan.assign(serializedPlan.begin(), serializedPlan.end());
+        if (this->costUpperBound > optimizedInitialPlanCost) {
+            this->costUpperBound = optimizedInitialPlanCost;
+        }
+        if (this->costLowerBound == optimizedInitialPlanCost) {
+            cout << "    Optimization of initial solution was perfect" << endl;
+            return optimizedInitialPlanCost;
+        }
+    }
+
     cout << "    Starting with bounds (" << this->costLowerBound << "-" << this->costUpperBound << ")" << endl;
-    return this->recursiveBranchAndBound(initialNode);
+    UIntEx result = this->recursiveBranchAndBound(initialNode);
+    if (result == UIntEx::INF && !this->plan.empty() && initialUpperBound >= this->optimizedInitialPlanCost && initialLowerBound <= this->optimizedInitialPlanCost) {
+        // optimized initial plan was perfect and is within expected bounds. no better plan could be discovered
+        return this->optimizedInitialPlanCost;
+    }
+    return result;
 }
 
 UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNode) {
