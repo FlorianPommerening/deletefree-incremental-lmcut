@@ -8,16 +8,16 @@
 #include <queue>
 
 using namespace std;
-PlanSet extractPlan(const RelaxedTask &task, vector<RelaxedOperator *> &hAddAchiever, const State *initialState=NULL,
+PlanSet extractPlan(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, const State *initialState=NULL,
                     Variable *goalVariable=NULL, Variable *assumedVariable=NULL);
 State collectAchievedFacts(const PlanSet &planSet);
 void addContainedFluents(const PlanSet &planSet, State &state);
-PlanSet findReplacedPlanPart(const RelaxedTask &task, vector<RelaxedOperator *> &hAddAchiever, Variable *const y, const PlanSet &planSet);
-PlanSet findDependentPlanPart(const RelaxedTask &task, vector<RelaxedOperator *> &hAddAchiever, Variable *const y);
-void findDependentPlanPartRec(vector<RelaxedOperator *> &hAddAchiever, Variable *const y, Variable *const goalVariable, vector<bool> &isDependent, PlanSet &dependentPart);
-bool improvePlan(const RelaxedTask &task, vector<RelaxedOperator *> &hAddAchiever, const PlanSet &planSet);
+PlanSet findReplacedPlanPart(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, Variable *const y, const PlanSet &planSet);
+PlanSet findDependentPlanPart(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, Variable *const y);
+void findDependentPlanPartRec(vector<const RelaxedOperator *> &hAddAchiever, Variable *const y, Variable *const goalVariable, vector<bool> &isDependent, PlanSet &dependentPart);
+bool improvePlan(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, const PlanSet &planSet);
 
-PlanSet discoverPlan(const RelaxedTask &task, vector<RelaxedOperator *> &hAddAchiever,
+PlanSet discoverPlan(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever,
         const State *initialState, Variable *goalVariable, const State *ignoredAddEffects) {
     State defaultInitialState;
     if (initialState == NULL) {
@@ -80,10 +80,9 @@ PlanSet discoverPlan(const RelaxedTask &task, vector<RelaxedOperator *> &hAddAch
     }
     PlanSet planSet = extractPlan(task, hAddAchiever, initialState, goalVariable);
     return planSet;
-
 }
 
-PlanSet optimizePlan(const RelaxedTask &task, PlanSet &planSet, vector<RelaxedOperator *> &hAddAchiever) {
+PlanSet optimizePlan(const RelaxedTask &task, PlanSet &planSet, vector<const RelaxedOperator *> &hAddAchiever) {
     while (improvePlan(task, hAddAchiever, planSet)) {
         planSet = extractPlan(task, hAddAchiever);
         cout << "        improved solution to cost " << planCost(planSet) << endl;
@@ -91,18 +90,39 @@ PlanSet optimizePlan(const RelaxedTask &task, PlanSet &planSet, vector<RelaxedOp
     return planSet;
 }
 
-PlanSet optimizePlan(const RelaxedTask &task, Plan &plan) {
-    // TODO do some mojo with the h^add supporters, so that plan will be discovered in the first step
-    // then call the other overload
-    throw "Not implemented";
+PlanSet optimizePlan(const RelaxedTask &task, const Plan &plan) {
+    // TODO
+    // removeRedundantOperators(plan);
+    // set the achiever of a variable v to the operator in the plan that first achieves v
+    vector<const RelaxedOperator *> hAddAchiever = vector<const RelaxedOperator *>(task.variables.size(), NULL);
+    foreach(const RelaxedOperator *op, plan) {
+        foreach(Variable *v, op->effects) {
+            if (hAddAchiever[v->id] == NULL) {
+                hAddAchiever[v->id] = op;
+            }
+        }
+    }
+    PlanSet planSet = extractPlan(task, hAddAchiever);
+    // remove achievers that are not needed for the plan set (this gives the plan improvement procedure
+    // the freedom to choose a different achiever for these variables)
+    State containedFluents;
+    addContainedFluents(planSet, containedFluents);
+    foreach(const RelaxedOperator *op, plan) {
+        foreach(Variable *v, op->effects) {
+            if (!containedFluents.contains(v)) {
+                hAddAchiever[v->id] = NULL;
+            }
+        }
+    }
+    return optimizePlan(task, planSet, hAddAchiever);
 }
 
 int planCost(PlanSet &planSet) {
-    vector<RelaxedOperator *> alreadyCounted;
+    vector<const RelaxedOperator *> alreadyCounted;
     alreadyCounted.reserve(planSet.size());
     int cost = 0;
     foreach(const PlanSetEntry &entry, planSet) {
-        RelaxedOperator *op = entry.first;
+        const RelaxedOperator *op = entry.first;
         if (find(alreadyCounted.begin(), alreadyCounted.end(), op) == alreadyCounted.end()) {
             cost += op->baseCost;
             alreadyCounted.push_back(op);
@@ -111,14 +131,15 @@ int planCost(PlanSet &planSet) {
     return cost;
 }
 
-vector<RelaxedOperator *> serializePlan(const PlanSet &planSet, const State &initialState) {
-    State currentState = initialState;
-    vector<RelaxedOperator *> serializedPlan;
+Plan serializePlan(const PlanSet &planSet, Variable *initialStateVariable) {
+    State currentState;
+    currentState.add(initialStateVariable);
+    Plan serializedPlan;
     bool finished = false;
     while (!finished) {
         finished = true;
         foreach(const PlanSetEntry &entry, planSet) {
-            RelaxedOperator *op = entry.first;
+            const RelaxedOperator *op = entry.first;
             if (currentState.contains(entry.second)) {
                 continue;
             }
@@ -136,7 +157,7 @@ vector<RelaxedOperator *> serializePlan(const PlanSet &planSet, const State &ini
 
 
 
-PlanSet extractPlan(const RelaxedTask &task, vector<RelaxedOperator *> &hAddAchiever, const State *initialState,
+PlanSet extractPlan(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, const State *initialState,
                     Variable *goalVariable, Variable *assumedVariable) {
     State defaultInitialState;
     if (initialState == NULL) {
@@ -161,7 +182,7 @@ PlanSet extractPlan(const RelaxedTask &task, vector<RelaxedOperator *> &hAddAchi
     while (!stack.empty()) {
         Variable *v = stack.back();
         stack.pop_back();
-        RelaxedOperator *achiever = hAddAchiever[v->id];
+        const RelaxedOperator *achiever = hAddAchiever[v->id];
         planSet.push_back(make_pair(achiever, v));
         foreach(Variable *w, achiever->preconditions) {
             if (!w->closed) {
@@ -187,11 +208,11 @@ void addContainedFluents(const PlanSet &planSet, State &state) {
     }
 }
 
-PlanSet findReplacedPlanPart(const RelaxedTask &task, vector<RelaxedOperator *> &hAddAchiever, Variable *const y, const PlanSet &planSet) {
+PlanSet findReplacedPlanPart(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, Variable *const y, const PlanSet &planSet) {
     PlanSet planAssumingY = extractPlan(task, hAddAchiever, NULL, NULL, y);
     PlanSet remainingPart;
     foreach(const PlanSetEntry &planSetEntry, planSet) {
-        RelaxedOperator *op = planSetEntry.first;
+        const RelaxedOperator *op = planSetEntry.first;
         bool operatorUsedForDifferentPurpose = false;
         foreach(const PlanSetEntry &planAssumingYEntry, planAssumingY) {
             if (planAssumingYEntry.first == op) {
@@ -205,7 +226,7 @@ PlanSet findReplacedPlanPart(const RelaxedTask &task, vector<RelaxedOperator *> 
     return remainingPart;
 }
 
-PlanSet findDependentPlanPart(const RelaxedTask &task, vector<RelaxedOperator *> &hAddAchiever, Variable *const y) {
+PlanSet findDependentPlanPart(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, Variable *const y) {
     vector<bool> isDependent = vector<bool>(task.variables.size());
     foreach(Variable *var, task.variables) {
         var->closed = false;
@@ -218,12 +239,12 @@ PlanSet findDependentPlanPart(const RelaxedTask &task, vector<RelaxedOperator *>
     return dependentPart;
 }
 
-void findDependentPlanPartRec(vector<RelaxedOperator *> &hAddAchiever, Variable *const y, Variable *const goalVariable, vector<bool> &isDependent, PlanSet &dependentPart) {
+void findDependentPlanPartRec(vector<const RelaxedOperator *> &hAddAchiever, Variable *const y, Variable *const goalVariable, vector<bool> &isDependent, PlanSet &dependentPart) {
     if (goalVariable->closed) {
         return;
     }
     isDependent[goalVariable->id] = false;
-    RelaxedOperator *achiever = hAddAchiever[goalVariable->id];
+    const RelaxedOperator *achiever = hAddAchiever[goalVariable->id];
     foreach(Variable *v, achiever->preconditions) {
         if (v == y) {
             isDependent[goalVariable->id] = true;
@@ -235,7 +256,7 @@ void findDependentPlanPartRec(vector<RelaxedOperator *> &hAddAchiever, Variable 
         }
     }
     if (isDependent[goalVariable->id]) {
-        pair<RelaxedOperator *, Variable *> newEntry = make_pair(achiever, goalVariable);
+        pair<const RelaxedOperator *, Variable *> newEntry = make_pair(achiever, goalVariable);
         if (find(dependentPart.begin(), dependentPart.end(), newEntry) == dependentPart.end()) {
             dependentPart.push_back(newEntry);
         }
@@ -243,7 +264,7 @@ void findDependentPlanPartRec(vector<RelaxedOperator *> &hAddAchiever, Variable 
     goalVariable->closed = true;
 }
 
-bool improvePlan(const RelaxedTask &task, vector<RelaxedOperator *> &hAddAchiever, const PlanSet &planSet) {
+bool improvePlan(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, const PlanSet &planSet) {
     State improvableFacts = collectAchievedFacts(planSet);
     foreach(Variable *y, improvableFacts) {
 #ifdef FULL_DEBUG
@@ -296,7 +317,7 @@ bool improvePlan(const RelaxedTask &task, vector<RelaxedOperator *> &hAddAchieve
             cout << "  " << v->name << endl;
         }
 #endif
-        vector<RelaxedOperator *> alternativeHAddAchiever;
+        vector<const RelaxedOperator *> alternativeHAddAchiever;
         alternativeHAddAchiever.resize(hAddAchiever.size());
         PlanSet alternativePlan = discoverPlan(task, alternativeHAddAchiever, &initialStateAfterReplace, y, &ignoredAddEffects);
 #ifdef FULL_DEBUG

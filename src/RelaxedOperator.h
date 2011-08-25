@@ -47,4 +47,6 @@ public:
  */
 typedef std::vector<UIntEx> OperatorCosts;
 
+typedef std::vector<const RelaxedOperator *> Plan;
+
 #endif

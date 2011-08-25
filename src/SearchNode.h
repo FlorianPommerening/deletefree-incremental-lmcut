@@ -47,7 +47,7 @@ public:
     unsigned int currentCost;
     State currentState;
     // plan used to reach this state
-    std::vector<const RelaxedOperator *> partialPlan;
+    Plan partialPlan;
     // Valid landmarks in this node, together with their cost partitioning.
     UnitCostLandmarkCollection landmarkCollection;
     // Cost function for the part of the cost partitioning that was not used in landmarks.

@@ -47,7 +47,7 @@ UIntEx BranchAndBoundSearch::run(const int initialLowerBound, const UIntEx initi
         cout << "    Discovering initial bound ... " << flush;
         Timer cpuTimer(CPU_TIME);
         // try to get better initial upper bound by using Steiner tree improvement
-        vector<RelaxedOperator *> hAddAchiever;
+        vector<const RelaxedOperator *> hAddAchiever;
         hAddAchiever.resize(this->task.variables.size());
         PlanSet initialPlanSet = discoverPlan(this->task, hAddAchiever);
         this->initialPlanCost = planCost(initialPlanSet);
@@ -55,7 +55,7 @@ UIntEx BranchAndBoundSearch::run(const int initialLowerBound, const UIntEx initi
         cout << "done (" << this->initialPlanCost << ") " << this->initialPlanTime << endl;
         if (this->costLowerBound == this->initialPlanCost) {
             cout << "    Initial solution was perfect" << endl;
-            Plan serializedPlan = serializePlan(initialPlanSet, initialNode.currentState);
+            Plan serializedPlan = serializePlan(initialPlanSet, this->task.init);
             this->plan.assign(serializedPlan.begin(), serializedPlan.end());
             return this->initialPlanCost;
         }
@@ -65,7 +65,7 @@ UIntEx BranchAndBoundSearch::run(const int initialLowerBound, const UIntEx initi
         this->optimizedInitialPlanCost = planCost(optimizedInitialPlanSet);
         this->optimizedInitialPlanTime = cpuTimer.elapsed();
         cout << "      done (" << this->optimizedInitialPlanCost << ") " << this->optimizedInitialPlanTime << endl;
-        Plan serializedPlan = serializePlan(optimizedInitialPlanSet, initialNode.currentState);
+        Plan serializedPlan = serializePlan(optimizedInitialPlanSet, this->task.init);
         this->plan.assign(serializedPlan.begin(), serializedPlan.end());
         if (this->costUpperBound > optimizedInitialPlanCost) {
             this->costUpperBound = optimizedInitialPlanCost;
@@ -105,10 +105,19 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNod
     // Have we reached the goal? If so, update the current best solution and return with its cost.
     // Test on heuristic == 0 is faster than subset test and should filter out most of the nodes during the search.
     if (searchNode.heuristicValue == 0 && searchNode.currentState.contains(this->task.goal)) {
+        // can use swap, as the search node is no longer needed (this is a bit of a hack)
+        swap(this->plan, const_cast<SearchNode &>(searchNode).partialPlan);
         this->costUpperBound = searchNode.currentCost;
-        this->plan.clear();
-        this->plan.assign(searchNode.partialPlan.begin(), searchNode.partialPlan.end());
         cout << "    New Solution, updated bounds (" << this->costLowerBound << "-" << this->costUpperBound << ")" << endl;
+        if (this->options.improveIntermediatePlans) {
+            PlanSet optimizedPlanSet = optimizePlan(this->task, this->plan);
+            int optimizedPlanCost = planCost(optimizedPlanSet);
+            if (this->costUpperBound > optimizedPlanCost) {
+                this->plan = serializePlan(optimizedPlanSet, this->task.init);
+                this->costUpperBound = optimizedPlanCost;
+                cout << "    New Solution, updated bounds (" << this->costLowerBound << "-" << this->costUpperBound << ")" << endl;
+            }
+        }
         return this->costUpperBound;
     }
 

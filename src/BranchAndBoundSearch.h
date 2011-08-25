@@ -86,7 +86,7 @@ private:
     /*
      * Always contains the best plan discovered so far. If run() returns, this contains a plan with cost h^+.
      */
-    std::vector<const RelaxedOperator *> plan;
+    Plan plan;
     /*
      * Number of nodes expanded during the search. A node counts as expanded, when at least one of its successors was generated.
      */

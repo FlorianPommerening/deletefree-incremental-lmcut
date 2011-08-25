@@ -11,6 +11,10 @@ struct OptimizationOptions {
      */
     static const bool initialUpperBound = true;
     /*
+     * Use the Steiner tree plan improvement procedure to improve plans found during the search
+     */
+    static const bool improveIntermediatePlans = true;
+    /*
      * Use iterative deepening A* to search for h^+ (default is Branch-and-Bound-Search)
      */
     static const bool idaStarSearch = false;
