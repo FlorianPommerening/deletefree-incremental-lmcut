@@ -50,9 +50,116 @@ Variable *RelaxedTask::getVariable(const std::string &name) const {
     throw "Unknown variable '" + name + "'";
 }
 
-bool RelaxedTask::removeIrrelevantVariables() {
+bool RelaxedTask::removeUnnecessaryParts() {
     this->crossreference();
+    vector<bool> variableNecesary = vector<bool>(this->variables.size(), true);
+    vector<bool> operatorNecesary = vector<bool>(this->operators.size(), true);
+    // In a relaxed task only first achievers are relevant (i.e. operators that add an effect that was not previously added)
+    this->filterFirstAchievers(variableNecesary, operatorNecesary);
     // The goal is relevant. If an operator adds a relevant variable all its preconditions are relevant
+    this->filterIrrelevant(variableNecesary, operatorNecesary);
+
+
+    if (!variableNecesary[this->init->id]) {
+        // unsolvable
+        return false;
+    }
+    // remove unnecessary operators and unnecessary variables from preconditions and effects
+    Variable *dummyPrecondition = this->getVariable("@@precond");
+    if (!dummyPrecondition) {
+        throw "Task is not in canonical form. Use parse function to create a task object.";
+    }
+    vector<RelaxedOperator *>::iterator itOp = this->operators.begin();
+    while (itOp != this->operators.end()) {
+        RelaxedOperator *op = *itOp;
+        if (operatorNecesary[op->id]) {
+            op->effects.removeUnnecessary(variableNecesary);
+            op->preconditions.removeUnnecessary(variableNecesary);
+            if (op->effects.size() == 0) {
+                operatorNecesary[op->id] = false;
+            }
+            else if (op->preconditions.size() == 0) {
+                // make sure the task stays in canonical form
+                op->preconditions.add(dummyPrecondition);
+                // if each operator already has a precondition, this might never trigger
+                // and the dummy precondition will be removed again
+                variableNecesary[dummyPrecondition->id] = true;
+            }
+        }
+        if (!operatorNecesary[op->id]) {
+            itOp = this->operators.erase(itOp);
+        } else {
+            ++itOp;
+        }
+    }
+    // remove unnecessary variables
+    vector<Variable *> relevantVariables;
+    relevantVariables.reserve(this->variables.size());
+    foreach(Variable *var, this->variables) {
+        if (variableNecesary[var->id]) {
+            relevantVariables.push_back(var);
+        }
+    }
+    std::swap(this->variables, relevantVariables);
+
+    State::setFullVariableSet(&this->variables);
+
+    // cross reference entries can be invalid, so recreate them
+    this->crossreference();
+    if (this->operators.empty()) {
+        return this->init == this->goal;
+    }
+    return true;
+}
+
+void RelaxedTask::filterFirstAchievers(vector<bool> &variableNecesary, vector<bool> &operatorNecesary) {
+    vector<bool> isFirstAchiever = vector<bool>(this->operators.size(), false);
+    foreach(Variable *v, this->variables) {
+        if (v == this->init) {
+            // init needs no achievers
+            continue;
+        }
+        if (!variableNecesary[v->id]) {
+            // removed by previous filter
+            continue;
+        }
+        bool hasAchiver = false;
+        // get maximal reachable state without using operators that add v
+        State maximalStateWithoutV;
+        maximalStateWithoutV.add(this->init);
+        bool stateChanged = true;
+        while (stateChanged) {
+            stateChanged = false;
+            foreach(RelaxedOperator *op, this->operators) {
+                if (!operatorNecesary[op->id] ||
+                    !op->isApplicable(maximalStateWithoutV) ||
+                    find(op->effects.begin(), op->effects.end(), v) != op->effects.end()) {
+                    continue;
+                }
+                if (!maximalStateWithoutV.contains(op->effects)) {
+                    op->apply(maximalStateWithoutV);
+                    stateChanged = true;
+                }
+            }
+        }
+
+        foreach(RelaxedOperator *op, v->effect_of) {
+            if (!operatorNecesary[op->id] || !op->isApplicable(maximalStateWithoutV)) {
+                // removed by previous filter or not reachable without reaching v first
+                continue;
+            }
+            isFirstAchiever[op->id] = true;
+            hasAchiver = true;
+        }
+        variableNecesary[v->id] = variableNecesary[v->id] & hasAchiver;
+    }
+    foreach(RelaxedOperator *op, this->operators) {
+        operatorNecesary[op->id] = operatorNecesary[op->id] & isFirstAchiever[op->id];
+    }
+}
+
+void RelaxedTask::filterIrrelevant(vector<bool> &variableNecesary, vector<bool> &operatorNecesary) {
+    // start with assuming nothing but the goal is relevant and mark backwards
     vector<bool> relevant = vector<bool>(this->variables.size());
     foreach(Variable *var, this->variables) {
         relevant[var->id] = false;
@@ -67,57 +174,21 @@ bool RelaxedTask::removeIrrelevantVariables() {
             continue;
         }
         relevant[var->id] = true;
+        // push all preconditions that havn't been previously removed
         foreach(RelaxedOperator *op, var->effect_of) {
-            foreach(Variable *pre, op->preconditions) {
-                relevantVariableQueue.push(pre);
+            if (operatorNecesary[op->id]) {
+                foreach(Variable *pre, op->preconditions) {
+                    if (variableNecesary[pre->id]) {
+                        relevantVariableQueue.push(pre);
+                    }
+                }
             }
         }
     }
-    if (!relevant[this->init->id]) {
-        // unsolvable
-        return false;
+    // update filter
+    foreach(Variable *v, this->variables) {
+        variableNecesary[v->id] = variableNecesary[v->id] & relevant[v->id];
     }
-    // remove unnecessary operators and unnecessary variables from preconditions and effects
-    Variable *dummyPrecondition = this->getVariable("@@precond");
-    if (!dummyPrecondition) {
-        throw "Task is not in canonical form. Use parse function to create a task object.";
-    }
-    vector<RelaxedOperator *>::iterator itOp = this->operators.begin();
-    while (itOp != this->operators.end()) {
-        RelaxedOperator *op = *itOp;
-        op->effects.removeIrrelevant(relevant);
-        op->preconditions.removeIrrelevant(relevant);
-        if (op->effects.size() == 0) {
-            itOp = this->operators.erase(itOp);
-            continue;
-        }
-        if (op->preconditions.size() == 0) {
-            // make sure the task stays in canonical form
-            op->preconditions.add(dummyPrecondition);
-            // if each operator already has a precondition, this might never trigger
-            // and the dummy precondition will be removed again
-            relevant[dummyPrecondition->id] = true;
-        }
-        ++itOp;
-    }
-    // remove unnecessary variables
-    vector<Variable *> relevantVariables;
-    relevantVariables.reserve(relevant.size());
-    foreach(Variable *var, this->variables) {
-        if (relevant[var->id]) {
-            relevantVariables.push_back(var);
-        }
-    }
-    std::swap(this->variables, relevantVariables);
-
-    State::setFullVariableSet(&this->variables);
-
-    // cross reference entries can be invalid, so recreate them
-    this->crossreference();
-    if (this->operators.empty()) {
-        return this->init == this->goal;
-    }
-    return true;
 }
 
 void RelaxedTask::crossreference() {

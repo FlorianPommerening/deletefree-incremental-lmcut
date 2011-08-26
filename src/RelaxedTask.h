@@ -39,13 +39,15 @@ public:
     // find a variable with that name and return its address
     Variable *getVariable(const std::string &name) const;
     // relevance analysis
-    bool removeIrrelevantVariables();
+    bool removeUnnecessaryParts();
     // creates mappings from effect to operator and from precondition to operator
     void crossreference();
 
     void printReadable() const;
 
 private:
+    void filterIrrelevant(std::vector<bool> &variableNecesary, std::vector<bool> &operatorNecesary);
+    void filterFirstAchievers(std::vector<bool> &variableNecesary, std::vector<bool> &operatorNecesary);
     void parseTask(std::ifstream &taskfile);
     template <class VariableSet>
     void parseVariableSet(std::ifstream &taskfile, VariableSet &set);

@@ -114,12 +114,19 @@ int main(int argc, char *argv[]) {
         cout << "done " << results["relaxation_time"] << endl;
 
         // Relevance analysis
+        int oldVariableCount = translatedTask.variables.size();
+        int oldOperatorCount = translatedTask.operators.size();
         cout << "Removing irrelevant variables ... " << flush;
         cpuTimer.restart();
         // if the task is trivially unsolvable, this can be discovered here
-        bool solvable = translatedTask.removeIrrelevantVariables();
+        bool solvable = translatedTask.removeUnnecessaryParts();
         results["relevance_analysis_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
         cout << "done " << results["relevance_analysis_time"] << endl;
+        cout << "  Removed " << oldVariableCount - translatedTask.variables.size() << " of " << oldVariableCount <<
+                " variables (" << translatedTask.variables.size() << " variables left)" << endl;
+        cout << "  Removed " << oldOperatorCount - translatedTask.operators.size() << " of " << oldOperatorCount <<
+                " operators (" << translatedTask.operators.size() << " operators left)" << endl;
+
 
         /*
         // calculate some statistics on the inital node

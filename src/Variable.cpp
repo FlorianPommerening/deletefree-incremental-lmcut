@@ -27,11 +27,11 @@ void Effects::inplaceIntersection(const Effects &other) {
     swap(this->entries, intersection);
 }
 
-void Effects::removeIrrelevant(const vector<bool> &relevant) {
+void Effects::removeUnnecessary(const vector<bool> &variableNecessary) {
     vector<Variable *> relevantSubset;
     relevantSubset.reserve(this->entries.size());
     foreach(Variable *v, this->entries) {
-        if (relevant[v->id]) {
+        if (variableNecessary[v->id]) {
             relevantSubset.push_back(v);
         }
     }

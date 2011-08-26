@@ -56,7 +56,7 @@ public:
 
     void inplaceIntersection(const Effects &other);
 
-    void removeIrrelevant(const std::vector<bool> &relevant);
+    void removeUnnecessary(const std::vector<bool> &variableNecessary);
 
     iterator begin() {
         return this->entries.begin();
