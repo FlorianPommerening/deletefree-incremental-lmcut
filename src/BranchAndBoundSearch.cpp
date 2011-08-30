@@ -43,10 +43,10 @@ UIntEx BranchAndBoundSearch::run(const int initialLowerBound, const UIntEx initi
         this->costLowerBound = initialNode.heuristicValue;
     }
 
+    // try to get better initial upper bound by using Steiner tree improvement
     if (this->options.initialUpperBound) {
         cout << "    Discovering initial bound ... " << flush;
         Timer cpuTimer(CPU_TIME);
-        // try to get better initial upper bound by using Steiner tree improvement
         vector<const RelaxedOperator *> hAddAchiever;
         hAddAchiever.resize(this->task.variables.size());
         PlanSet initialPlanSet = discoverPlan(this->task, hAddAchiever);
@@ -72,6 +72,8 @@ UIntEx BranchAndBoundSearch::run(const int initialLowerBound, const UIntEx initi
         }
         if (this->costLowerBound == optimizedInitialPlanCost) {
             cout << "    Optimization of initial solution was perfect" << endl;
+            // its not necessary to return here (the search would do that anyway in the first step)
+            // but this way we can see the reasoning for returning better
             return optimizedInitialPlanCost;
         }
     }
