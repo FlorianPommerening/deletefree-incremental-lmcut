@@ -54,6 +54,7 @@ PlanSet discoverPlan(const RelaxedTask &task, vector<const RelaxedOperator *> &h
         queue.pop();
         UIntEx cost = entry.first;
         Variable *v = entry.second;
+        // TODO is this really enough to avoid popping the same variable twice? Otherwise operator costs could be off.
         if (hAddVariableCost[v->id] < cost) {
             continue;
         }
@@ -123,6 +124,7 @@ int planCost(PlanSet &planSet) {
     int cost = 0;
     foreach(const PlanSetEntry &entry, planSet) {
         const RelaxedOperator *op = entry.first;
+        // TODO use an array mapping operator ids to bool instead
         if (find(alreadyCounted.begin(), alreadyCounted.end(), op) == alreadyCounted.end()) {
             cost += op->baseCost;
             alreadyCounted.push_back(op);
@@ -140,6 +142,7 @@ Plan serializePlan(const PlanSet &planSet, Variable *initialStateVariable) {
         finished = true;
         foreach(const PlanSetEntry &entry, planSet) {
             const RelaxedOperator *op = entry.first;
+            // TODO is this the fastest way to prevent operators from being applied twice?
             if (currentState.contains(entry.second)) {
                 continue;
             }
@@ -153,9 +156,6 @@ Plan serializePlan(const PlanSet &planSet, Variable *initialStateVariable) {
     }
     return serializedPlan;
 }
-
-
-
 
 PlanSet extractPlan(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, const State *initialState,
                     Variable *goalVariable, Variable *assumedVariable) {
@@ -214,6 +214,7 @@ PlanSet findReplacedPlanPart(const RelaxedTask &task, vector<const RelaxedOperat
     foreach(const PlanSetEntry &planSetEntry, planSet) {
         const RelaxedOperator *op = planSetEntry.first;
         bool operatorUsedForDifferentPurpose = false;
+        // TODO this loop could also be avoided if extractPlan would mark operators in an array mapping operators to (contained/not contained)
         foreach(const PlanSetEntry &planAssumingYEntry, planAssumingY) {
             if (planAssumingYEntry.first == op) {
                 operatorUsedForDifferentPurpose = true;
@@ -257,6 +258,8 @@ void findDependentPlanPartRec(vector<const RelaxedOperator *> &hAddAchiever, Var
     }
     if (isDependent[goalVariable->id]) {
         pair<const RelaxedOperator *, Variable *> newEntry = make_pair(achiever, goalVariable);
+        // TODO is it even possible to reach the same var twice? can we use closed?
+        // not to self: be careful here, there could be a reason why closed is only set after this!
         if (find(dependentPart.begin(), dependentPart.end(), newEntry) == dependentPart.end()) {
             dependentPart.push_back(newEntry);
         }
@@ -287,6 +290,7 @@ bool improvePlan(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddA
             cout << "  " << entry.first->name << " achieving " << entry.second->name << endl;
         }
 #endif
+        // TODO could use array mapping operator id to 0 (unused), 1 (replaced part), 2 (dependent part), 3 (remaining part)
         PlanSet remainingPlanPart;
         foreach(PlanSetEntry entry, planSet) {
             if (find(replacedPlanPart.begin(), replacedPlanPart.end(), entry) == replacedPlanPart.end() &&
