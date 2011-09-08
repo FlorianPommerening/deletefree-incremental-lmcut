@@ -64,7 +64,7 @@ struct OptimizationOptions {
     int expansionLimit;
 
     OptimizationOptions() {
-        expansionLimit = 10000;
+        expansionLimit = 100;
     }
 };
 
