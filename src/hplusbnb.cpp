@@ -287,17 +287,26 @@ SearchClass runSearch(RelaxedTask &task, Results &results, OptimizationOptions &
     OperatorSelectorClass opSelector = OperatorSelectorClass(options);
     SearchClass search = SearchClass(task, opSelector, options);
     UIntEx h_plus_value = search.run();
-    results["h_plus_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
-    results["h_plus"] = h_plus_value.toString();
-    results["bnb_expansions"] = boost::lexical_cast<string>(search.getExpansionCount());
-    results["bnb_unit_propagations"] = boost::lexical_cast<string>(search.getUnitPropagationCount());
-    ostringstream planstring;
-    foreach(const RelaxedOperator *op, search.getPlan()) {
-        planstring << op->name << ", ";
+    if (options.expansionLimit != 0 && search.getExpansionCount() >= options.expansionLimit) {
+        results["error"] = "Exceeded expansion limit of " + boost::lexical_cast<string>(options.expansionLimit);
+        results["h_plus_guess_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
+        results["h_plus_guess"] = h_plus_value.toString();
+        results["bnb_expansions"] = boost::lexical_cast<string>(search.getExpansionCount());
+        results["bnb_unit_propagations"] = boost::lexical_cast<string>(search.getUnitPropagationCount());
+        cout << "exceeded expansion bound (" << options.expansionLimit << ") " << results["bnb_unit_propagations"] << " unit propagations " << results["h_plus_guess_time"] << endl;
+    } else {
+        results["h_plus_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
+        results["h_plus"] = h_plus_value.toString();
+        results["bnb_expansions"] = boost::lexical_cast<string>(search.getExpansionCount());
+        results["bnb_unit_propagations"] = boost::lexical_cast<string>(search.getUnitPropagationCount());
+        ostringstream planstring;
+        foreach(const RelaxedOperator *op, search.getPlan()) {
+            planstring << op->name << ", ";
+        }
+        results["plan"] = planstring.str();
+        cout << "done (" << h_plus_value << ") " << results["bnb_expansions"] << " expansions " << results["bnb_unit_propagations"] << " unit propagations " << results["h_plus_time"] << endl;
+        cout << "    With plan: " << results["plan"] << endl;
     }
-    results["plan"] = planstring.str();
-    cout << "done (" << h_plus_value << ") " << results["bnb_expansions"] << " expansions " << results["bnb_unit_propagations"] << " unit propagations " << results["h_plus_time"] << endl;
-    cout << "    With plan: " << results["plan"] << endl;
     return search;
 }
 

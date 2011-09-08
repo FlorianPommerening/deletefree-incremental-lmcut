@@ -9,15 +9,15 @@ struct OptimizationOptions {
     /*
      * Use the Steiner tree plan improvement procedure to calculate an initial upper bound
      */
-    static const bool initialUpperBound = false;
+    static const bool initialUpperBound = true;
     /*
      * Use the Steiner tree plan improvement procedure to improve plans found during the search
      */
-    static const bool improveIntermediatePlans = false;
+    static const bool improveIntermediatePlans = true;
     /*
      * Use iterative deepening A* to search for h^+ (default is Branch-and-Bound-Search)
      */
-    static const bool idaStarSearch = true;
+    static const bool idaStarSearch = false;
     /*
      * selectOperatorInSmallestLandmark
      * true: An applicable operator contained a minimal size landmark is chosen in each step
@@ -49,13 +49,23 @@ struct OptimizationOptions {
      * This leads to a shorter time per node but potentially worse landmarks.
      * If set to true, LM-cut is run with the default cost function in each step.
      */
-    static const bool incrementalSearch = true;
+    static const bool incrementalSearch = false;
     /*
      * If set to true, the search will only run until a first solution is discovered.
      * This is only useful to get an idea of the range in which h+ falls.
      * To emphasize that this doesn't calculate h+, the search returns infinity.
      */
     static const bool breakOnFirstSolution = false;
+
+    // TODO somehow this doesn't work as static const int, so we set it in the c'tor for now (all of this should be changed to command line options anyway)
+    /*
+     * If this is set to a value other than 0, the search will stop after that amount of expansions and return infinity
+     */
+    int expansionLimit;
+
+    OptimizationOptions() {
+        expansionLimit = 10000;
+    }
 };
 
 #endif /* OPTIONS_H_ */

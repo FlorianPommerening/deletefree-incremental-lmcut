@@ -163,6 +163,9 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNod
         this->unitPropagationCount += successor->unitPropagationCount;
         // recursively continue the search in depth first manner
         UIntEx planCost = this->recursiveBranchAndBound(*successor);
+        if (this->options.expansionLimit != 0 && this->expansionCount >= this->options.expansionLimit) {
+            return UIntEx::INF;
+        }
         // a finite return value means, that a better solution was found in this subtree
         if (planCost.hasFiniteValue()) {
             foundBetterPlan = true;
