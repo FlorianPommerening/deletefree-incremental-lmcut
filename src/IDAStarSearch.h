@@ -36,8 +36,28 @@ public:
         return this->expansionCount;
     }
 
+    /*
+     * The last layer is the layer in which a solution is discovered.
+     * This is work that has to be done in Branch and Bound search as well.
+     */
     int getExpansionCountLastLayer() const {
         return this->bnbSearch.getExpansionCount();
+    }
+
+    int getTimeLastLayer() const {
+        return this->currentLayerTime;
+    }
+
+    /*
+     * The second to last layer would be enough to proof that there is no better solution after a solution has been discovered.
+     * This is the non-redundant part of the proof
+     */
+    int getExpansionCountSecondToLastLayer() const {
+        return this->previousLayerExpansions;
+    }
+
+    int getTimeSecondToLastLayer() const {
+        return this->previousLayerTime;
     }
 
     int getUnitPropagationCount() const {
@@ -47,6 +67,9 @@ private:
     const RelaxedTask &task;
     BranchAndBoundSearch bnbSearch;
     int expansionCount;
+    int previousLayerExpansions;
+    int previousLayerTime;
+    int currentLayerTime;
     int unitPropagationCount;
 };
 

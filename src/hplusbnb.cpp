@@ -229,6 +229,9 @@ int main(int argc, char *argv[]) {
             if (options.idaStarSearch) {
                 IDAStarSearch search = runSearch<IDAStarSearch, AchieveLandmarksTryGoalOperatorSelector>(translatedTask, results, options);
                 results["bnb_expansions_last_layer"] = boost::lexical_cast<string>(search.getExpansionCountLastLayer());
+                results["bnb_expansions_second_to_last_layer"] = boost::lexical_cast<string>(search.getExpansionCountSecondToLastLayer());
+                results["bnb_time_last_layer"] = boost::lexical_cast<string>(search.getTimeLastLayer());
+                results["bnb_time_second_to_last_layer"] = boost::lexical_cast<string>(search.getTimeSecondToLastLayer());
             } else {
                 BranchAndBoundSearch search = runSearch<BranchAndBoundSearch, AchieveLandmarksTryGoalOperatorSelector>(translatedTask, results, options);
                 if (options.initialUpperBound) {
