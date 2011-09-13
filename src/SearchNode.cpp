@@ -145,8 +145,13 @@ void SearchNode::updateHeuristicValue() {
         this->landmarkCollection.clear();
     }
     // run heuristic calculation
-    lmCut(this->task, this->currentState, this->operatorCost, this->landmarkCollection);
-    this->heuristicValue = this->landmarkCollection.getCost();
+    UIntEx lmCutResult = lmCut(this->task, this->currentState, this->operatorCost, this->landmarkCollection);
+    // TODO: is it safe to do this instead?   this->heuristicValue += lmCutResult;
+    if (lmCutResult == UIntEx::INF) {
+        this->heuristicValue = UIntEx::INF;
+    } else {
+        this->heuristicValue = this->landmarkCollection.getCost();
+    }
 }
 
 void SearchNode::unitPropagation() {
@@ -158,13 +163,13 @@ void SearchNode::unitPropagation() {
     while (stateChanged) {
         stateChanged = false;
         // try 0-base-cost operators
-        if (!this->options.autoApplyZeroCostOperators) {
+        if (this->options.autoApplyZeroCostOperators) {
             foreach(RelaxedOperator *freeOp, this->task.zeroBaseCostOperators) {
                 stateChanged = this->tryApplyUnitPropagationOperator(freeOp);
             }
         }
         // try operators in landmarks of size 1
-        if (!this->options.autoApplyUnitLandmarks) {
+        if (this->options.autoApplyUnitLandmarks) {
             vector<RelaxedOperator *> &singleOperatorLandmarks = this->landmarkCollection.getSingleOperatorLandmarks();
             foreach(RelaxedOperator *op, singleOperatorLandmarks) {
                 stateChanged = this->tryApplyUnitPropagationOperator(op);

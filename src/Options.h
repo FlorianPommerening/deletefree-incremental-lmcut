@@ -49,7 +49,7 @@ struct OptimizationOptions {
      * This leads to a shorter time per node but potentially worse landmarks.
      * If set to true, LM-cut is run with the default cost function in each step.
      */
-    static const bool incrementalSearch = false;
+    static const bool incrementalSearch = true;
     /*
      * If set to true, the search will only run until a first solution is discovered.
      * This is only useful to get an idea of the range in which h+ falls.
@@ -64,7 +64,7 @@ struct OptimizationOptions {
     int expansionLimit;
 
     OptimizationOptions() {
-        expansionLimit = 100;
+        expansionLimit = 0;
     }
 };
 
