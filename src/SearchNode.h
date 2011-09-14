@@ -73,7 +73,7 @@ private:
     void unitPropagation();
     // apply operator without update if it is applicable
     bool tryApplyUnitPropagationOperator(RelaxedOperator *op);
-    // list of landmarks that could be used for unit propagation
+    // vector of landmarks that could be used for unit propagation
     std::vector<Landmark *> singleOperatorLandmarks;
     OptimizationOptions &options;
 };
