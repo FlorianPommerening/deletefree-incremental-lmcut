@@ -200,21 +200,15 @@ void SearchNode::unitPropagation() {
     while (stateChanged) {
         stateChanged = false;
         // try 0-base-cost operators
-        if (!this->options.autoApplyZeroCostOperators) {
+        if (this->options.autoApplyZeroCostOperators) {
             foreach(RelaxedOperator *freeOp, this->task.zeroBaseCostOperators) {
                 stateChanged = this->tryApplyUnitPropagationOperator(freeOp);
             }
         }
         // try operators in landmarks of size 1
-        if (!this->options.autoApplyUnitLandmarks) {
-            vector<Landmark *>::iterator it = this->singleOperatorLandmarks.begin();
-            while (it != this->singleOperatorLandmarks.end()) {
-                // applyOperatorWithoutUpdate() can delete the entry in singleOperatorLandmarks
-                // copy iterator so it can be used for erase without breaking the loop
-                vector<Landmark *>::iterator current = it;
-                // increment iterator before (!!!) erase
-                ++it;
-                Landmark *unitClause = *current;
+        if (this->options.autoApplyUnitLandmarks) {
+            for (int i=this->singleOperatorLandmarks.size()-1; i > -1; --i) {
+                Landmark *unitClause = this->singleOperatorLandmarks[i];
                 RelaxedOperator *op = unitClause->begin()->first;
                 stateChanged = this->tryApplyUnitPropagationOperator(op);
             }
