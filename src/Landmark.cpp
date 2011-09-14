@@ -155,7 +155,7 @@ int UnitCostLandmarkCollection::getValidLandmarkIds() {
 std::vector<RelaxedOperator*> &UnitCostLandmarkCollection::getSingleOperatorLandmarks() {
     if (this->singleOperatorLandmarksDirty) {
         unsigned nValid = 0;
-        for(unsigned current = 0; current < this->landmarks.size(); ++current) {
+        for(unsigned current = 0; current < this->singleOperatorLandmarks.size(); ++current) {
             RelaxedOperator *op = this->singleOperatorLandmarks[current];
             if (this->operatorToLandmark[op->id] != -1) {
                 this->singleOperatorLandmarks[nValid] = this->singleOperatorLandmarks[current];
