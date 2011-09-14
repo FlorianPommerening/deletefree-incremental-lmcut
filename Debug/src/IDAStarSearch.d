@@ -3,7 +3,7 @@ src/IDAStarSearch.d src/IDAStarSearch.o: ../src/IDAStarSearch.cpp \
  ../src/Variable.h ../src/UIntEx.h ../src/foreach.h \
  ../src/RelaxedOperator.h ../src/OperatorSelector.h ../src/SearchNode.h \
  ../src/Landmark.h ../src/PointerMap.h ../src/BranchAndBoundSearch.h \
- ../src/lmcut.h
+ ../src/lmcut.h ../src/Timer.h
 
 ../src/IDAStarSearch.h:
 
@@ -30,3 +30,5 @@ src/IDAStarSearch.d src/IDAStarSearch.o: ../src/IDAStarSearch.cpp \
 ../src/BranchAndBoundSearch.h:
 
 ../src/lmcut.h:
+
+../src/Timer.h:
