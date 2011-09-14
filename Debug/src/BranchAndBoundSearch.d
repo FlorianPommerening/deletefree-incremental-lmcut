@@ -3,7 +3,7 @@ src/BranchAndBoundSearch.d src/BranchAndBoundSearch.o: \
  ../src/Options.h ../src/RelaxedTask.h ../src/Variable.h ../src/UIntEx.h \
  ../src/foreach.h ../src/RelaxedOperator.h ../src/SearchNode.h \
  ../src/Landmark.h ../src/PointerMap.h ../src/OperatorSelector.h \
- ../src/steinertreeImprove.h
+ ../src/Timer.h ../src/steinertreeImprove.h
 
 ../src/BranchAndBoundSearch.h:
 
@@ -26,5 +26,7 @@ src/BranchAndBoundSearch.d src/BranchAndBoundSearch.o: \
 ../src/PointerMap.h:
 
 ../src/OperatorSelector.h:
+
+../src/Timer.h:
 
 ../src/steinertreeImprove.h:
