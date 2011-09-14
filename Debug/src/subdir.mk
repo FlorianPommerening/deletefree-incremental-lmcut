@@ -6,6 +6,7 @@
 CPP_SRCS += \
 ../src/BranchAndBoundSearch.cpp \
 ../src/GabowSCC.cpp \
+../src/IDAStarSearch.cpp \
 ../src/Landmark.cpp \
 ../src/OperatorSelector.cpp \
 ../src/RelaxedTask.cpp \
@@ -20,6 +21,7 @@ CPP_SRCS += \
 OBJS += \
 ./src/BranchAndBoundSearch.o \
 ./src/GabowSCC.o \
+./src/IDAStarSearch.o \
 ./src/Landmark.o \
 ./src/OperatorSelector.o \
 ./src/RelaxedTask.o \
@@ -34,6 +36,7 @@ OBJS += \
 CPP_DEPS += \
 ./src/BranchAndBoundSearch.d \
 ./src/GabowSCC.d \
+./src/IDAStarSearch.d \
 ./src/Landmark.d \
 ./src/OperatorSelector.d \
 ./src/RelaxedTask.d \
