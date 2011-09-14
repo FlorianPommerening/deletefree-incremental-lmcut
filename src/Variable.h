@@ -94,7 +94,8 @@ public:
     public:
         StateIterator(): state(NULL), index(0) {}
         StateIterator(StateClass *state, int index): state(state), index(index) {
-            if (this->state->containsIndex[this->index] == 0) {
+            if (this->index < this->state->containsIndex.size() &&
+                this->state->containsIndex[this->index] == 0) {
                 this->increment();
             }
         }

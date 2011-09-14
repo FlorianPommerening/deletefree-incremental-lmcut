@@ -158,13 +158,13 @@ void SearchNode::unitPropagation() {
     while (stateChanged) {
         stateChanged = false;
         // try 0-base-cost operators
-        if (!this->options.autoApplyZeroCostOperators) {
+        if (this->options.autoApplyZeroCostOperators) {
             foreach(RelaxedOperator *freeOp, this->task.zeroBaseCostOperators) {
                 stateChanged = this->tryApplyUnitPropagationOperator(freeOp);
             }
         }
         // try operators in landmarks of size 1
-        if (!this->options.autoApplyUnitLandmarks) {
+        if (this->options.autoApplyUnitLandmarks) {
             vector<RelaxedOperator *> &singleOperatorLandmarks = this->landmarkCollection.getSingleOperatorLandmarks();
             foreach(RelaxedOperator *op, singleOperatorLandmarks) {
                 stateChanged = this->tryApplyUnitPropagationOperator(op);
