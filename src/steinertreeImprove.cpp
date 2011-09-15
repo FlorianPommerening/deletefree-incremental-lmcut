@@ -268,7 +268,8 @@ void findDependentPlanPartRec(vector<const RelaxedOperator *> &hAddAchiever, Var
 }
 
 bool improvePlan(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, const PlanSet &planSet) {
-    State improvableFacts = collectAchievedFacts(planSet);
+    State improvableFacts;
+    addContainedFluents(planSet, improvableFacts);
     foreach(Variable *y, improvableFacts) {
 #ifdef FULL_DEBUG
         cout << "IMPROVING ON " << y->name << endl;
