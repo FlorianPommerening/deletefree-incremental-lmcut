@@ -6,15 +6,15 @@
 
 #include <algorithm>
 #include <queue>
+#include <assert.h>
 
 using namespace std;
 PlanSet extractPlan(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, const State *initialState=NULL,
                     Variable *goalVariable=NULL, Variable *assumedVariable=NULL);
-State collectAchievedFacts(const PlanSet &planSet);
 void addContainedFluents(const PlanSet &planSet, State &state);
-PlanSet findReplacedPlanPart(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, Variable *const y, const PlanSet &planSet);
-PlanSet findDependentPlanPart(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, Variable *const y);
-void findDependentPlanPartRec(vector<const RelaxedOperator *> &hAddAchiever, Variable *const y, Variable *const goalVariable, vector<bool> &isDependent, PlanSet &dependentPart);
+PlanSet findReplacedPlanPart(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, Variable *const y, const PlanSet &planSet, vector<int> &markIn, const int markAs);
+PlanSet findDependentPlanPart(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, Variable *const y, vector<int> &markIn, const int markAs);
+void findDependentPlanPartRec(vector<const RelaxedOperator *> &hAddAchiever, Variable *const y, Variable *const goalVariable, vector<bool> &isDependent, PlanSet &dependentPart, vector<int> &markIn, const int markAs);
 bool improvePlan(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, const PlanSet &planSet);
 
 PlanSet discoverPlan(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever,
@@ -86,7 +86,7 @@ PlanSet discoverPlan(const RelaxedTask &task, vector<const RelaxedOperator *> &h
 PlanSet optimizePlan(const RelaxedTask &task, PlanSet &planSet, vector<const RelaxedOperator *> &hAddAchiever) {
     while (improvePlan(task, hAddAchiever, planSet)) {
         planSet = extractPlan(task, hAddAchiever);
-        cout << "        improved solution to cost " << planCost(planSet) << endl;
+        cout << "        improved solution to cost " << planCost(task, planSet) << endl;
     }
     return planSet;
 }
@@ -118,16 +118,14 @@ PlanSet optimizePlan(const RelaxedTask &task, const Plan &plan) {
     return optimizePlan(task, planSet, hAddAchiever);
 }
 
-int planCost(PlanSet &planSet) {
-    vector<const RelaxedOperator *> alreadyCounted;
-    alreadyCounted.reserve(planSet.size());
+int planCost(const RelaxedTask &task, PlanSet &planSet) {
+    vector<int> alreadyCounted = vector<int>(task.operators.size(), 0);
     int cost = 0;
     foreach(const PlanSetEntry &entry, planSet) {
         const RelaxedOperator *op = entry.first;
-        // TODO use an array mapping operator ids to bool instead
-        if (find(alreadyCounted.begin(), alreadyCounted.end(), op) == alreadyCounted.end()) {
+        if (alreadyCounted[op->id] == 0) {
             cost += op->baseCost;
-            alreadyCounted.push_back(op);
+            alreadyCounted[op->id] = 1;
         }
     }
     return cost;
@@ -138,21 +136,24 @@ Plan serializePlan(const PlanSet &planSet, Variable *initialStateVariable) {
     currentState.add(initialStateVariable);
     Plan serializedPlan;
     bool finished = false;
+    bool stateChanged = false;
     while (!finished) {
         finished = true;
+        stateChanged = false;
         foreach(const PlanSetEntry &entry, planSet) {
             const RelaxedOperator *op = entry.first;
-            // TODO is this the fastest way to prevent operators from being applied twice?
             if (currentState.contains(entry.second)) {
                 continue;
             }
             if (op->isApplicable(currentState)) {
                 op->apply(currentState);
                 serializedPlan.push_back(op);
+                stateChanged = true;
             } else {
                 finished = false;
             }
         }
+        assert(stateChanged);
     }
     return serializedPlan;
 }
@@ -194,40 +195,32 @@ PlanSet extractPlan(const RelaxedTask &task, vector<const RelaxedOperator *> &hA
     return planSet;
 }
 
-State collectAchievedFacts(const PlanSet &planSet) {
-    State achieved;
-    foreach(const PlanSetEntry &entry, planSet) {
-        achieved.add(entry.first->effects);
-    }
-    return achieved;
-}
-
 void addContainedFluents(const PlanSet &planSet, State &state) {
     foreach(const PlanSetEntry &entry, planSet) {
         state.add(entry.second);
     }
 }
 
-PlanSet findReplacedPlanPart(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, Variable *const y, const PlanSet &planSet) {
+PlanSet findReplacedPlanPart(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, Variable *const y,
+                             const PlanSet &planSet, vector<int> &markIn, const int markAs) {
     PlanSet planAssumingY = extractPlan(task, hAddAchiever, NULL, NULL, y);
+    vector<int> usedForDifferentPurpose =  vector<int>(task.operators.size(), 0);
+    foreach(const PlanSetEntry &entry, planAssumingY) {
+        usedForDifferentPurpose[entry.first->id] = 1;
+    }
     PlanSet remainingPart;
     foreach(const PlanSetEntry &planSetEntry, planSet) {
         const RelaxedOperator *op = planSetEntry.first;
-        bool operatorUsedForDifferentPurpose = false;
-        // TODO this loop could also be avoided if extractPlan would mark operators in an array mapping operators to (contained/not contained)
-        foreach(const PlanSetEntry &planAssumingYEntry, planAssumingY) {
-            if (planAssumingYEntry.first == op) {
-                operatorUsedForDifferentPurpose = true;
-            }
-        }
-        if (!operatorUsedForDifferentPurpose) {
+        if (usedForDifferentPurpose[op->id] == 0) {
             remainingPart.push_back(planSetEntry);
+            markIn[planSetEntry.second->id] = markAs;
         }
     }
     return remainingPart;
 }
 
-PlanSet findDependentPlanPart(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, Variable *const y) {
+PlanSet findDependentPlanPart(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, Variable *const y,
+                              vector<int> &markIn, const int markAs) {
     vector<bool> isDependent = vector<bool>(task.variables.size());
     foreach(Variable *var, task.variables) {
         var->closed = false;
@@ -236,11 +229,12 @@ PlanSet findDependentPlanPart(const RelaxedTask &task, vector<const RelaxedOpera
     isDependent[task.init->id] = false;
 
     PlanSet dependentPart;
-    findDependentPlanPartRec(hAddAchiever, y, task.goal, isDependent, dependentPart);
+    findDependentPlanPartRec(hAddAchiever, y, task.goal, isDependent, dependentPart, markIn, markAs);
     return dependentPart;
 }
 
-void findDependentPlanPartRec(vector<const RelaxedOperator *> &hAddAchiever, Variable *const y, Variable *const goalVariable, vector<bool> &isDependent, PlanSet &dependentPart) {
+void findDependentPlanPartRec(vector<const RelaxedOperator *> &hAddAchiever, Variable *const y, Variable *const goalVariable, vector<bool> &isDependent,
+                              PlanSet &dependentPart, vector<int> &markIn, const int markAs) {
     if (goalVariable->closed) {
         return;
     }
@@ -251,30 +245,34 @@ void findDependentPlanPartRec(vector<const RelaxedOperator *> &hAddAchiever, Var
             isDependent[goalVariable->id] = true;
             continue;
         }
-        findDependentPlanPartRec(hAddAchiever, y, v, isDependent, dependentPart);
+        findDependentPlanPartRec(hAddAchiever, y, v, isDependent, dependentPart, markIn, markAs);
         if (isDependent[v->id]) {
             isDependent[goalVariable->id] = true;
         }
     }
     if (isDependent[goalVariable->id]) {
         pair<const RelaxedOperator *, Variable *> newEntry = make_pair(achiever, goalVariable);
-        // TODO is it even possible to reach the same var twice? can we use closed?
-        // not to self: be careful here, there could be a reason why closed is only set after this!
-        if (find(dependentPart.begin(), dependentPart.end(), newEntry) == dependentPart.end()) {
+        // note to self: be careful here, there could be a reason why closed is only set after this!
+        if (markIn[goalVariable->id] != markAs) {
             dependentPart.push_back(newEntry);
+            markIn[goalVariable->id] = markAs;
         }
     }
     goalVariable->closed = true;
 }
 
 bool improvePlan(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddAchiever, const PlanSet &planSet) {
+    const int NO_PART = 0;
+    const int REPLACED_PART  = 1;
+    const int DEPENDENT_PART = 2;
     State improvableFacts;
     addContainedFluents(planSet, improvableFacts);
     foreach(Variable *y, improvableFacts) {
 #ifdef FULL_DEBUG
         cout << "IMPROVING ON " << y->name << endl;
 #endif
-        PlanSet replacedPlanPart = findReplacedPlanPart(task, hAddAchiever, y, planSet);
+        vector<int> planPart = vector<int>(task.variables.size(), NO_PART);
+        PlanSet replacedPlanPart = findReplacedPlanPart(task, hAddAchiever, y, planSet, planPart, REPLACED_PART);
 #ifdef FULL_DEBUG
         cout << "Replaced Part" << endl;
         foreach(PlanSetEntry entry, replacedPlanPart) {
@@ -284,18 +282,16 @@ bool improvePlan(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddA
         if (replacedPlanPart.empty()) {
             continue;
         }
-        PlanSet dependentPlanPart = findDependentPlanPart(task, hAddAchiever, y);
+        PlanSet dependentPlanPart = findDependentPlanPart(task, hAddAchiever, y, planPart, DEPENDENT_PART);
 #ifdef FULL_DEBUG
         cout << "Dependent Part" << endl;
         foreach(PlanSetEntry entry, dependentPlanPart) {
             cout << "  " << entry.first->name << " achieving " << entry.second->name << endl;
         }
 #endif
-        // TODO could use array mapping operator id to 0 (unused), 1 (replaced part), 2 (dependent part), 3 (remaining part)
         PlanSet remainingPlanPart;
         foreach(PlanSetEntry entry, planSet) {
-            if (find(replacedPlanPart.begin(), replacedPlanPart.end(), entry) == replacedPlanPart.end() &&
-                find(dependentPlanPart.begin(), dependentPlanPart.end(), entry) == dependentPlanPart.end()) {
+            if (planPart[entry.second->id] != REPLACED_PART && planPart[entry.second->id] != DEPENDENT_PART) {
                 remainingPlanPart.push_back(entry);
             }
         }
@@ -331,10 +327,8 @@ bool improvePlan(const RelaxedTask &task, vector<const RelaxedOperator *> &hAddA
             cout << "  " << entry.first->name << " achieving " << entry.second->name << endl;
         }
 #endif
-        if (planCost(alternativePlan) < planCost(replacedPlanPart)) {
+        if (planCost(task, alternativePlan) < planCost(task, replacedPlanPart)) {
             foreach(PlanSetEntry &entry, alternativePlan) {
-            // TODO according to the paper this might also be:
-            // for q in collect_achieved_facts(alternative_plan):
                 hAddAchiever[entry.second->id] = entry.first;
             }
             return true;

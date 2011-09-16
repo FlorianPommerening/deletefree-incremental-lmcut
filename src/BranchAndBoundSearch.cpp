@@ -50,7 +50,7 @@ UIntEx BranchAndBoundSearch::run(const int initialLowerBound, const UIntEx initi
         vector<const RelaxedOperator *> hAddAchiever;
         hAddAchiever.resize(this->task.variables.size());
         PlanSet initialPlanSet = discoverPlan(this->task, hAddAchiever);
-        this->initialPlanCost = planCost(initialPlanSet);
+        this->initialPlanCost = planCost(this->task, initialPlanSet);
         this->initialPlanTime = cpuTimer.elapsed();
         cout << "done (" << this->initialPlanCost << ") " << this->initialPlanTime << endl;
         if (this->costLowerBound == this->initialPlanCost) {
@@ -62,7 +62,7 @@ UIntEx BranchAndBoundSearch::run(const int initialLowerBound, const UIntEx initi
         cout << "    Trying to improve initial solution ... " << endl << flush;
         cpuTimer.restart();
         PlanSet optimizedInitialPlanSet = optimizePlan(this->task, initialPlanSet, hAddAchiever);
-        this->optimizedInitialPlanCost = planCost(optimizedInitialPlanSet);
+        this->optimizedInitialPlanCost = planCost(this->task, optimizedInitialPlanSet);
         this->optimizedInitialPlanTime = cpuTimer.elapsed();
         cout << "      done (" << this->optimizedInitialPlanCost << ") " << this->optimizedInitialPlanTime << endl;
         Plan serializedPlan = serializePlan(optimizedInitialPlanSet, this->task.init);
@@ -113,7 +113,7 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNod
         cout << "    New Solution, updated bounds (" << this->costLowerBound << "-" << this->costUpperBound << ")" << endl;
         if (this->options.improveIntermediatePlans) {
             PlanSet optimizedPlanSet = optimizePlan(this->task, this->plan);
-            int optimizedPlanCost = planCost(optimizedPlanSet);
+            int optimizedPlanCost = planCost(this->task, optimizedPlanSet);
             if (this->costUpperBound > optimizedPlanCost) {
                 this->plan = serializePlan(optimizedPlanSet, this->task.init);
                 this->costUpperBound = optimizedPlanCost;

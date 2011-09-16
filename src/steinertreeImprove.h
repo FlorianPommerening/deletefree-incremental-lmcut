@@ -34,7 +34,7 @@ PlanSet optimizePlan(const RelaxedTask &task, const Plan &plan);
 /*
  * The cost of an unserialized plan is the sum of the base cost of all actions occurring in it (each action only counted once)
  */
-int planCost(PlanSet &planSet);
+int planCost(const RelaxedTask &task, PlanSet &planSet);
 
 /*
  * returns a serialized version of the plan. I.e. an ordered list containing the actions in the plan that is applicable in the initial state
