@@ -93,7 +93,7 @@ public:
                                                        boost::forward_traversal_tag> {
     public:
         StateIterator(): state(NULL), index(0) {}
-        StateIterator(StateClass *state, int index): state(state), index(index) {
+        StateIterator(StateClass *state, unsigned int index): state(state), index(index) {
             if (this->index < this->state->containsIndex.size() &&
                 this->state->containsIndex[this->index] == 0) {
                 this->increment();
@@ -122,7 +122,7 @@ public:
 
     private:
         StateClass *state;
-        int index;
+        unsigned int index;
     };
 public:
     typedef Variable* value_type;
@@ -190,7 +190,7 @@ public:
 private:
     std::vector<int> containsIndex;
     int nEntries;
-    static int nVariables;
+    static unsigned int nVariables;
     static std::vector<Variable *> *variables;
 };
 

@@ -40,5 +40,5 @@ void Effects::removeUnnecessary(const vector<bool> &variableNecessary) {
 
 
 
-int State::nVariables = 0;
+unsigned int State::nVariables = 0;
 vector<Variable *> *State::variables;
