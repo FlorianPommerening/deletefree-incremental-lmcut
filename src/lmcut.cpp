@@ -115,7 +115,7 @@ void findCut(const RelaxedTask &task, const State &state, const OperatorCosts &o
                 foreach(Variable *effect, op->effects) {
                     // add op to cut if it contains an effect that is in the goal zone
                     if (goalZone.contains(effect)){
-                        cut->insert(op);
+                        cut->push_back(op);
                         addedToCut = true;
                         break;
                     }
