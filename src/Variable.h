@@ -83,7 +83,6 @@ typedef Effects Preconditions;
  * A set of variables representing a state.
  * Wraps vector<int> with 1 at position i iff variable with id == i is in the set
  * (this will take up more space than vector<bool> but requires no bit magic)
- * TODO: compare performance with vector<bool> and boost::dynamic_bitset
  */
 class State {
 public:

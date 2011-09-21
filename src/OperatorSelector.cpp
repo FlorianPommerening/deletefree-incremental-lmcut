@@ -32,6 +32,9 @@ void AchieveLandmarksOperatorSelector::select(const SearchNode &searchNode, cons
                 if (searchNode.operatorCost[op->id].hasFiniteValue() && op->isApplicable(currentState)) {
                     *nextOperator = op;
                     best = landmarkSize;
+                    // TODO This break reduced the number of expansions by half for depot/pfile10. Find out why and if this transfers to other problems
+                    // TODO Think about switching back to vectors instead of hash sets for vectors
+                    break;
                 }
             }
         }
