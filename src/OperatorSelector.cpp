@@ -6,6 +6,7 @@
 
 #include <limits.h>
 #include <stdexcept>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -14,6 +15,7 @@ void AchieveLandmarksOperatorSelector::select(const SearchNode &searchNode, cons
     *nextOperator = NULL;
     const State &currentState = searchNode.currentState;
     if (this->options.selectOperatorInSmallestLandmark) {
+        vector<RelaxedOperator *> possibleChoices;
         int best = INT_MAX;
         int nLandmarks = searchNode.landmarkCollection.getValidLandmarkIds();
         for(LandmarkId landmarkId=0; landmarkId < nLandmarks; ++landmarkId) {
@@ -24,21 +26,26 @@ void AchieveLandmarksOperatorSelector::select(const SearchNode &searchNode, cons
             //    continue;
             //}
             int landmarkSize = searchNode.landmarkCollection.getSize(landmarkId);
-            if (*nextOperator != NULL && landmarkSize >= best) {
-                // we already know an operator at least as good
+            if (landmarkSize > best) {
+                // we already know better operators
                 continue;
             }
             foreach(RelaxedOperator *op, searchNode.landmarkCollection.iterateLandmark(landmarkId)) {
                 if (searchNode.operatorCost[op->id].hasFiniteValue() && op->isApplicable(currentState)) {
-                    *nextOperator = op;
+                    if (landmarkSize < best) {
+                        // forget operators in larger LMs
+                        possibleChoices.clear();
+                    }
                     best = landmarkSize;
-                    // TODO This break reduced the number of expansions by half for depot/pfile10. Find out why and if this transfers to other problems
-                    // TODO Think about switching back to vectors instead of hash sets for vectors
-                    break;
+                    possibleChoices.push_back(op);
                 }
             }
         }
-        if (*nextOperator != NULL) {
+        // pick an operator from a smallest LM uniformly at random
+        if (!possibleChoices.empty()) {
+            *nextOperator = possibleChoices[rand() % possibleChoices.size()];
+            // *nextOperator = possibleChoices[0];
+            // *nextOperator = possibleChoices[possibleChoices.size() -1];
             return;
         }
     }

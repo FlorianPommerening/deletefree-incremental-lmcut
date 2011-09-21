@@ -6,6 +6,8 @@
 #include <map>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
+#include <stdlib.h>
+#include <time.h>
 
 #include "Options.h"
 #include "Variable.h"
@@ -35,8 +37,8 @@ SearchClass runSearch(RelaxedTask &task, Results &results, OptimizationOptions &
 
 int main(int argc, char *argv[]) {
     // Parse command line arguments.
-    if (argc > 3) {
-        cout << "Only 2 arguments expected: problemfile, domainfile" << endl;
+    if (argc > 4) {
+        cout << "Only 2 arguments expected: problemfile domainfile [out_file]" << endl;
         return 1;
     }
     if (argc == 2) {
@@ -52,13 +54,23 @@ int main(int argc, char *argv[]) {
     path taskTranslationPath = translationPath / "output.sas";
     path translationKeyPath = translationPath / "test.groups";
     path resultsFilePath = path(RESULTS_DIR) / (domainName + "_" + problemName + ".result");
-
+    if (argc == 4) {
+        resultsFilePath = argv[3];
+    }
     // TODO use command line options to set this
     // right now: set defaults in class definition to keep all configuration in one place.
     OptimizationOptions options;
+    // initialize random seed
+    unsigned int randomSeed;
+    ifstream urandom("/dev/urandom", ios::in|ios::binary);
+    urandom.read(reinterpret_cast<char*>(&randomSeed), sizeof(randomSeed));
+    urandom.close();
+    // do not use time(NULL) here, to avoid getting the same seeds on the grid
+    srand (randomSeed);
 
     // results will contain all properties recorded in the result file
     Results results;
+    results["random_seed"] = boost::lexical_cast<string>(randomSeed);
     Timer cpuTimer(CPU_TIME);
     Timer wallClockTimer(WALLCLOCK_TIME);
     cout.setf(ios::fixed, ios::floatfield);
