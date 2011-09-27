@@ -43,6 +43,13 @@ void AchieveLandmarksOperatorSelector::select(const SearchNode &searchNode, cons
         }
         // pick an operator from a smallest LM uniformly at random
         if (!possibleChoices.empty()) {
+#ifdef FULL_DEBUG
+            if (possibleChoices.size() == 1) {
+                cout << endl << "Only 1 applicable operator in landmarks of minimal size" << endl;
+            } else {
+                cout << endl << "Choosing operator from " << possibleChoices.size() << " possible choices in landmarks of minimal size" << endl;
+            }
+#endif
             *nextOperator = possibleChoices[rand() % possibleChoices.size()];
             // *nextOperator = possibleChoices[0];
             // *nextOperator = possibleChoices[possibleChoices.size() -1];

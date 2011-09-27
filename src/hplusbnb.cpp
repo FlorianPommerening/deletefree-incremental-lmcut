@@ -65,6 +65,11 @@ int main(int argc, char *argv[]) {
     ifstream urandom("/dev/urandom", ios::in|ios::binary);
     urandom.read(reinterpret_cast<char*>(&randomSeed), sizeof(randomSeed));
     urandom.close();
+
+    // HACK test for depot/7
+    // randomSeed = 454619343;
+
+
     // do not use time(NULL) here, to avoid getting the same seeds on the grid
     srand (randomSeed);
 
