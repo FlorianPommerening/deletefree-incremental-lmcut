@@ -215,6 +215,9 @@ void printNode(const SearchNode &searchNode, const UIntEx &upperBound) {
     int nLandmarks = searchNode.landmarkCollection.getValidLandmarkIds();
     for(LandmarkId landmarkId=0; landmarkId < nLandmarks; ++landmarkId) {
         foreach(RelaxedOperator *op, searchNode.landmarkCollection.iterateLandmark(landmarkId)) {
+            if (op->isApplicable(searchNode.currentState)) {
+                std::cout << "*";
+            }
             std::cout << op->name << ", ";
         }
         std::cout << std::endl;
