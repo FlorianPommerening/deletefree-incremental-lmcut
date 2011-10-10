@@ -17,6 +17,7 @@ void AchieveLandmarksOperatorSelector::select(const SearchNode &searchNode, cons
     if (this->options.selectOperatorInSmallestLandmark) {
         vector<RelaxedOperator *> possibleChoices;
         int best = INT_MAX;
+        bool hasOperatorFromPlan = false;
         int nLandmarks = searchNode.landmarkCollection.getValidLandmarkIds();
         for(LandmarkId landmarkId=0; landmarkId < nLandmarks; ++landmarkId) {
             // landmarks of size 1 are handled in unit propagation, but
@@ -31,9 +32,16 @@ void AchieveLandmarksOperatorSelector::select(const SearchNode &searchNode, cons
                 continue;
             }
             foreach(RelaxedOperator *op, searchNode.landmarkCollection.iterateLandmark(landmarkId)) {
+                if (hasOperatorFromPlan && !op->partOfCurrentBestPlan) {
+                    continue;
+                }
                 if (searchNode.operatorCost[op->id].hasFiniteValue() && op->isApplicable(currentState)) {
                     if (landmarkSize < best) {
                         // forget operators in larger LMs
+                        possibleChoices.clear();
+                    }
+                    if (op->partOfCurrentBestPlan && !hasOperatorFromPlan) {
+                        // forget operators that are not in the current best plan
                         possibleChoices.clear();
                     }
                     best = landmarkSize;
