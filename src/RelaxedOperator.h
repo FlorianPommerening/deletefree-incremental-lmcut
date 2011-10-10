@@ -14,8 +14,8 @@
  */
 class RelaxedOperator {
 public:
-    RelaxedOperator(): baseCost(), unsatisfiedPreconditions(0), id(-1) {}
-    RelaxedOperator(int id): baseCost(), unsatisfiedPreconditions(0), id(id) {}
+    RelaxedOperator(): baseCost(), unsatisfiedPreconditions(0), partOfCurrentBestPlan(false), id(-1) {}
+    RelaxedOperator(int id): baseCost(), unsatisfiedPreconditions(0), partOfCurrentBestPlan(false), id(id) {}
 
     std::string name;
     int baseCost;
@@ -25,6 +25,8 @@ public:
     // temporary variable for h^max and h^LM-cut calculation
     Variable *preconditionChoice;
     Effects effects;
+    // this operator is contained in the best currently known plan and should thus be preferred in operator selection
+    mutable bool partOfCurrentBestPlan;
     // values filled by cross-referencing the task
     int id;
     /*
