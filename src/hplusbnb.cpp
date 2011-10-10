@@ -65,8 +65,10 @@ int main(int argc, char *argv[]) {
     ifstream urandom("/dev/urandom", ios::in|ios::binary);
     urandom.read(reinterpret_cast<char*>(&randomSeed), sizeof(randomSeed));
     urandom.close();
+
     // do not use time(NULL) here, to avoid getting the same seeds on the grid
     srand (randomSeed);
+    cout << "Random seed: " << randomSeed << endl << flush;
 
     // results will contain all properties recorded in the result file
     Results results;

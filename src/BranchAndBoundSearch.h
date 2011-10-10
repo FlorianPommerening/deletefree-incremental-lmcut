@@ -6,6 +6,7 @@
 #include "SearchNode.h"
 #include "OperatorSelector.h"
 #include "UIntEx.h"
+#include "steinertreeImprove.h"
 
 /*
  * Represents a search for h^+ for the initial state of a given task.
@@ -31,6 +32,21 @@ public:
 
     UIntEx getCostUpperBound() const {
         return this->costUpperBound;
+    }
+
+    void setPlan(Plan &newPlan) {
+        foreach(const RelaxedOperator *op, this->plan) {
+            op->partOfCurrentBestPlan = false;
+        }
+        swap(this->plan, newPlan);
+        foreach(const RelaxedOperator *op, this->plan) {
+            op->partOfCurrentBestPlan = true;
+        }
+    }
+
+    void setPlan(PlanSet &newPlanset) {
+        Plan serializedPlan = serializePlan(newPlanset, this->task.init);
+        setPlan(serializedPlan);
     }
 
     const std::vector<const RelaxedOperator *> &getPlan() const {
