@@ -51,6 +51,11 @@ struct OptimizationOptions {
      */
     static const bool incrementalSearch = true;
     /*
+     * If set to true, operators occurring in the current plan are preferred over
+     * other operators in landmarks with minimal size (i.e. minimal size counts more than this)
+     */
+    static const bool preferOperatorsFromCurrentPlan = true;
+    /*
      * If set to true, the search will only run until a first solution is discovered.
      * This is only useful to get an idea of the range in which h+ falls.
      * To emphasize that this doesn't calculate h+, the search returns infinity.

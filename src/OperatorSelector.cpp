@@ -32,7 +32,7 @@ void AchieveLandmarksOperatorSelector::select(const SearchNode &searchNode, cons
                 continue;
             }
             foreach(RelaxedOperator *op, searchNode.landmarkCollection.iterateLandmark(landmarkId)) {
-                if (hasOperatorFromPlan && !op->partOfCurrentBestPlan) {
+                if (this->options.preferOperatorsFromCurrentPlan && hasOperatorFromPlan && !op->partOfCurrentBestPlan) {
                     continue;
                 }
                 if (searchNode.operatorCost[op->id].hasFiniteValue() && op->isApplicable(currentState)) {
@@ -40,7 +40,7 @@ void AchieveLandmarksOperatorSelector::select(const SearchNode &searchNode, cons
                         // forget operators in larger LMs
                         possibleChoices.clear();
                     }
-                    if (op->partOfCurrentBestPlan && !hasOperatorFromPlan) {
+                    if (this->options.preferOperatorsFromCurrentPlan && op->partOfCurrentBestPlan && !hasOperatorFromPlan) {
                         // forget operators that are not in the current best plan
                         possibleChoices.clear();
                     }
