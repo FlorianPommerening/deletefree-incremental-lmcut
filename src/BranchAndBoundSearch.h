@@ -133,7 +133,10 @@ private:
      * Returns the value of the best solution in the subtree starting in searchNode if it is cheaper than the current upper bound
      * or infinity if there is no (cheaper) solution in this subtree.
      */
-    UIntEx recursiveBranchAndBound(const SearchNode &searchNode);
+    UIntEx recursiveBranchAndBound(const SearchNode &searchNode, int parentNodeId);
+
+    // HACK
+    int nodeId;
 };
 
 #endif /* BRANCHANDBOUNDSEARCH_H_ */

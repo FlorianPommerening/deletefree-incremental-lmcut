@@ -1,0 +1,37 @@
+digraph foo {
+  node [shape=box, label="init"] n1;
+  node [shape=box,label="navigate rover2 waypoint0 waypoint3\nnavigate rover3 waypoint2 waypoint1\nnavigate rover2 waypoint0 waypoint6\nnavigate rover3 waypoint2 waypoint6\n*sample_soil rover2 rover2store waypoint0\n"] n2;
+  n1 -> n2[ label = "navigate rover1 waypoint2 waypoint1\nnavigate rover1 waypoint2 waypoint6\nnavigate rover1 waypoint2 waypoint0\nnavigate rover1 waypoint1 waypoint3\nsample_rock rover1 rover1store waypoint6\nsample_rock rover1 rover1store waypoint0\nsample_rock rover1 rover1store waypoint3\n" ];
+  node [shape=box,label="navigate rover2 waypoint0 waypoint3\nnavigate rover3 waypoint2 waypoint1\n*navigate rover2 waypoint0 waypoint6\nnavigate rover3 waypoint2 waypoint6\n"] n3;
+  n2 -> n3[ label = "" ];
+  node [shape=box,label="sample_soil rover2 rover2store waypoint6\nnavigate rover2 waypoint0 waypoint3\n*navigate rover3 waypoint2 waypoint1\n"] n4;
+  n3 -> n4[ label = "" ];
+  node [shape=box,label="navigate rover3 waypoint1 waypoint4\n*sample_soil rover2 rover2store waypoint6\n"] n5;
+  n4 -> n5[ label = "" ];
+  node [shape=box,label="*navigate rover3 waypoint1 waypoint4\n"] n6;
+  n5 -> n6[ label = "" ];
+  node [shape=box,label="*sample_soil rover3 rover3store waypoint4\n"] n7;
+  n6 -> n7[ label = "" ];
+  node [shape=box,label="communicate_rock_data rover1 general waypoint3 waypoint1 waypoint4\ncommunicate_rock_data rover1 general waypoint3 waypoint6 waypoint4\ncommunicate_rock_data rover1 general waypoint3 waypoint3 waypoint4\ncommunicate_rock_data rover1 general waypoint6 waypoint6 waypoint4\n*communicate_rock_data rover1 general waypoint6 waypoint1 waypoint4\ncommunicate_rock_data rover1 general waypoint6 waypoint3 waypoint4\ncommunicate_rock_data rover1 general waypoint0 waypoint1 waypoint4\ncommunicate_rock_data rover1 general waypoint0 waypoint6 waypoint4\ncommunicate_rock_data rover1 general waypoint0 waypoint3 waypoint4\n"] n8;
+  n7 -> n8[ label = "" ];
+  node [shape=box,label="communicate_rock_data rover1 general waypoint3 waypoint1 waypoint4\ncommunicate_rock_data rover1 general waypoint3 waypoint6 waypoint4\ncommunicate_rock_data rover1 general waypoint3 waypoint3 waypoint4\ncommunicate_rock_data rover1 general waypoint0 waypoint1 waypoint4\ncommunicate_rock_data rover1 general waypoint0 waypoint6 waypoint4\n*communicate_rock_data rover1 general waypoint0 waypoint3 waypoint4\n"] n9;
+  n8 -> n9[ label = "" ];
+  node [shape=box,label="communicate_rock_data rover1 general waypoint3 waypoint1 waypoint4\n*communicate_rock_data rover1 general waypoint3 waypoint6 waypoint4\ncommunicate_rock_data rover1 general waypoint3 waypoint3 waypoint4\n"] n10;
+  n9 -> n10[ label = "" ];
+  node [shape=box,label="*communicate_soil_data rover3 general waypoint4 waypoint1 waypoint4\ncommunicate_soil_data rover2 general waypoint6 waypoint6 waypoint4\ncommunicate_soil_data rover2 general waypoint0 waypoint6 waypoint4\n"] n11;
+  n10 -> n11[ label = "" ];
+  node [shape=box,label="communicate_soil_data rover2 general waypoint6 waypoint6 waypoint4\n*communicate_soil_data rover2 general waypoint0 waypoint6 waypoint4\n"] n12;
+  n11 -> n12[ label = "" ];
+  node [shape=box,label="*communicate_soil_data rover2 general waypoint6 waypoint6 waypoint4\n"] n13;
+  n12 -> n13[ label = "" ];
+  node [shape=box,label="calibrate rover1 camera4 objective1 waypoint2\ncalibrate rover2 camera3 objective0 waypoint0\ncalibrate rover3 camera0 objective2 waypoint2\nnavigate rover1 waypoint2 waypoint5\nnavigate rover2 waypoint0 waypoint1\nnavigate rover3 waypoint2 waypoint0\ncalibrate rover3 camera0 objective2 waypoint1\ncalibrate rover3 camera0 objective2 waypoint4\ncalibrate rover1 camera4 objective1 waypoint1\nnavigate rover1 waypoint1 waypoint4\n*calibrate rover1 camera4 objective1 waypoint3\ncalibrate rover1 camera4 objective1 waypoint0\n"] n14;
+  n13 -> n14[ label = "" ];
+  node [shape=box,label="take_image rover1 waypoint2 objective2 camera4 low_res\ntake_image rover1 waypoint6 objective2 camera4 low_res\ntake_image rover1 waypoint1 objective2 camera4 low_res\ntake_image rover1 waypoint3 objective2 camera4 low_res\ntake_image rover1 waypoint0 objective2 camera4 low_res\n*take_image rover1 waypoint2 objective2 camera4 colour\ntake_image rover1 waypoint6 objective2 camera4 colour\ntake_image rover1 waypoint1 objective2 camera4 colour\ntake_image rover1 waypoint3 objective2 camera4 colour\ntake_image rover1 waypoint0 objective2 camera4 colour\n"] n15;
+  n14 -> n15[ label = "" ];
+  node [shape=box,label="communicate_image_data rover1 general objective2 colour waypoint6 waypoint4\n*communicate_image_data rover1 general objective2 colour waypoint1 waypoint4\ncommunicate_image_data rover1 general objective2 colour waypoint3 waypoint4\n"] n16;
+  n15 -> n16[ label = "" ];
+  node [shape=box,label="take_image rover1 waypoint2 objective2 camera4 low_res\ntake_image rover1 waypoint6 objective2 camera4 low_res\n*take_image rover1 waypoint1 objective2 camera4 low_res\ntake_image rover1 waypoint3 objective2 camera4 low_res\ntake_image rover1 waypoint0 objective2 camera4 low_res\n"] n17;
+  n16 -> n17[ label = "" ];
+  node [shape=box,label="*communicate_image_data rover1 general objective2 low_res waypoint6 waypoint4\ncommunicate_image_data rover1 general objective2 low_res waypoint1 waypoint4\ncommunicate_image_data rover1 general objective2 low_res waypoint3 waypoint4\n"] n18;
+  n17 -> n18[ label = "" ];
+}

@@ -37,6 +37,7 @@ SearchNode::SearchNode(const SearchNode &other):
                     operatorCost(other.operatorCost),
                     task(other.task),
                     unitPropagationCount(0),
+                    unitPropOps(other.unitPropOps),
                     options(other.options) {
 }
 
@@ -183,6 +184,10 @@ bool SearchNode::tryApplyUnitPropagationOperator(const RelaxedOperator *op) {
 #ifdef FULL_DEBUG
         cout << endl << "Operator applied in unit propagation: " << op->name << endl;
 #endif
+
+        // HACK
+        this->unitPropOps.push_back(op);
+
         this->applyOperatorWithoutUpdate(op);
         this->unitPropagationCount++;
         return true;

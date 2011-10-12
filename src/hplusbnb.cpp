@@ -66,6 +66,15 @@ int main(int argc, char *argv[]) {
     urandom.read(reinterpret_cast<char*>(&randomSeed), sizeof(randomSeed));
     urandom.close();
 
+    // HACK 17 expansions for rovertest/p09b
+    // randomSeed = 824851328;
+    // HACK 18 expansions in rovers/p09
+    // randomSeed = 1246929717;
+    // HACK 3195 expansions in rovers/p09
+    randomSeed = 755065614;
+    // HACK 7107 expansions in rovers/p09
+    // randomSeed = 683442765;
+
     // do not use time(NULL) here, to avoid getting the same seeds on the grid
     srand (randomSeed);
     cout << "Random seed: " << randomSeed << endl << flush;

@@ -76,7 +76,7 @@ UIntEx BranchAndBoundSearch::run(const int initialLowerBound, const UIntEx initi
     }
 
     cout << "    Starting with bounds (" << this->costLowerBound << "-" << this->costUpperBound << ")" << endl;
-    UIntEx result = this->recursiveBranchAndBound(initialNode);
+    UIntEx result = this->recursiveBranchAndBound(initialNode, -1);
     if (result == UIntEx::INF && !this->plan.empty() && initialUpperBound >= this->optimizedInitialPlanCost && initialLowerBound <= this->optimizedInitialPlanCost) {
         // optimized initial plan was perfect and is within expected bounds. no better plan could be discovered
         return this->optimizedInitialPlanCost;
@@ -84,7 +84,10 @@ UIntEx BranchAndBoundSearch::run(const int initialLowerBound, const UIntEx initi
     return result;
 }
 
-UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNode) {
+UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNode, int parentNodeId) {
+    // HACK
+    int currentNodeId = ++this->nodeId;
+
     if (this->options.breakOnFirstSolution && !this->plan.empty()) {
         return UIntEx::INF;
     }
@@ -131,6 +134,17 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNod
 #endif
         return UIntEx::INF;
     }
+    // HACK
+    if (parentNodeId > 0) {
+        cerr << "n" << currentNodeId << ";" << endl;
+        cerr << "  n" << parentNodeId << " -> n" << currentNodeId << "[ label = \"";
+        foreach (const RelaxedOperator *op, searchNode.unitPropOps) {
+            cerr << op->name << "\\n";
+        }
+        searchNode.unitPropOps.clear();
+        cerr << "\" ];" << endl;
+    }
+
     // TODO remove redundant operators???
     bool foundBetterPlan = false;
     SearchNode *successor = NULL;
@@ -159,7 +173,7 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNod
         // Applying or forbidding an operator could have lead to unit propagations; add them to the running total.
         this->unitPropagationCount += successor->unitPropagationCount;
         // recursively continue the search in depth first manner
-        UIntEx planCost = this->recursiveBranchAndBound(*successor);
+        UIntEx planCost = this->recursiveBranchAndBound(*successor, currentNodeId);
         if (this->options.expansionLimit != 0 && this->expansionCount >= this->options.expansionLimit) {
             return UIntEx::INF;
         }

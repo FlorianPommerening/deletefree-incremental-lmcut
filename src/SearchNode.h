@@ -55,6 +55,10 @@ public:
     const RelaxedTask &task;
     // Number of operators applied in unit propagation in this node.
     int unitPropagationCount;
+
+    //HACK
+    mutable std::vector<const RelaxedOperator *> unitPropOps;
+
 private:
     // Applies an operator and changes operator costs and landmarks accordingly
     // but does not update the heuristic value.

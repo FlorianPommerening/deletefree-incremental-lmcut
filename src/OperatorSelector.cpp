@@ -51,6 +51,17 @@ void AchieveLandmarksOperatorSelector::select(const SearchNode &searchNode, cons
             }
 #endif
             *nextOperator = possibleChoices[rand() % possibleChoices.size()];
+
+            // HACK
+            cerr << "  node [shape=box,label=\"";
+            foreach(RelaxedOperator* op, possibleChoices) {
+                if (op == *nextOperator) {
+                    cerr << "*";
+                }
+                cerr << op->name << "\\n";
+            }
+            cerr << "\"] ";
+
             // *nextOperator = possibleChoices[0];
             // *nextOperator = possibleChoices[possibleChoices.size() -1];
             return;

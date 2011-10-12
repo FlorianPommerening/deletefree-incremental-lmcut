@@ -2,7 +2,7 @@
 #define OPTIONS_H_
 
 // very heavy on the output, use only for bug tracing
-// #define FULL_DEBUG
+#define FULL_DEBUG
 
 // TODO use command line options to set these instead of constants
 struct OptimizationOptions {
