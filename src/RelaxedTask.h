@@ -39,7 +39,7 @@ public:
     // find a variable with that name and return its address
     Variable *getVariable(const std::string &name) const;
     // relevance analysis
-    bool removeUnnecessaryParts(std::vector<std::pair<std::string, std::pair<int, int> > > &filteredElements);
+    bool removeUnnecessaryParts(std::vector<std::pair<std::pair<std::string, float>, std::pair<int, int> > > &filteredElements);
     // creates mappings from effect to operator and from precondition to operator
     void crossreference();
 

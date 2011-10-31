@@ -7,6 +7,7 @@
 
 #include "RelaxedTask.h"
 #include "foreach.h"
+#include "Timer.h"
 
 using namespace std;
 
@@ -50,11 +51,12 @@ Variable *RelaxedTask::getVariable(const std::string &name) const {
     throw "Unknown variable '" + name + "'";
 }
 
-bool RelaxedTask::removeUnnecessaryParts(vector<pair<string, pair<int, int> > > &filteredElements) {
+bool RelaxedTask::removeUnnecessaryParts(vector<pair<pair<string, float>, pair<int, int> > > &filteredElements) {
     this->crossreference();
     vector<bool> variableNecesary = vector<bool>(this->variables.size(), true);
     vector<bool> operatorNecesary = vector<bool>(this->operators.size(), true);
 
+    Timer cpuTimer(CPU_TIME);
     bool relevancyFilteringPossible = true;
     bool achieverFilteringPossible = true;
     while (relevancyFilteringPossible || achieverFilteringPossible) {
@@ -62,9 +64,10 @@ bool RelaxedTask::removeUnnecessaryParts(vector<pair<string, pair<int, int> > > 
         int filteredOperators;
         if (relevancyFilteringPossible) {
             // The goal is relevant. If an operator adds a relevant variable all its preconditions are relevant
+            cpuTimer.restart();
             achieverFilteringPossible = this->filterIrrelevant(variableNecesary, operatorNecesary, &filteredVariables, &filteredOperators);
             relevancyFilteringPossible = false;
-            filteredElements.push_back(make_pair("relevance", make_pair(filteredVariables, filteredOperators)));
+            filteredElements.push_back(make_pair(make_pair("relevance", cpuTimer.elapsed()), make_pair(filteredVariables, filteredOperators)));
 #ifdef FULL_DEBUG
             cout << "Relevancy analysis filtered " << filteredVariables << " variables and " << filteredOperators << " operators" << endl;
 #endif
@@ -75,9 +78,10 @@ bool RelaxedTask::removeUnnecessaryParts(vector<pair<string, pair<int, int> > > 
         }
         if (achieverFilteringPossible) {
             // In a relaxed task only first achievers are relevant (i.e. operators that add an effect that was not previously added)
+            cpuTimer.restart();
             relevancyFilteringPossible = this->filterFirstAchievers(variableNecesary, operatorNecesary, &filteredVariables, &filteredOperators);
             achieverFilteringPossible = false;
-            filteredElements.push_back(make_pair("first achiever", make_pair(filteredVariables, filteredOperators)));
+            filteredElements.push_back(make_pair(make_pair("first achiever", cpuTimer.elapsed()), make_pair(filteredVariables, filteredOperators)));
 #ifdef FULL_DEBUG
             cout << "First achiever analysis filtered " << filteredVariables << " variables and " << filteredOperators << " operators" << endl;
 #endif
