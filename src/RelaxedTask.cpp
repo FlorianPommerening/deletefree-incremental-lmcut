@@ -50,20 +50,41 @@ Variable *RelaxedTask::getVariable(const std::string &name) const {
     throw "Unknown variable '" + name + "'";
 }
 
-bool RelaxedTask::removeUnnecessaryParts() {
+bool RelaxedTask::removeUnnecessaryParts(vector<pair<string, pair<int, int> > > &filteredElements) {
     this->crossreference();
     vector<bool> variableNecesary = vector<bool>(this->variables.size(), true);
     vector<bool> operatorNecesary = vector<bool>(this->operators.size(), true);
-    // In a relaxed task only first achievers are relevant (i.e. operators that add an effect that was not previously added)
-    this->filterFirstAchievers(variableNecesary, operatorNecesary);
-    // The goal is relevant. If an operator adds a relevant variable all its preconditions are relevant
-    this->filterIrrelevant(variableNecesary, operatorNecesary);
 
-
-    if (!variableNecesary[this->init->id]) {
-        // unsolvable
-        return false;
+    bool relevancyFilteringPossible = true;
+    bool achieverFilteringPossible = true;
+    while (relevancyFilteringPossible || achieverFilteringPossible) {
+        int filteredVariables;
+        int filteredOperators;
+        if (relevancyFilteringPossible) {
+            // The goal is relevant. If an operator adds a relevant variable all its preconditions are relevant
+            achieverFilteringPossible = this->filterIrrelevant(variableNecesary, operatorNecesary, &filteredVariables, &filteredOperators);
+            relevancyFilteringPossible = false;
+            filteredElements.push_back(make_pair("relevance", make_pair(filteredVariables, filteredOperators)));
+#ifdef FULL_DEBUG
+            cout << "Relevancy analysis filtered " << filteredVariables << " variables and " << filteredOperators << " operators" << endl;
+#endif
+        }
+        if (!variableNecesary[this->init->id]) {
+            // unsolvable
+            return false;
+        }
+        if (achieverFilteringPossible) {
+            // In a relaxed task only first achievers are relevant (i.e. operators that add an effect that was not previously added)
+            relevancyFilteringPossible = this->filterFirstAchievers(variableNecesary, operatorNecesary, &filteredVariables, &filteredOperators);
+            achieverFilteringPossible = false;
+            filteredElements.push_back(make_pair("first achiever", make_pair(filteredVariables, filteredOperators)));
+#ifdef FULL_DEBUG
+            cout << "First achiever analysis filtered " << filteredVariables << " variables and " << filteredOperators << " operators" << endl;
+#endif
+        }
     }
+
+
     // remove unnecessary operators and unnecessary variables from preconditions and effects
     Variable *dummyPrecondition = this->getVariable("@@precond");
     if (!dummyPrecondition) {
@@ -112,7 +133,10 @@ bool RelaxedTask::removeUnnecessaryParts() {
     return true;
 }
 
-void RelaxedTask::filterFirstAchievers(vector<bool> &variableNecesary, vector<bool> &operatorNecesary) {
+bool RelaxedTask::filterFirstAchievers(vector<bool> &variableNecesary, vector<bool> &operatorNecesary, int *filteredVariables, int *filteredOperators) {
+    bool filteredSomething = false;
+    *filteredVariables = 0;
+    *filteredOperators = 0;
     vector<bool> isFirstAchiever = vector<bool>(this->operators.size(), false);
     foreach(Variable *v, this->variables) {
         if (v == this->init) {
@@ -125,24 +149,32 @@ void RelaxedTask::filterFirstAchievers(vector<bool> &variableNecesary, vector<bo
         }
         bool hasAchiver = false;
         // get maximal reachable state without using operators that add v
+        foreach(RelaxedOperator *op, this->operators) {
+            op->unsatisfiedPreconditions = op->preconditions.size();
+        }
         State maximalStateWithoutV;
         maximalStateWithoutV.add(this->init);
-        bool stateChanged = true;
-        while (stateChanged) {
-            stateChanged = false;
-            foreach(RelaxedOperator *op, this->operators) {
-                if (!operatorNecesary[op->id] ||
-                    !op->isApplicable(maximalStateWithoutV) ||
-                    find(op->effects.begin(), op->effects.end(), v) != op->effects.end()) {
+        vector<Variable *> reachedStack;
+        reachedStack.reserve(this->variables.size());
+        reachedStack.push_back(this->init);
+        while (!reachedStack.empty()) {
+            Variable *reachedVar = reachedStack.back();
+            reachedStack.pop_back();
+            foreach(RelaxedOperator *op, reachedVar->precondition_of) {
+                op->unsatisfiedPreconditions--;
+                if (op->unsatisfiedPreconditions != 0 ||
+                        !operatorNecesary[op->id] ||
+                        find(op->effects.begin(), op->effects.end(), v) != op->effects.end()) {
                     continue;
                 }
-                if (!maximalStateWithoutV.contains(op->effects)) {
-                    op->apply(maximalStateWithoutV);
-                    stateChanged = true;
+                foreach(Variable *eff, op->effects) {
+                    if (!maximalStateWithoutV.contains(eff)) {
+                        maximalStateWithoutV.add(eff);
+                        reachedStack.push_back(eff);
+                    }
                 }
             }
         }
-
         foreach(RelaxedOperator *op, v->effect_of) {
             if (!operatorNecesary[op->id] || !op->isApplicable(maximalStateWithoutV)) {
                 // removed by previous filter or not reachable without reaching v first
@@ -151,16 +183,29 @@ void RelaxedTask::filterFirstAchievers(vector<bool> &variableNecesary, vector<bo
             isFirstAchiever[op->id] = true;
             hasAchiver = true;
         }
-        variableNecesary[v->id] = variableNecesary[v->id] & hasAchiver;
+        if (!hasAchiver) {
+            variableNecesary[v->id] = false;
+            filteredSomething = true;
+            (*filteredVariables)++;
+        }
     }
     foreach(RelaxedOperator *op, this->operators) {
-        operatorNecesary[op->id] = operatorNecesary[op->id] & isFirstAchiever[op->id];
+        if (operatorNecesary[op->id] & !isFirstAchiever[op->id]) {
+            operatorNecesary[op->id] = false;
+            filteredSomething = true;
+            (*filteredOperators)++;
+        }
     }
+    return filteredSomething;
 }
 
-void RelaxedTask::filterIrrelevant(vector<bool> &variableNecesary, vector<bool> &operatorNecesary) {
+bool RelaxedTask::filterIrrelevant(vector<bool> &variableNecesary, vector<bool> &operatorNecesary, int *filteredVariables, int *filteredOperators) {
+    bool filteredSomething = false;
+    *filteredVariables = 0;
+    *filteredOperators = 0;
     // start with assuming nothing but the goal is relevant and mark backwards
     vector<bool> relevant = vector<bool>(this->variables.size());
+    vector<bool> operatorRelevant = vector<bool>(this->operators.size());
     foreach(Variable *var, this->variables) {
         relevant[var->id] = false;
     }
@@ -177,6 +222,7 @@ void RelaxedTask::filterIrrelevant(vector<bool> &variableNecesary, vector<bool> 
         // push all preconditions that havn't been previously removed
         foreach(RelaxedOperator *op, var->effect_of) {
             if (operatorNecesary[op->id]) {
+                operatorRelevant[op->id] = true;
                 foreach(Variable *pre, op->preconditions) {
                     if (variableNecesary[pre->id]) {
                         relevantVariableQueue.push(pre);
@@ -187,8 +233,20 @@ void RelaxedTask::filterIrrelevant(vector<bool> &variableNecesary, vector<bool> 
     }
     // update filter
     foreach(Variable *v, this->variables) {
-        variableNecesary[v->id] = variableNecesary[v->id] & relevant[v->id];
+        if (variableNecesary[v->id] & !relevant[v->id]) {
+            variableNecesary[v->id] = false;
+            filteredSomething = true;
+            (*filteredVariables)++;
+        }
     }
+    foreach(RelaxedOperator *op, this->operators) {
+        if (operatorNecesary[op->id] & !operatorRelevant[op->id]) {
+            operatorNecesary[op->id] = false;
+            filteredSomething = true;
+            (*filteredOperators)++;
+        }
+    }
+    return filteredSomething;
 }
 
 void RelaxedTask::crossreference() {

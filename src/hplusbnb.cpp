@@ -130,11 +130,20 @@ int main(int argc, char *argv[]) {
         // Relevance analysis
         int oldVariableCount = translatedTask.variables.size();
         int oldOperatorCount = translatedTask.operators.size();
+        vector<pair<string, pair<int, int> > > filteredElements;
         cout << "Removing irrelevant variables ... " << flush;
         cpuTimer.restart();
         // if the task is trivially unsolvable, this can be discovered here
-        bool solvable = translatedTask.removeUnnecessaryParts();
+        bool solvable = translatedTask.removeUnnecessaryParts(filteredElements);
         results["relevance_analysis_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
+        typedef pair<string, pair<int, int> > ElementType;
+        int i = 0;
+        foreach (ElementType e, filteredElements) {
+            i++;
+            results["filtered_name_" + boost::lexical_cast<string>(i)] = e.first;
+            results["filtered_variables_" + boost::lexical_cast<string>(i)] = boost::lexical_cast<string>(e.second.first);
+            results["filtered_operators_" + boost::lexical_cast<string>(i)] = boost::lexical_cast<string>(e.second.second);
+        }
         cout << "done " << results["relevance_analysis_time"] << endl;
         cout << "  Removed " << oldVariableCount - translatedTask.variables.size() << " of " << oldVariableCount <<
                 " variables (" << translatedTask.variables.size() << " variables left)" << endl;
