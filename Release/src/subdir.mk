@@ -9,6 +9,7 @@ CPP_SRCS += \
 ../src/IDAStarSearch.cpp \
 ../src/Landmark.cpp \
 ../src/OperatorSelector.cpp \
+../src/Options.cpp \
 ../src/RelaxedTask.cpp \
 ../src/SASTask.cpp \
 ../src/SearchNode.cpp \
@@ -25,6 +26,7 @@ OBJS += \
 ./src/IDAStarSearch.o \
 ./src/Landmark.o \
 ./src/OperatorSelector.o \
+./src/Options.o \
 ./src/RelaxedTask.o \
 ./src/SASTask.o \
 ./src/SearchNode.o \
@@ -41,6 +43,7 @@ CPP_DEPS += \
 ./src/IDAStarSearch.d \
 ./src/Landmark.d \
 ./src/OperatorSelector.d \
+./src/Options.d \
 ./src/RelaxedTask.d \
 ./src/SASTask.d \
 ./src/SearchNode.d \

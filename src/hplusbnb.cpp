@@ -31,6 +31,7 @@ typedef map<string, string> Results;
 const string RESULTS_DIR = "./results/";
 const string TRANSLATIONS_DIR = "../../translations/";
 const string TRANSLATE_CMD = "../translate/translate-relaxed.py";
+const string OPTIONS_FILE = "options";
 
 template<class SearchClass, class OperatorSelectorClass>
 SearchClass runSearch(RelaxedTask &task, Results &results, OptimizationOptions &options);
@@ -57,22 +58,15 @@ int main(int argc, char *argv[]) {
     if (argc == 4) {
         resultsFilePath = argv[3];
     }
-    // TODO use command line options to set this
-    // right now: set defaults in class definition to keep all configuration in one place.
-    OptimizationOptions options;
-    // initialize random seed
-    unsigned int randomSeed;
-    ifstream urandom("/dev/urandom", ios::in|ios::binary);
-    urandom.read(reinterpret_cast<char*>(&randomSeed), sizeof(randomSeed));
-    urandom.close();
-
+    // TODO use command line options to set options or at least use them to point to the options file
+    OptimizationOptions options = OptimizationOptions(OPTIONS_FILE);
     // do not use time(NULL) here, to avoid getting the same seeds on the grid
-    srand (randomSeed);
-    cout << "Random seed: " << randomSeed << endl << flush;
+    srand (options.randomSeed);
+    cout << "Random seed: " << options.randomSeed << endl << flush;
 
     // results will contain all properties recorded in the result file
     Results results;
-    results["random_seed"] = boost::lexical_cast<string>(randomSeed);
+    results["random_seed"] = boost::lexical_cast<string>(options.randomSeed);
     Timer cpuTimer(CPU_TIME);
     Timer wallClockTimer(WALLCLOCK_TIME);
     cout.setf(ios::fixed, ios::floatfield);

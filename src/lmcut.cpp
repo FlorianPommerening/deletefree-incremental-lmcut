@@ -10,7 +10,7 @@ using namespace std;
 
 UIntEx lmCut(const RelaxedTask &task) {
     // TODO: change this to call lmCut(task, VariableSet(task->initialState))
-    OptimizationOptions options;
+    OptimizationOptions options = OptimizationOptions("");
     SearchNode initialNode = SearchNode(task, options);
     return initialNode.heuristicValue;
 }

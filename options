@@ -1,0 +1,13 @@
+randomSeed                       = 42
+initialUpperBound                = true
+improveIntermediatePlans         = true
+idaStarSearch                    = false
+selectOperatorInSmallestLandmark = true
+tryGoalOnZeroHeuristic           = true
+autoApplyUnitLandmarks           = true
+autoApplyZeroCostOperators       = true
+avoidExpandingSecondSuccessor    = true
+incrementalSearch                = true
+preferOperatorsFromCurrentPlan   = true
+breakOnFirstSolution             = false
+expansionLimit                   = 0
