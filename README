@@ -1,0 +1,52 @@
+=== Dependencies ===
+Needs
+  * boost header files
+  * libboost_system
+  * libboost_filesystem
+  * librt
+
+=== Changes in boost 1.46 ===
+I used version 1.43 of the boost headers. If you use the current version of boost there is a problem with the "path" class.
+The method path::leaf() was changed from returning a string to returning a path object.
+In that case change line 49 of implementation/src/cppmodule/hplusbnb.cpp from
+    string domainName = path(domainFilename).parent_path().leaf();
+to
+    string domainName = path(domainFilename).parent_path().leaf().string();
+and everything else should work.
+
+
+=== Compiling ===
+Compiling should be possible with
+  cd Release
+  make
+
+If this doesn't work, the compiler needs the boost include
+  -I/usr/include/boost
+and the linker needs he following libs
+ * librt
+ * boost_system
+ * boost_filesystem
+I used static linking so it would run on the grid without too much problems
+
+
+== Setting the options ==
+
+The program uses default options if you do not supply an options file (which probably won't work for you unless you have the directory structure that I use)
+Options are read from a file called "options" in the current working directory.
+There is one with suggested options and comments about the options in the directory "implementation/src/cppmodule".
+
+Change the paths contained in this file to point to the respective files on your computer.
+The translate-relaxed.py script contained in the Fast Downward repository didn't work when I got it so I had to make some small changes to it.
+The modified script is in the directory "implementation/src/translate" and you should change the path in the options file to the path of that file.
+If you run the program from the directory "implementation/src/cppmodule" in the checked out repository, the relative path that is already in the options file should work.
+
+
+== Running ==
+
+Run with
+  ./Release/hplusbnb <path to task file> <task to domain file> [<path to output file>]
+
+Delete relaxations (i.e. SAS+ translations) are searched in <cache directory>/<domain name without .pddl extension>/<task name without .pddl extension>.
+If they are not found there, they are created with the translate-relaxed.py script and saved there.
+I always used the same translation from the cache for all experiments to get reproducable results (I created them by one run, of the program where only the preprocessing was done).
+

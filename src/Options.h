@@ -9,6 +9,13 @@
 class OptimizationOptions {
 public:
     OptimizationOptions(const std::string optionsFilename);
+
+
+    std::string resultDirectory;
+    std::string translationsCacheDirectory;
+    std::string translateRelaxedCommand;
+
+
     /*
      * Seed used for all random choices
      */

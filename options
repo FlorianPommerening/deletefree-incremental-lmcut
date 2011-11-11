@@ -1,13 +1,35 @@
+# paths
+resultDirectory = ./results/
+translationsCacheDirectory = ../../translations
+translateRelaxedCommand = ../translate/translate-relaxed.py
+
+# The seed mainly influences what operator is branched over.
+# Warning: in some c++ libraries the seeds 0 and 1 do the same thing
 randomSeed                       = 1
-initialUpperBound                = false
-improveIntermediatePlans         = false
-idaStarSearch                    = false
-selectOperatorInSmallestLandmark = true
-tryGoalOnZeroHeuristic           = false
-autoApplyUnitLandmarks           = false
+
+# search type (IDA* or branch and bound)
+idaStarSearch                    = true
+
+# change to true for domains with 0-cost operators (doesn't hurt much in other domains, so could also always be true)
 autoApplyZeroCostOperators       = false
-avoidExpandingSecondSuccessor    = true
+
+# initial bound with h^lst (local Steiner Tree improvement) (usefull for branch and bound search, no use for IDA*)
+initialUpperBound                = false
+
+# Steiner Tree improvement for all plans found during the search (usefull for branch and bound search, no use for IDA*)
+improveIntermediatePlans         = false
+
+# can turn search non-incremental for comparison with Fast Downward
 incrementalSearch                = true
+
+
+
+# Options for experimental purposes
+# (do not change these values unless you know what you are doing)
+selectOperatorInSmallestLandmark = true
+avoidExpandingSecondSuccessor    = true
+autoApplyUnitLandmarks           = false
 preferOperatorsFromCurrentPlan   = false
+tryGoalOnZeroHeuristic           = false
 breakOnFirstSolution             = false
 expansionLimit                   = 0

@@ -8,6 +8,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
 
 
 using namespace std;
@@ -18,6 +19,10 @@ bool stringToBool(string value) {
 
 OptimizationOptions::OptimizationOptions(std::string optionsFilename) {
     // set default values
+    // TODO should use better defaults
+    this->resultDirectory = "./results/";
+    this->translationsCacheDirectory = "../../translations/";
+    this->translateRelaxedCommand = "../translate/translate-relaxed.py";
     // initialize random seed
     ifstream urandom("/dev/urandom", ios::in|ios::binary);
     urandom.read(reinterpret_cast<char*>(&(this->randomSeed)), sizeof(this->randomSeed));
@@ -54,7 +59,16 @@ OptimizationOptions::OptimizationOptions(std::string optionsFilename) {
               value = lineTokens[1];
           }
           // set parsed option
-          if (option == "randomSeed") {
+          if (option == "resultDirectory") {
+              this->resultDirectory = value;
+          }
+          else if (option == "translationsCacheDirectory") {
+              this->translationsCacheDirectory = value;
+          }
+          else if (option == "translateRelaxedCommand") {
+              this->translateRelaxedCommand = value;
+          }
+          else if (option == "randomSeed") {
               this->randomSeed = boost::lexical_cast<unsigned int>(value);
           }
           else if (option == "initialUpperBound") {
@@ -93,6 +107,11 @@ OptimizationOptions::OptimizationOptions(std::string optionsFilename) {
           else if (option == "expansionLimit") {
               this->expansionLimit = boost::lexical_cast<int>(value);
           }
+
+          // create directories if not already there
+          boost::filesystem::create_directories( this->resultDirectory );
+          boost::filesystem::create_directories( this->translationsCacheDirectory );
+
     }
     optionsFile.close();
 }

@@ -28,9 +28,6 @@ using namespace boost::filesystem;
 typedef map<string, string> Results;
 
 // TODO: stop hard coding directory names
-const string RESULTS_DIR = "./results/";
-const string TRANSLATIONS_DIR = "../../translations/";
-const string TRANSLATE_CMD = "../translate/translate-relaxed.py";
 const string OPTIONS_FILE = "options";
 
 template<class SearchClass, class OperatorSelectorClass>
@@ -50,16 +47,16 @@ int main(int argc, char *argv[]) {
     string domainFilename = argv[2];
     string problemName = basename(problemFilename);
     string domainName = path(domainFilename).parent_path().leaf();
-    create_directory(RESULTS_DIR);
-    path translationPath = path(TRANSLATIONS_DIR) / domainName / problemName;
+
+    // TODO use command line options to set options or at least use them to point to the options file
+    OptimizationOptions options = OptimizationOptions(OPTIONS_FILE);
+    path translationPath = path(options.translationsCacheDirectory) / domainName / problemName;
     path taskTranslationPath = translationPath / "output.sas";
     path translationKeyPath = translationPath / "test.groups";
-    path resultsFilePath = path(RESULTS_DIR) / (domainName + "_" + problemName + ".result");
+    path resultsFilePath = path(options.resultDirectory) / (domainName + "_" + problemName + ".result");
     if (argc == 4) {
         resultsFilePath = argv[3];
     }
-    // TODO use command line options to set options or at least use them to point to the options file
-    OptimizationOptions options = OptimizationOptions(OPTIONS_FILE);
     // do not use time(NULL) here, to avoid getting the same seeds on the grid
     srand (options.randomSeed);
     cout << "Random seed: " << options.randomSeed << endl << flush;
@@ -79,7 +76,7 @@ int main(int argc, char *argv[]) {
         // check if cached translations already exist
         if (!exists(taskTranslationPath) || !exists(translationKeyPath)) {
             // call python translate-relaxed.py to translate file
-            string command = TRANSLATE_CMD + " " + problemFilename + " " + domainFilename + " " + translationPath.string();
+            string command = options.translateRelaxedCommand + " " + problemFilename + " " + domainFilename + " " + translationPath.string();
             wallClockTimer.restart();
             if (system(command.c_str()) != 0) {
                 cout << "Error while translating the problem into SAS." << endl;
