@@ -21,13 +21,20 @@
 
 using namespace std;
 
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
+    if (parser.dry_run())
+        return 0;
+    else
+        return new LandmarkCutFloHeuristic(opts);
+}
 
-static ScalarEvaluatorPlugin landmark_cut_flo_heuristic_plugin(
-    "lmcutflo", LandmarkCutFloHeuristic::create);
+static Plugin<ScalarEvaluator> _plugin("lmcutflo", _parse);
 
 
 // construction and destruction
-LandmarkCutFloHeuristic::LandmarkCutFloHeuristic(const HeuristicOptions &options)
+LandmarkCutFloHeuristic::LandmarkCutFloHeuristic(const Options &options)
     : Heuristic(options) {
 }
 
@@ -42,6 +49,7 @@ LandmarkCutFloHeuristic::~LandmarkCutFloHeuristic() {
     for (int opId = 0; opId < g_operators.size(); opId++) {
         delete this->relaxedTask.operators[opId];
     }
+    delete this->landmarkCollection;
 }
 
 // initialization
@@ -54,24 +62,25 @@ void LandmarkCutFloHeuristic::initialize() {
         ::exit(1);
     }
 
-
+    int varId = 0;
     propositions.resize(g_variable_domain.size());
     for (int var = 0; var < g_variable_domain.size(); var++) {
         for (int value = 0; value < g_variable_domain[var]; value++) {
             char buf[20];
             sprintf(buf, "var%d#%d", var, value);
             string varname = buf;
-            Variable *newVar = new Variable(varname);
+            Variable *newVar = new Variable(varname, varId++);
             this->relaxedTask.variables.push_back(newVar);
             propositions[var].push_back(newVar);
         }
     }
 
     // canonicalization (if @@precond is not needed it will be removed by the relevance analysis)
-    this->dummyPrecondition = new Variable("@@precond");
+    this->dummyPrecondition = new Variable("@@precond", varId++);
     this->relaxedTask.variables.push_back(this->dummyPrecondition);
-    this->relaxedTask.goal = new Variable("@@goal");
+    this->relaxedTask.goal = new Variable("@@goal", varId++);
     this->relaxedTask.variables.push_back(this->relaxedTask.goal);
+    MyState::setFullVariableSet(&this->relaxedTask.variables);
 
     // initial state is not used/needed as every call to calculate heuristic brings its own state
     // so we can leave out the init operator. This makes the delete relaxation unsolvable, when solved from initial state (which is never done)
@@ -90,7 +99,10 @@ void LandmarkCutFloHeuristic::initialize() {
 //    initOperator.effects.add(this->dummyPrecondition);
 //    this->relaxedTask.operators.push_back(initOperator);
 
-    RelaxedOperator *goalOperator = new RelaxedOperator();
+    this->operatorCosts.resize(g_operators.size() + 1);
+
+    int relaxedOpId = 0;
+    RelaxedOperator *goalOperator = new RelaxedOperator(relaxedOpId++);
     goalOperator->name = "@@goal-operator";
     goalOperator->baseCost = 0;
     for (int i = 0; i < g_goal.size(); i++) {
@@ -106,7 +118,7 @@ void LandmarkCutFloHeuristic::initialize() {
         const Operator &op  = g_operators[opId];
         const vector<Prevail> &prevail = op.get_prevail();
         const vector<PrePost> &pre_post = op.get_pre_post();
-        RelaxedOperator *relaxedOp = new RelaxedOperator();
+        RelaxedOperator *relaxedOp = new RelaxedOperator(relaxedOpId++);
         relaxedOp->baseCost = get_adjusted_cost(op);
         relaxedOp->name = op.get_name();
 
@@ -141,62 +153,26 @@ void LandmarkCutFloHeuristic::initialize() {
             relaxedOp->preconditions.add(this->dummyPrecondition);
         }
         this->relaxedTask.operators.push_back(relaxedOp);
-        this->operatorCosts[relaxedOp] = relaxedOp->baseCost;
+        this->operatorCosts[relaxedOp->id] = relaxedOp->baseCost;
     }
     this->relaxedTask.crossreference();
+    this->landmarkCollection = new UnitCostLandmarkCollection(this->relaxedTask.operators);
 }
 
 int LandmarkCutFloHeuristic::compute_heuristic(const State &state) {
     // need to copy this, so LM-cut can change the values
     OperatorCosts operatorCostCopy = this->operatorCosts;
-    vector<Landmark> landmarks;
-    VariableSet convertedState;
+    MyState convertedState;
     for (int var = 0; var < propositions.size(); var++) {
         Variable *relaxedVar = propositions[var][state[var]];
         convertedState.add(relaxedVar);
     }
     convertedState.add(this->dummyPrecondition);
-    UIntEx heuristic = lmCut(this->relaxedTask, convertedState, operatorCostCopy, landmarks);
-    for (int i= 0; i < landmarks.size(); ++i) {
-        delete landmarks[i];
-    }
+    this->landmarkCollection->clear();
+    UIntEx heuristic = lmCut(this->relaxedTask, convertedState, operatorCostCopy, *landmarkCollection);
     unsigned int heuristicValue;
     if (!heuristic.hasFiniteValue(heuristicValue)) {
         return DEAD_END;
     }
     return heuristicValue;
 }
-
-ScalarEvaluator *LandmarkCutFloHeuristic::create(const std::vector<string> &config,
-                                                 int start, int &end,
-                                                 bool dry_run) {
-    HeuristicOptions common_options;
-
-    if (config.size() <= start) {
-        throw ParseError(start);
-    }
-
-    // "<name>()" or "<name>(<options>)"
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            common_options.add_option_to_parser(option_parser);
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")") {
-            throw ParseError(end);
-        }
-    } else {
-        throw ParseError(start + 1);
-    }
-
-    if (dry_run) {
-        return 0;
-    } else {
-        return new LandmarkCutFloHeuristic(common_options);
-    }
-}
-

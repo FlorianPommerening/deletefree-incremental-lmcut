@@ -6,6 +6,7 @@
 #include "RelaxedTask.h"
 #include "RelaxedOperator.h"
 #include "Variable.h"
+#include "Landmark.h"
 
 #include <vector>
 
@@ -15,6 +16,7 @@ class State;
 
 class LandmarkCutFloHeuristic : public Heuristic {
     RelaxedTask relaxedTask;
+    UnitCostLandmarkCollection *landmarkCollection;
     Variable *dummyPrecondition;
     OperatorCosts operatorCosts;
     std::vector<std::vector<Variable *> > propositions;
@@ -22,7 +24,7 @@ class LandmarkCutFloHeuristic : public Heuristic {
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    LandmarkCutFloHeuristic(const HeuristicOptions &options);
+    LandmarkCutFloHeuristic(const Options &options);
     virtual ~LandmarkCutFloHeuristic();
     static ScalarEvaluator *create(const std::vector<std::string> &config,
                                    int start, int &end, bool dry_run);
