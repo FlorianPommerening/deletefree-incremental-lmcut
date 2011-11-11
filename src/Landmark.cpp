@@ -148,6 +148,8 @@ int UnitCostLandmarkCollection::getValidLandmarkIds() const {
             }
         }
         this->landmarks.resize(nValid);
+        this->sizes.resize(nValid);
+        this->dirty.resize(nValid);
         this->landmarksDirty = false;
     }
     return this->landmarks.size();
