@@ -66,6 +66,7 @@ public:
 private:
     const RelaxedTask &task;
     BranchAndBoundSearch bnbSearch;
+    const OptimizationOptions &options;
     int expansionCount;
     int previousLayerExpansions;
     int previousLayerTime;

@@ -8,7 +8,8 @@ using namespace std;
 
 IDAStarSearch::IDAStarSearch(const RelaxedTask &task, const OperatorSelector &operatorSelector, const OptimizationOptions &options):
                                             task(task),
-                                            bnbSearch(task, operatorSelector, options) {
+                                            bnbSearch(task, operatorSelector, options),
+                                            options(options) {
 }
 
 UIntEx IDAStarSearch::run() {
@@ -30,6 +31,10 @@ UIntEx IDAStarSearch::run() {
         UIntEx solution = this->bnbSearch.run(currentBound, currentBound);
         this->currentLayerTime = cpuTimer.elapsed();
         this->expansionCount += this->bnbSearch.getExpansionCount();
+        if (this->options.expansionLimit != 0 && this->expansionCount >= this->options.expansionLimit) {
+            return UIntEx::INF;
+        }
+
         this->unitPropagationCount += this->bnbSearch.getUnitPropagationCount();
         if (solution.hasFiniteValue()) {
             return solution;
