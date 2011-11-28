@@ -4,6 +4,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/BinarySearch.cpp \
 ../src/BranchAndBoundSearch.cpp \
 ../src/GabowSCC.cpp \
 ../src/IDAStarSearch.cpp \
@@ -21,6 +22,7 @@ CPP_SRCS += \
 ../src/steinertreeImprove.cpp 
 
 OBJS += \
+./src/BinarySearch.o \
 ./src/BranchAndBoundSearch.o \
 ./src/GabowSCC.o \
 ./src/IDAStarSearch.o \
@@ -38,6 +40,7 @@ OBJS += \
 ./src/steinertreeImprove.o 
 
 CPP_DEPS += \
+./src/BinarySearch.d \
 ./src/BranchAndBoundSearch.d \
 ./src/GabowSCC.d \
 ./src/IDAStarSearch.d \
