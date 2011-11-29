@@ -7,6 +7,7 @@
 #include "OperatorSelector.h"
 #include "UIntEx.h"
 #include "steinertreeImprove.h"
+#include "Timer.h"
 
 /*
  * Represents a search for h^+ for the initial state of a given task.
@@ -128,6 +129,22 @@ private:
      * Time used to optimize the initialPlan
      */
     float optimizedInitialPlanTime;
+
+    /*
+     * Time for the current run if restarts are used (0 otherwise)
+     */
+    int restartTime;
+
+    /*
+     * Measures time since last (re)start
+     */
+    Timer restartTimer;
+
+    /*
+     * can return inf because of "time" (exceeded time limit), "expansions" (exceeded expansion limit) or "unsolvable"
+     */
+    // TODO replace by enum
+    std::string error;
 
     /*
      * Returns the value of the best solution in the subtree starting in searchNode if it is cheaper than the current upper bound

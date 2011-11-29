@@ -5,19 +5,19 @@ translateRelaxedCommand = ../translate/translate-relaxed.py
 
 # The seed mainly influences what operator is branched over.
 # Warning: in some c++ libraries the seeds 0 and 1 do the same thing
-randomSeed                       = 1
+randomSeed                       = 2
 
 # search type (IDA* or branch and bound)
-idaStarSearch                    = true
+idaStarSearch                    = false
 
 # change to true for domains with 0-cost operators (doesn't hurt much in other domains, so could also always be true)
-autoApplyZeroCostOperators       = false
+autoApplyZeroCostOperators       = true
 
 # initial bound with h^lst (local Steiner Tree improvement) (usefull for branch and bound search, no use for IDA*)
-initialUpperBound                = false
+initialUpperBound                = true
 
 # Steiner Tree improvement for all plans found during the search (usefull for branch and bound search, no use for IDA*)
-improveIntermediatePlans         = false
+improveIntermediatePlans         = true
 
 # can turn search non-incremental for comparison with Fast Downward
 incrementalSearch                = true
@@ -26,6 +26,8 @@ incrementalSearch                = true
 
 # Options for experimental purposes
 # (do not change these values unless you know what you are doing)
+restartTime = 1
+geometricallyIncreasedRestartTime = true
 selectOperatorInSmallestLandmark = true
 avoidExpandingSecondSuccessor    = true
 autoApplyUnitLandmarks           = false

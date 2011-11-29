@@ -23,7 +23,10 @@ BranchAndBoundSearch::BranchAndBoundSearch(const RelaxedTask &task, const Operat
     initialPlanCost(0),
     initialPlanTime(0),
     optimizedInitialPlanCost(0),
-    optimizedInitialPlanTime(0) {
+    optimizedInitialPlanTime(0),
+    restartTime(options.restartTime),
+    restartTimer(Timer(CPU_TIME)),
+    error("") {
 }
 
 UIntEx BranchAndBoundSearch::run() {
@@ -76,16 +79,58 @@ UIntEx BranchAndBoundSearch::run(const int initialLowerBound, const UIntEx initi
     }
 
     cout << "    Starting with bounds (" << this->costLowerBound << "-" << this->costUpperBound << ")" << endl;
+    this->restartTime = this->options.restartTime;
+    this->restartTimer.restart();
     UIntEx result = this->recursiveBranchAndBound(initialNode);
-    if (result == UIntEx::INF && !this->plan.empty() && initialUpperBound >= this->optimizedInitialPlanCost && initialLowerBound <= this->optimizedInitialPlanCost) {
-        // optimized initial plan was perfect and is within expected bounds. no better plan could be discovered
-        return this->optimizedInitialPlanCost;
+    if (this->error == "expansions") {
+        return UIntEx::INF;
+    }
+    if (this->error == "unsolvable" && !this->plan.empty()) {
+        int planCost = 0;
+        foreach(const RelaxedOperator* op, this->plan) {
+            planCost += op->baseCost;
+        }
+        if (initialUpperBound >= planCost && initialLowerBound <= planCost) {
+            return planCost;
+        }
+        return UIntEx::INF;
+    }
+    // handle restarts
+    if (this->error == "time" && this->restartTime > 0) {
+        while (result == UIntEx::INF) {
+            // use different seed
+            int seed = rand();
+            cout << "Restarting search with new seed (" << seed << ")";
+            srand(seed);
+            if (this->options.geometricallyIncreasedRestartTime) {
+                this->restartTime *= 2;
+            }
+            cout << " and time limit " << this->restartTime << endl;
+            this->error = "";
+            this->restartTimer.restart();
+            UIntEx result = this->recursiveBranchAndBound(initialNode);
+            // TODO should not repeat all this exit code
+            if (this->error == "expansions") {
+                return UIntEx::INF;
+            }
+            if (this->error == "unsolvable" && !this->plan.empty()) {
+                int planCost = 0;
+                foreach(const RelaxedOperator* op, this->plan) {
+                    planCost += op->baseCost;
+                }
+                if (initialUpperBound >= planCost && initialLowerBound <= planCost) {
+                    return planCost;
+                }
+                return UIntEx::INF;
+            }
+        }
     }
     return result;
 }
 
 UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNode) {
     if (this->options.breakOnFirstSolution && !this->plan.empty()) {
+        this->error = "expansions";
         return UIntEx::INF;
     }
 #ifdef FULL_DEBUG
@@ -98,6 +143,7 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNod
 #ifdef FULL_DEBUG
         cout << endl << "Exceeded bound (" << searchNode.getCostLowerBound() << " >= " << this->costUpperBound << ")" << endl << endl;
 #endif
+        this->error = "unsolvable";
         return UIntEx::INF;
     }
 
@@ -117,6 +163,7 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNod
                 cout << "    New Solution, updated bounds (" << this->costLowerBound << "-" << this->costUpperBound << ")" << endl;
             }
         }
+        this->error = "";
         return this->costUpperBound;
     }
 
@@ -129,6 +176,7 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNod
 #ifdef FULL_DEBUG
         cout << endl << "No more applicable operators. Backtracking" << endl << endl;
 #endif
+        this->error = "unsolvable";
         return UIntEx::INF;
     }
     // TODO remove redundant operators???
@@ -161,6 +209,11 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNod
         // recursively continue the search in depth first manner
         UIntEx planCost = this->recursiveBranchAndBound(*successor);
         if (this->options.expansionLimit != 0 && this->expansionCount >= this->options.expansionLimit) {
+            this->error = "expansions";
+            return UIntEx::INF;
+        }
+        if (this->restartTime != 0 && this->restartTimer.elapsed() >= this->restartTime) {
+            this->error = "time";
             return UIntEx::INF;
         }
         // a finite return value means, that a better solution was found in this subtree
@@ -184,12 +237,14 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNod
 #ifdef FULL_DEBUG
         cout << endl << "Backtracking with better plan of cost " << this->costUpperBound << endl;
 #endif
+        this->error = "";
         return this->costUpperBound;
     }
     // else
 #ifdef FULL_DEBUG
     cout << endl << "Backtracking without better plan" << endl;
 #endif
+    this->error = "unsolvable";
     return UIntEx::INF;
 }
 

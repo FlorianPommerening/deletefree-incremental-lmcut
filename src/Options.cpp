@@ -39,6 +39,8 @@ OptimizationOptions::OptimizationOptions(std::string optionsFilename) {
     this->preferOperatorsFromCurrentPlan = true;
     this->breakOnFirstSolution = false;
     this->expansionLimit = 0;
+    this->restartTime = 0;
+    this->geometricallyIncreasedRestartTime = false;
     ifstream optionsFile(optionsFilename.c_str());
     if (!optionsFile.is_open()) {
         cout << "No option file, using default options" << endl;
@@ -107,11 +109,20 @@ OptimizationOptions::OptimizationOptions(std::string optionsFilename) {
           else if (option == "expansionLimit") {
               this->expansionLimit = boost::lexical_cast<int>(value);
           }
-
-          // create directories if not already there
-          boost::filesystem::create_directories( this->resultDirectory );
-          boost::filesystem::create_directories( this->translationsCacheDirectory );
-
+          else if (option == "restartTime") {
+              this->restartTime = boost::lexical_cast<int>(value);
+          }
+          else if (option == "geometricallyIncreasedRestartTime") {
+              this->geometricallyIncreasedRestartTime = stringToBool(value);
+          }
     }
     optionsFile.close();
+
+    if (this->geometricallyIncreasedRestartTime && this->restartTime == 0){
+        this->restartTime = 1;
+    }
+    // create directories if not already there
+    boost::filesystem::create_directories( this->resultDirectory );
+    boost::filesystem::create_directories( this->translationsCacheDirectory );
+
 }

@@ -79,6 +79,17 @@ public:
      * If this is set to a value other than 0, the search will stop after that amount of expansions and return infinity
      */
     int expansionLimit;
+
+    /*
+     * If this is set to a value other than 0, the search will restart with the current best bounds and a new random seed if no solution was found until then
+     */
+    int restartTime;
+
+    /*
+     * If set to true, the search will do restarts starting with 1 second and multiplying this value by 2 each time
+     * if restartTime is also set, the value will start at the restartTime.
+     */
+    int geometricallyIncreasedRestartTime;
 };
 
 #endif /* OPTIONS_H_ */
