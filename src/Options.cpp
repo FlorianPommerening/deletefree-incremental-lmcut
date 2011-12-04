@@ -38,6 +38,7 @@ OptimizationOptions::OptimizationOptions(std::string optionsFilename) {
     this->incrementalSearch = true;
     this->preferOperatorsFromCurrentPlan = true;
     this->breakOnFirstSolution = false;
+    this->dontUseHeuristic = false;
     this->expansionLimit = 0;
     this->restartTime = 0;
     this->geometricallyIncreasedRestartTime = false;
@@ -105,6 +106,9 @@ OptimizationOptions::OptimizationOptions(std::string optionsFilename) {
           }
           else if (option == "breakOnFirstSolution") {
               this->breakOnFirstSolution = stringToBool(value);
+          }
+          else if (option == "dontUseHeuristic") {
+              this->dontUseHeuristic = stringToBool(value);
           }
           else if (option == "expansionLimit") {
               this->expansionLimit = boost::lexical_cast<int>(value);

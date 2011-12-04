@@ -80,6 +80,9 @@ public:
 
     bool boundsOverlap(const SearchNode searchNode) const {
         UIntEx costLowerBound = searchNode.getCostLowerBound();
+        if (this->options.dontUseHeuristic) {
+            costLowerBound = searchNode.currentCost;
+        }
         if (costLowerBound < this->costLowerBound) {
             costLowerBound = this->costLowerBound;
         }

@@ -75,6 +75,13 @@ public:
      * To emphasize that this doesn't calculate h+, the search returns infinity.
      */
     bool breakOnFirstSolution;
+
+    /*
+     * Not using the heuristic value means h=0 is assumed for all nodes.
+     * The heuristic is still computed however, to select operators for branching. this effectively switches off pruning with the h-value.
+     */
+    bool dontUseHeuristic;
+
     /*
      * If this is set to a value other than 0, the search will stop after that amount of expansions and return infinity
      */
