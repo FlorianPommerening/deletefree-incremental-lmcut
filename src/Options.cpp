@@ -42,6 +42,7 @@ OptimizationOptions::OptimizationOptions(std::string optionsFilename) {
     this->expansionLimit = 0;
     this->restartTime = 0;
     this->geometricallyIncreasedRestartTime = false;
+    this->universalRestartStrategy = false;
     ifstream optionsFile(optionsFilename.c_str());
     if (!optionsFile.is_open()) {
         cout << "No option file, using default options" << endl;
@@ -118,6 +119,9 @@ OptimizationOptions::OptimizationOptions(std::string optionsFilename) {
           }
           else if (option == "geometricallyIncreasedRestartTime") {
               this->geometricallyIncreasedRestartTime = stringToBool(value);
+          }
+          else if (option == "universalRestartStrategy") {
+              this->universalRestartStrategy = stringToBool(value);
           }
     }
     optionsFile.close();

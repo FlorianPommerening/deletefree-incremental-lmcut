@@ -4,7 +4,7 @@ src/hplusbnb.d src/hplusbnb.o: ../src/hplusbnb.cpp ../src/Options.h \
  ../src/lmcut.h ../src/Landmark.h ../src/SASTask.h ../src/Timer.h \
  ../src/BranchAndBoundSearch.h ../src/SearchNode.h \
  ../src/OperatorSelector.h ../src/steinertreeImprove.h \
- ../src/IDAStarSearch.h
+ ../src/UniversalRestartSequence.h ../src/IDAStarSearch.h
 
 ../src/Options.h:
 
@@ -35,5 +35,7 @@ src/hplusbnb.d src/hplusbnb.o: ../src/hplusbnb.cpp ../src/Options.h \
 ../src/OperatorSelector.h:
 
 ../src/steinertreeImprove.h:
+
+../src/UniversalRestartSequence.h:
 
 ../src/IDAStarSearch.h:

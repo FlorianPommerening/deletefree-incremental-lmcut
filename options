@@ -11,7 +11,7 @@ randomSeed                       = 1
 idaStarSearch                    = false
 
 # change to true for domains with 0-cost operators (doesn't hurt much in other domains, so could also always be true)
-autoApplyZeroCostOperators       = true
+autoApplyZeroCostOperators       = false
 
 # initial bound with h^lst (local Steiner Tree improvement) (usefull for branch and bound search, no use for IDA*)
 initialUpperBound                = true
@@ -26,8 +26,10 @@ incrementalSearch                = true
 
 # Options for experimental purposes
 # (do not change these values unless you know what you are doing)
-restartTime = 1
-geometricallyIncreasedRestartTime = true
+dontUseHeuristic = false
+restartTime = 0
+geometricallyIncreasedRestartTime = false
+universalRestartStrategy = true
 selectOperatorInSmallestLandmark = true
 avoidExpandingSecondSuccessor    = true
 autoApplyUnitLandmarks           = false

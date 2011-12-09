@@ -97,6 +97,8 @@ public:
      * if restartTime is also set, the value will start at the restartTime.
      */
     int geometricallyIncreasedRestartTime;
+
+    bool universalRestartStrategy;
 };
 
 #endif /* OPTIONS_H_ */

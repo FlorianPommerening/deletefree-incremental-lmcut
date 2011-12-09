@@ -8,6 +8,7 @@
 #include "UIntEx.h"
 #include "steinertreeImprove.h"
 #include "Timer.h"
+#include "UniversalRestartSequence.h"
 
 /*
  * Represents a search for h^+ for the initial state of a given task.
@@ -137,6 +138,11 @@ private:
      * Time for the current run if restarts are used (0 otherwise)
      */
     int restartTime;
+
+    /*
+     * universal restart sequence
+     */
+    UniversalRestartSequence universalRestartSequence;
 
     /*
      * Measures time since last (re)start

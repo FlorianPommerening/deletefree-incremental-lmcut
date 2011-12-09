@@ -79,7 +79,11 @@ UIntEx BranchAndBoundSearch::run(const int initialLowerBound, const UIntEx initi
     }
 
     cout << "    Starting with bounds (" << this->costLowerBound << "-" << this->costUpperBound << ")" << endl;
-    this->restartTime = this->options.restartTime;
+    if (this->options.universalRestartStrategy) {
+        this->restartTime = this->universalRestartSequence.getNext();
+    } else {
+        this->restartTime = this->options.restartTime;
+    }
     this->restartTimer.restart();
     UIntEx result = this->recursiveBranchAndBound(initialNode);
     if (this->error == "expansions") {
@@ -104,6 +108,9 @@ UIntEx BranchAndBoundSearch::run(const int initialLowerBound, const UIntEx initi
             srand(seed);
             if (this->options.geometricallyIncreasedRestartTime) {
                 this->restartTime *= 2;
+            }
+            if (this->options.universalRestartStrategy) {
+                this->restartTime = this->universalRestartSequence.getNext();
             }
             cout << " and time limit " << this->restartTime << endl;
             this->error = "";
