@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     string problemFilename = argv[1];
     string domainFilename = argv[2];
     string problemName = basename(problemFilename);
-    string domainName = path(domainFilename).parent_path().leaf();
+    string domainName = path(domainFilename).parent_path().leaf().string();
 
     // TODO use command line options to set options or at least use them to point to the options file
     OptimizationOptions options = OptimizationOptions(OPTIONS_FILE);
@@ -141,7 +141,10 @@ int main(int argc, char *argv[]) {
                 " variables (" << translatedTask.variables.size() << " variables left)" << endl;
         cout << "  Removed " << oldOperatorCount - translatedTask.operators.size() << " of " << oldOperatorCount <<
                 " operators (" << translatedTask.operators.size() << " operators left)" << endl;
-
+        results["variable_count_original"] = boost::lexical_cast<string>(oldVariableCount);
+        results["operator_count_original"] = boost::lexical_cast<string>(oldOperatorCount);
+        results["variable_count_relevant"] = boost::lexical_cast<string>(translatedTask.variables.size());
+        results["operator_count_relevant"] = boost::lexical_cast<string>(translatedTask.operators.size());
 
         /*
         // calculate some statistics on the inital node

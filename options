@@ -5,7 +5,7 @@ translateRelaxedCommand = ../translate/translate-relaxed.py
 
 # The seed mainly influences what operator is branched over.
 # Warning: in some c++ libraries the seeds 0 and 1 do the same thing
-randomSeed                       = 1
+randomSeed                       = 3
 
 # search type (IDA* or branch and bound)
 idaStarSearch                    = false
@@ -29,11 +29,11 @@ incrementalSearch                = true
 dontUseHeuristic = false
 restartTime = 0
 geometricallyIncreasedRestartTime = false
-universalRestartStrategy = true
-selectOperatorInSmallestLandmark = true
-avoidExpandingSecondSuccessor    = true
-autoApplyUnitLandmarks           = false
-preferOperatorsFromCurrentPlan   = false
-tryGoalOnZeroHeuristic           = false
-breakOnFirstSolution             = false
-expansionLimit                   = 0
+universalRestartStrategy          = false
+selectOperatorInSmallestLandmark  = true
+avoidExpandingSecondSuccessor     = true
+autoApplyUnitLandmarks            = false
+preferOperatorsFromCurrentPlan    = false
+tryGoalOnZeroHeuristic            = false
+breakOnFirstSolution              = false
+expansionLimit                    = 1

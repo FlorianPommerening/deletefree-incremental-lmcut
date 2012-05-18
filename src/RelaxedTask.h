@@ -46,8 +46,7 @@ public:
     void printReadable() const;
 
 private:
-    bool filterIrrelevant(std::vector<bool> &variableNecesary, std::vector<bool> &operatorNecesary, int *filteredVariables, int *filteredOperators);
-    bool filterFirstAchievers(std::vector<bool> &variableNecesary, std::vector<bool> &operatorNecesary, int *filteredVariables, int *filteredOperators);
+    bool filterFirstAchieversForRelevantVariable(std::vector<bool> &variableNecesary, std::vector<bool> &operatorNecesary, int *filteredVariables, int *filteredOperators);
     void parseTask(std::ifstream &taskfile);
     template <class VariableSet>
     void parseVariableSet(std::ifstream &taskfile, VariableSet &set);

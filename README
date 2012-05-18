@@ -6,19 +6,17 @@ Needs
   * librt
 
 === Changes in boost 1.46 ===
-I used version 1.43 of the boost headers. If you use the current version of boost there is a problem with the "path" class.
+I used version 1.46 of the boost headers. If you use an older version of boost (e.g. 1.43) there is a problem with the "path" class.
 The method path::leaf() was changed from returning a string to returning a path object.
 In that case change line 49 of implementation/src/cppmodule/hplusbnb.cpp from
-    string domainName = path(domainFilename).parent_path().leaf();
-to
     string domainName = path(domainFilename).parent_path().leaf().string();
+to
+    string domainName = path(domainFilename).parent_path().leaf();
 and everything else should work.
 
 
 === Compiling ===
-Compiling should be possible with
-  cd Release
-  make
+Compiling should be possible with cmake
 
 If this doesn't work, the compiler needs the boost include
   -I/usr/include/boost
@@ -44,7 +42,7 @@ If you run the program from the directory "implementation/src/cppmodule" in the 
 == Running ==
 
 Run with
-  ./Release/hplusbnb <path to task file> <task to domain file> [<path to output file>]
+  ./build/hplusbnb <path to task file> <task to domain file> [<path to output file>]
 
 Delete relaxations (i.e. SAS+ translations) are searched in <cache directory>/<domain name without .pddl extension>/<task name without .pddl extension>.
 If they are not found there, they are created with the translate-relaxed.py script and saved there.
