@@ -5,14 +5,38 @@
 using namespace std;
 
 
-UnitCostLandmarkCollection::UnitCostLandmarkCollection(const std::vector<RelaxedOperator*> &operators):
+/*
+ *  ARBITRARY COST IMPLEMENTATION
+ */
+ArbitraryCostLandmarkCollection::ArbitraryCostLandmarkCollection(const std::vector<RelaxedOperator*> &operators){}
+ArbitraryCostLandmarkCollection::ArbitraryCostLandmarkCollection(const ArbitraryCostLandmarkCollection &other){}
+ArbitraryCostLandmarkCollection::~ArbitraryCostLandmarkCollection(){}
+void ArbitraryCostLandmarkCollection::clear(){}
+LandmarkId ArbitraryCostLandmarkCollection::addLandmark(Landmark &landmarkIn){}
+vector<LandmarkId> ArbitraryCostLandmarkCollection::containingLandmarks(const RelaxedOperator *const op) const{}
+bool ArbitraryCostLandmarkCollection::removeOperatorFromContainingLandmarks(RelaxedOperator *const op){}
+void ArbitraryCostLandmarkCollection::removeLandmark(const LandmarkId landmarkId){}
+int ArbitraryCostLandmarkCollection::getLandmarkSize(const LandmarkId landmarkId) const{}
+UIntEx ArbitraryCostLandmarkCollection::getCost() const{}
+int ArbitraryCostLandmarkCollection::getLandmarkCost(const LandmarkId landmarkId) const {}
+Landmark &ArbitraryCostLandmarkCollection::iterateLandmark(LandmarkId landmarkId) const{}
+int ArbitraryCostLandmarkCollection::getValidLandmarkIds() const{}
+std::vector<RelaxedOperator*> &ArbitraryCostLandmarkCollection::getSingleOperatorLandmarks() const{}
+
+
+/*
+ *  BINARY COST SPECIFIC OPTIMIZATIONS
+ */
+
+
+BinaryCostLandmarkCollection::BinaryCostLandmarkCollection(const std::vector<RelaxedOperator*> &operators):
                                                                      cost(0),
                                                                      landmarksDirty(false),
                                                                      singleOperatorLandmarksDirty(false) {
     this->operatorToLandmark.resize(operators.size(), -1);
 }
 
-UnitCostLandmarkCollection::UnitCostLandmarkCollection(const UnitCostLandmarkCollection &other):
+BinaryCostLandmarkCollection::BinaryCostLandmarkCollection(const BinaryCostLandmarkCollection &other):
                                                                      cost(other.cost),
                                                                      sizes(other.sizes),
                                                                      dirty(other.dirty),
@@ -30,13 +54,13 @@ UnitCostLandmarkCollection::UnitCostLandmarkCollection(const UnitCostLandmarkCol
     }
 }
 
-UnitCostLandmarkCollection::~UnitCostLandmarkCollection() {
+BinaryCostLandmarkCollection::~BinaryCostLandmarkCollection() {
     for(unsigned i=0; i != this->landmarks.size(); ++i) {
         delete this->landmarks[i];
     }
 }
 
-void UnitCostLandmarkCollection::clear() {
+void BinaryCostLandmarkCollection::clear() {
     for(unsigned i=0; i != this->landmarks.size(); ++i) {
         delete this->landmarks[i];
     }
@@ -52,7 +76,7 @@ void UnitCostLandmarkCollection::clear() {
     this->operatorToLandmark.resize(nOperators, -1);
 }
 
-LandmarkId UnitCostLandmarkCollection::addLandmark(Landmark &landmarkIn) {
+LandmarkId BinaryCostLandmarkCollection::addLandmark(Landmark &landmarkIn) {
     Landmark *landmark = new Landmark();
     swap(*landmark, landmarkIn);
     LandmarkId landmarkId = this->landmarks.size();
@@ -69,15 +93,17 @@ LandmarkId UnitCostLandmarkCollection::addLandmark(Landmark &landmarkIn) {
     return landmarkId;
 }
 
-LandmarkId UnitCostLandmarkCollection::containingLandmark(const RelaxedOperator *const op) const {
+std::vector<LandmarkId> BinaryCostLandmarkCollection::containingLandmarks(const RelaxedOperator *const op) const {
     LandmarkId landmarkId = this->operatorToLandmark[op->id];
     if (landmarkId != -1 && this->landmarks[landmarkId] != NULL) {
-        return landmarkId;
+        // vector of size 1 (in binary cost tasks an operator can only be in one LM at one time)
+        return vector<LandmarkId>(1, landmarkId);
     }
-    return -1;
+    return vector<LandmarkId>(0);
 }
 
-bool UnitCostLandmarkCollection::removeOperatorFromContainingLandmark(RelaxedOperator *const op) {
+bool BinaryCostLandmarkCollection::removeOperatorFromContainingLandmarks(RelaxedOperator *const op) {
+    // there is only one containing landmark in the binary cost setting
     LandmarkId landmarkId = this->operatorToLandmark[op->id];
     Landmark &containingLM = *this->landmarks[landmarkId];
     this->operatorToLandmark[op->id] = -1;
@@ -95,7 +121,7 @@ bool UnitCostLandmarkCollection::removeOperatorFromContainingLandmark(RelaxedOpe
     return true;
 }
 
-void UnitCostLandmarkCollection::removeLandmark(const LandmarkId landmarkId) {
+void BinaryCostLandmarkCollection::removeLandmark(const LandmarkId landmarkId) {
     Landmark &landmark = *(this->landmarks[landmarkId]);
     // TODO
     // should use loop over valid operators in landmark instead
@@ -112,7 +138,7 @@ void UnitCostLandmarkCollection::removeLandmark(const LandmarkId landmarkId) {
     --(this->cost);
 }
 
-Landmark &UnitCostLandmarkCollection::iterateLandmark(const LandmarkId landmarkId) const {
+Landmark &BinaryCostLandmarkCollection::iterateLandmark(const LandmarkId landmarkId) const {
     Landmark &landmark = *this->landmarks[landmarkId];
     if (this->dirty[landmarkId]) {
         unsigned nValid = 0;
@@ -131,7 +157,7 @@ Landmark &UnitCostLandmarkCollection::iterateLandmark(const LandmarkId landmarkI
     return landmark;
 }
 
-int UnitCostLandmarkCollection::getValidLandmarkIds() const {
+int BinaryCostLandmarkCollection::getValidLandmarkIds() const {
     if (this->landmarksDirty) {
         unsigned nValid = 0;
         for(unsigned current = 0; current < this->landmarks.size(); ++current) {
@@ -155,7 +181,7 @@ int UnitCostLandmarkCollection::getValidLandmarkIds() const {
     return this->landmarks.size();
 }
 
-std::vector<RelaxedOperator*> &UnitCostLandmarkCollection::getSingleOperatorLandmarks() const {
+std::vector<RelaxedOperator*> &BinaryCostLandmarkCollection::getSingleOperatorLandmarks() const {
     if (this->singleOperatorLandmarksDirty) {
         unsigned nValid = 0;
         for(unsigned current = 0; current < this->singleOperatorLandmarks.size(); ++current) {

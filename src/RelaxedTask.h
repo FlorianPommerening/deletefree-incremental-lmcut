@@ -35,6 +35,9 @@ public:
     // while cross-referencing the task
     std::vector<RelaxedOperator *> zeroBaseCostOperators;
 
+    // True iff all operator costs are either 0 or 1
+    bool isBinaryCostTask;
+
     void parseFile(const char *filename);
     // find a variable with that name and return its address
     Variable *getVariable(const std::string &name) const;

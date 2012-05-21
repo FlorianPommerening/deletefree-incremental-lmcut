@@ -11,8 +11,7 @@ typedef std::pair<const RelaxedOperator *, Variable *> PlanSetEntry;
 typedef std::vector<PlanSetEntry> PlanSet;
 
 /*
- * Finds a plan with cost h^set-additive
- * TODO: is this really set-additive? or what is the difference to h^add
+ * Finds a plan with cost h^FF/add
  * and returns it as a set of variables together with their h^add achievers
  * use planCost() to determine its cost and serializePlan() to get a serialized version of it.
  */

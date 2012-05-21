@@ -16,7 +16,7 @@ class State;
 
 class LandmarkCutFloHeuristic : public Heuristic {
     RelaxedTask relaxedTask;
-    UnitCostLandmarkCollection *landmarkCollection;
+    ILandmarkCollection *landmarkCollection;
     Variable *dummyPrecondition;
     OperatorCosts operatorCosts;
     std::vector<std::vector<Variable *> > propositions;

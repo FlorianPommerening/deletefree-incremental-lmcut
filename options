@@ -36,4 +36,4 @@ autoApplyUnitLandmarks            = false
 preferOperatorsFromCurrentPlan    = false
 tryGoalOnZeroHeuristic            = false
 breakOnFirstSolution              = false
-expansionLimit                    = 1
+expansionLimit                    = 0

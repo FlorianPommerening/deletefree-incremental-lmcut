@@ -22,6 +22,15 @@ UIntEx hmax(const RelaxedTask &task, const State &state) {
 }
 
 UIntEx hmax(const RelaxedTask &task, const State &state, const OperatorCosts &operatorCosts) {
+    if (task.isBinaryCostTask) {
+        binaryCostHmax(task, state, operatorCosts);
+    }
+    else {
+        arbitraryCostHmax(task, state, operatorCosts);
+    }
+}
+
+UIntEx arbitraryCostHmax(const RelaxedTask &task, const State &state, const OperatorCosts &operatorCosts) {
     // reset all temporary variables
     foreach(Variable *var, task.variables) {
         var->hmax = UIntEx::INF;
@@ -85,7 +94,7 @@ UIntEx hmax(const RelaxedTask &task, const State &state, const OperatorCosts &op
 
 void handleOperators(vector<Variable *> &fromQueue, vector<Variable *> &toQueue, const OperatorCosts &operatorCosts, const int requiredCost);
 
-UIntEx UnitCostHmax(const RelaxedTask &task, const State &state, const OperatorCosts &operatorCosts) {
+UIntEx binaryCostHmax(const RelaxedTask &task, const State &state, const OperatorCosts &operatorCosts) {
     // reset all temporary variables
     foreach(Variable *var, task.variables) {
         var->hmax = UIntEx::INF;
