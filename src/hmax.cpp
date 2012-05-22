@@ -23,10 +23,10 @@ UIntEx hmax(const RelaxedTask &task, const State &state) {
 
 UIntEx hmax(const RelaxedTask &task, const State &state, const OperatorCosts &operatorCosts) {
     if (task.isBinaryCostTask) {
-        binaryCostHmax(task, state, operatorCosts);
+        return binaryCostHmax(task, state, operatorCosts);
     }
     else {
-        arbitraryCostHmax(task, state, operatorCosts);
+        return arbitraryCostHmax(task, state, operatorCosts);
     }
 }
 

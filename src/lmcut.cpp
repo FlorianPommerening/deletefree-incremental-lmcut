@@ -21,7 +21,7 @@ UIntEx lmCut(const RelaxedTask &task, const State &state) {
         operatorCosts[op->id] = op->baseCost;
     }
     // dummy list to contain the discovered landmark
-    ILandmarkCollection *landmarkCollection = NULL;
+    AbstractLandmarkCollection *landmarkCollection = NULL;
     if (task.isBinaryCostTask) {
         landmarkCollection = new BinaryCostLandmarkCollection(task.operators);
     }
@@ -33,21 +33,21 @@ UIntEx lmCut(const RelaxedTask &task, const State &state) {
     return result;
 }
 
-UIntEx lmCut(const RelaxedTask &task, const State &state, OperatorCosts &operatorCosts, ILandmarkCollection *landmarkCollection) {
+UIntEx lmCut(const RelaxedTask &task, const State &state, OperatorCosts &operatorCosts, AbstractLandmarkCollection *landmarkCollection) {
     // calculating h^max also sets all hmax costs of variables and preconditionChoice values of operators
     UIntEx hmax_value = hmax(task, state, operatorCosts);
     if (!hmax_value.hasFiniteValue()) {
         // unsolvable problem
         return UIntEx::INF;
     }
-    int lmcutValue = 0;
+    UIntEx lmcutValue = 0;
     // One new landmark is discovered in each iteration until h^max is 0
     Landmark cut;
     while (hmax_value != 0) {
         cut.clear();
         findCut(task, state, operatorCosts, &cut);
-        LandmarkId landmarkId = landmarkCollection->addLandmark(cut);
-        const int landmarkCost = landmarkCollection->getLandmarkCost(landmarkId);
+        LandmarkId landmarkId = landmarkCollection->addLandmark(cut, operatorCosts);
+        const UIntEx landmarkCost = landmarkCollection->getLandmarkCost(landmarkId);
         lmcutValue += landmarkCost;
         // adjust cost function
         foreach(RelaxedOperator *op, landmarkCollection->iterateLandmark(landmarkId)) {

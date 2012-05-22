@@ -49,7 +49,7 @@ public:
     // plan used to reach this state
     Plan partialPlan;
     // Valid landmarks in this node, together with their cost partitioning.
-    ILandmarkCollection *landmarkCollection;
+    AbstractLandmarkCollection *landmarkCollection;
     // Cost function for the part of the cost partitioning that was not used in landmarks.
     OperatorCosts operatorCost;
     const RelaxedTask &task;

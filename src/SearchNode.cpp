@@ -92,12 +92,12 @@ SearchNode& SearchNode::forbidOperator(RelaxedOperator *const forbiddenOp) {
         } else {
             // remove operator from all containing landmarks. If it was the only operator in at least one landmark,
             // the problem becomes unsolvable
-            bool stillValid = this->landmarkCollection->removeOperatorFromContainingLandmarks(forbiddenOp);
+            bool stillValid = this->landmarkCollection->removeOperatorFromContainingLandmarks(forbiddenOp, this->operatorCost);
             if (!stillValid) {
                 this->heuristicValue = UIntEx::INF;
                 return *this;
             }
-            // the cost of a landmark can change in the arbitrary cost setting, because a landmark can get cheaper by removing an operator
+            // the cost of a landmark can increase in the arbitrary cost setting, if the cheapest operator is removed
             this->heuristicValue = this->landmarkCollection->getCost();
         }
     }
@@ -131,7 +131,7 @@ bool SearchNode::applyOperatorWithoutUpdate(const RelaxedOperator *appliedOp) {
             foreach(LandmarkId landmarkId, containingLandmarkIds) {
                 // "undo" this landmark: decrease heuristic value and
                 // increase all contained operator's costs by the LM's cost
-                const int landmarkCost = this->landmarkCollection->getLandmarkCost(landmarkId);
+                const UIntEx landmarkCost = this->landmarkCollection->getLandmarkCost(landmarkId);
                 this->heuristicValue -= landmarkCost;
                 foreach(RelaxedOperator *op, this->landmarkCollection->iterateLandmark(landmarkId)) {
                     if (op != appliedOp) {
