@@ -4,6 +4,7 @@
 #include <ostream>
 #include <sstream>
 #include <map>
+#include <boost/version.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <stdlib.h>
@@ -46,8 +47,12 @@ int main(int argc, char *argv[]) {
     string problemFilename = argv[1];
     string domainFilename = argv[2];
     string problemName = basename(problemFilename);
-    string domainName = path(domainFilename).parent_path().leaf().string();
 
+#if BOOST_VERSION < 104400 || BOOST_FILESYSTEM_VERSION == 2
+    string domainName = path(domainFilename).parent_path().leaf();
+#else
+    string domainName = path(domainFilename).parent_path().leaf().string();
+#endif
     // TODO use command line options to set options or at least use them to point to the options file
     OptimizationOptions options = OptimizationOptions(OPTIONS_FILE);
     path translationPath = path(options.translationsCacheDirectory) / domainName / problemName;

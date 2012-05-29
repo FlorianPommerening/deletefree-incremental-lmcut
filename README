@@ -1,18 +1,9 @@
 === Dependencies ===
 Needs
-  * boost header files
+  * boost header files (tested with 1.44 and 1.46)
   * libboost_system
   * libboost_filesystem
   * librt
-
-=== Changes in boost 1.46 ===
-I used version 1.46 of the boost headers. If you use an older version of boost (e.g. 1.43) there is a problem with the "path" class.
-The method path::leaf() was changed from returning a string to returning a path object.
-In that case change line 49 of implementation/src/cppmodule/hplusbnb.cpp from
-    string domainName = path(domainFilename).parent_path().leaf().string();
-to
-    string domainName = path(domainFilename).parent_path().leaf();
-and everything else should work.
 
 
 === Compiling ===
@@ -20,7 +11,7 @@ Compiling should be possible with cmake
 
 If this doesn't work, the compiler needs the boost include
   -I/usr/include/boost
-and the linker needs he following libs
+and the linker needs the following libs
  * librt
  * boost_system
  * boost_filesystem
