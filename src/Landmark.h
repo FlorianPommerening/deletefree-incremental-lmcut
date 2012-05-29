@@ -73,7 +73,7 @@ protected:
 
     virtual int calculateLandmarkCost(const Landmark *landmark, const OperatorCosts& operatorCosts) const = 0;
     virtual void addOperatorToLandmarkMapping(const RelaxedOperator *op, const LandmarkId landmarkId) const = 0;
-    virtual void removeOperatorToLandmarkMapping(const RelaxedOperator *op, const LandmarkId landmarkId) const = 0;
+    virtual bool removeOperatorToLandmarkMapping(const RelaxedOperator *op, const LandmarkId landmarkId) const = 0;
     virtual bool hasOperatorToLandmarkMapping(const RelaxedOperator *op, const LandmarkId landmarkId) const = 0;
 };
 
@@ -94,9 +94,14 @@ protected:
         this->operatorToLandmark[op->id].push_back(landmarkId);
     }
 
-    virtual void removeOperatorToLandmarkMapping(const RelaxedOperator *op, const LandmarkId landmarkId) const {
+    virtual bool removeOperatorToLandmarkMapping(const RelaxedOperator *op, const LandmarkId landmarkId) const {
         std::vector<LandmarkId> &containingLandmarks = this->operatorToLandmark[op->id];
-        containingLandmarks.erase(std::remove(containingLandmarks.begin(), containingLandmarks.end(), landmarkId), containingLandmarks.end());
+        std::vector<LandmarkId>::iterator itNewEnd = std::remove(containingLandmarks.begin(), containingLandmarks.end(), landmarkId);
+        if (itNewEnd == containingLandmarks.end()) {
+            return false;
+        } // else
+        containingLandmarks.erase(itNewEnd, containingLandmarks.end());
+        return true;
     }
 
     virtual bool hasOperatorToLandmarkMapping(const RelaxedOperator *op, const LandmarkId landmarkId) const {
@@ -132,8 +137,10 @@ protected:
         this->operatorToLandmark[op->id] = landmarkId;
     }
 
-    virtual void removeOperatorToLandmarkMapping(const RelaxedOperator *op, const LandmarkId /*landmarkId*/) const {
+    virtual bool removeOperatorToLandmarkMapping(const RelaxedOperator *op, const LandmarkId /*landmarkId*/) const {
+        bool wasSet = (this->operatorToLandmark[op->id] != -1);
         this->operatorToLandmark[op->id] = -1;
+        return wasSet;
     }
 
     virtual bool hasOperatorToLandmarkMapping(const RelaxedOperator *op, const LandmarkId landmarkId) const {

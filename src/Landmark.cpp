@@ -1,7 +1,6 @@
 #include "Landmark.h"
 #include "foreach.h"
 
-
 using namespace std;
 
 /*
@@ -79,26 +78,26 @@ bool AbstractLandmarkCollection::removeOperatorFromContainingLandmarks(RelaxedOp
         --(this->landmarkSizes[landmarkId]);
         // try to increase the cost of the landmark by further reducing the cost of all operators it contains
         UIntEx possibleIncrease = -1;
-        foreach(RelaxedOperator *op, containingLM) {
-            if (!this->hasOperatorToLandmarkMapping(op, landmarkId)) {
+        foreach(RelaxedOperator *iterOp, containingLM) {
+            if (!this->hasOperatorToLandmarkMapping(iterOp, landmarkId)) {
                 continue;
             }
             if (possibleIncrease == -1) {
-                possibleIncrease = operatorCosts[op->id];
+                possibleIncrease = operatorCosts[iterOp->id];
             }
             else {
-                possibleIncrease = min(operatorCosts[op->id], possibleIncrease);
+                possibleIncrease = min(operatorCosts[iterOp->id], possibleIncrease);
             }
             if (possibleIncrease == 0) {
                 break;
             }
         }
         if (possibleIncrease > 0) {
-            foreach(RelaxedOperator *op, containingLM) {
-                if (!this->hasOperatorToLandmarkMapping(op, landmarkId)) {
+            foreach(RelaxedOperator *iterOp, containingLM) {
+                if (!this->hasOperatorToLandmarkMapping(iterOp, landmarkId)) {
                     continue;
                 }
-                operatorCosts[op->id] -= possibleIncrease;
+                operatorCosts[iterOp->id] -= possibleIncrease;
             }
             this->landmarkCosts[landmarkId] += possibleIncrease;
             this->cost += possibleIncrease;
@@ -166,8 +165,9 @@ int AbstractLandmarkCollection::getValidLandmarkIds() const {
                     this->landmarkCosts[nValid] = this->landmarkCosts[current];
                     this->dirty[nValid] = this->dirty[current];
                     foreach(RelaxedOperator *op, *this->landmarks[nValid]) {
-                        this->removeOperatorToLandmarkMapping(op, current);
-                        this->addOperatorToLandmarkMapping(op, nValid);
+                        if (this->removeOperatorToLandmarkMapping(op, current)) {
+                            this->addOperatorToLandmarkMapping(op, nValid);
+                        }
                     }
                 }
                 ++nValid;
