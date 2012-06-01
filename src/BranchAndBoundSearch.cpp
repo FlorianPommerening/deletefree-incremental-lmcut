@@ -217,10 +217,12 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNod
         UIntEx planCost = this->recursiveBranchAndBound(*successor);
         if (this->options.expansionLimit != 0 && this->expansionCount >= this->options.expansionLimit) {
             this->error = "expansions";
+            delete successor; successor = NULL;
             return UIntEx::INF;
         }
         if (this->restartTime != 0 && this->restartTimer.elapsed() >= this->restartTime) {
             this->error = "time";
+            delete successor; successor = NULL;
             return UIntEx::INF;
         }
         // a finite return value means, that a better solution was found in this subtree

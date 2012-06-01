@@ -93,6 +93,7 @@ bool RelaxedTask::removeUnnecessaryParts(vector<pair<pair<string, float>, pair<i
             }
         }
         if (!operatorNecesary[op->id]) {
+            delete op;
             itOp = this->operators.erase(itOp);
         } else {
             ++itOp;
@@ -104,6 +105,9 @@ bool RelaxedTask::removeUnnecessaryParts(vector<pair<pair<string, float>, pair<i
     foreach(Variable *var, this->variables) {
         if (variableNecesary[var->id]) {
             relevantVariables.push_back(var);
+        }
+        else {
+            delete var;
         }
     }
     std::swap(this->variables, relevantVariables);
