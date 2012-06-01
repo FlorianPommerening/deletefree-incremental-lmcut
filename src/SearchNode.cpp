@@ -141,8 +141,9 @@ bool SearchNode::applyOperatorWithoutUpdate(const RelaxedOperator *appliedOp) {
                 if (this->landmarkCollection->getLandmarkSize(landmarkId) > 1) {
                     needsHeuristicUpdate = true;
                 }
-                this->landmarkCollection->removeLandmark(landmarkId);
             }
+            // avoid removing elements during iteration
+            this->landmarkCollection->removeContainingLandmarks(appliedOp);
         }
     }
     return needsHeuristicUpdate;
@@ -187,7 +188,7 @@ void SearchNode::unitPropagation() {
         }
         // try operators in landmarks of size 1
         if (this->options.autoApplyUnitLandmarks) {
-            vector<RelaxedOperator *> &singleOperatorLandmarks = this->landmarkCollection->getSingleOperatorLandmarks();
+            vector<RelaxedOperator *> singleOperatorLandmarks = this->landmarkCollection->getSingleOperatorLandmarks();
             foreach(RelaxedOperator *op, singleOperatorLandmarks) {
                 stateChanged = this->tryApplyUnitPropagationOperator(op);
             }

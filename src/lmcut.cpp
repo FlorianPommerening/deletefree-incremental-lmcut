@@ -21,7 +21,7 @@ UIntEx lmCut(const RelaxedTask &task, const State &state) {
         operatorCosts[op->id] = op->baseCost;
     }
     // dummy list to contain the discovered landmark
-    AbstractLandmarkCollection *landmarkCollection = NULL;
+    ILandmarkCollection *landmarkCollection = NULL;
     if (task.isBinaryCostTask) {
         landmarkCollection = new BinaryCostLandmarkCollection(task.operators);
     }
@@ -33,7 +33,7 @@ UIntEx lmCut(const RelaxedTask &task, const State &state) {
     return result;
 }
 
-UIntEx lmCut(const RelaxedTask &task, const State &state, OperatorCosts &operatorCosts, AbstractLandmarkCollection *landmarkCollection) {
+UIntEx lmCut(const RelaxedTask &task, const State &state, OperatorCosts &operatorCosts, ILandmarkCollection *landmarkCollection) {
     // calculating h^max also sets all hmax costs of variables and preconditionChoice values of operators
     UIntEx hmax_value = hmax(task, state, operatorCosts);
     if (!hmax_value.hasFiniteValue()) {
