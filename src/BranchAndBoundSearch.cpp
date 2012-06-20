@@ -217,10 +217,12 @@ UIntEx BranchAndBoundSearch::recursiveBranchAndBound(const SearchNode &searchNod
         UIntEx planCost = this->recursiveBranchAndBound(*successor);
         if (this->options.expansionLimit != 0 && this->expansionCount >= this->options.expansionLimit) {
             this->error = "expansions";
+            delete successor; successor = NULL;
             return UIntEx::INF;
         }
         if (this->restartTime != 0 && this->restartTimer.elapsed() >= this->restartTime) {
             this->error = "time";
+            delete successor; successor = NULL;
             return UIntEx::INF;
         }
         // a finite return value means, that a better solution was found in this subtree
@@ -271,9 +273,9 @@ void printNode(const SearchNode &searchNode, const UIntEx &upperBound) {
     }
     std::cout << std::endl;
     std::cout << "Landmarks" << std::endl;
-    int nLandmarks = searchNode.landmarkCollection.getValidLandmarkIds();
+    int nLandmarks = searchNode.landmarkCollection->getValidLandmarkIds();
     for(LandmarkId landmarkId=0; landmarkId < nLandmarks; ++landmarkId) {
-        foreach(RelaxedOperator *op, searchNode.landmarkCollection.iterateLandmark(landmarkId)) {
+        foreach(RelaxedOperator *op, searchNode.landmarkCollection->iterateLandmark(landmarkId)) {
             if (op->isApplicable(searchNode.currentState)) {
                 std::cout << "*";
             }

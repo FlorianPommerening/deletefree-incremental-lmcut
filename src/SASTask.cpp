@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <sstream>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <iostream>
 
@@ -9,26 +10,32 @@
 
 using namespace std;
 
-bool SASParser::parseTask(const string &taskFilename, const string &translationKeyFilename,
-                          SASTask &taskOut) {
+bool SASParser::parseTask(const string &taskFilename, SASTask &taskOut) {
     // parse task file
     this->taskfile.open(taskFilename.c_str());
+    int version;
     int metric;
+    if (!this->parseVersion(version) || version != 3) {
+        this->error = "Unknown version of translated file.";
+        return false;
+    }
     bool success = (
             this->parseMetric(metric) &&
             this->parseVariables(taskOut.variables) &&
+            this->parseMutexGroups() &&
             this->parseInitialState(taskOut.variables, taskOut.init) &&
             this->parseGoal(taskOut.variables, taskOut.goal) &&
             this->parseOperators(taskOut.variables, metric, taskOut.operators) &&
             this->parseAxioms(taskOut.variables, taskOut.axioms));
     this->taskfile.close();
-    if (!success || translationKeyFilename.empty()) {
-        return success;
-    }
-    // parse translation key
-    this->taskfile.open(translationKeyFilename.c_str());
-    success = this->parseTranslationKey(taskOut.variables);
-    this->taskfile.close();
+    return success;
+}
+
+bool SASParser::parseVersion(int &version) {
+    bool success = (
+            this->isNextLine("begin_version") &&
+            this->nextLineAsInt(version) &&
+            this->isNextLine("end_version"));
     return success;
 }
 
@@ -41,26 +48,53 @@ bool SASParser::parseMetric(int &metric) {
 }
 
 bool SASParser::parseVariables(vector<SASVariable> &variables) {
-    vector<string> variableLines;
-    if (!this->isNextLine("begin_variables")) { return false; }
-    if (!this->nextLinesAsList(variableLines)) { return false; }
-    variables.resize(variableLines.size());
-    for (unsigned int varId = 0; varId < variableLines.size(); ++varId) {
-        stringstream lineStream(variableLines[varId]);
-        string expectedName = "var" + intToStr(varId);
-        if (!this->isNextToken(lineStream, expectedName)) { return false; }
-        int range;
-        if (!this->nextTokenAsInt(lineStream, range)) { return false; }
-        variables[varId].id = varId;
-        variables[varId].values.reserve(range);
-        for (int i = 0; i < range; ++i) {
-            variables[varId].values.push_back(intToStr(i));
+    int nVariables;
+    if (!this->nextLineAsInt(nVariables)) { return false; }
+    variables.resize(nVariables);
+    for (unsigned int varId = 0; varId < nVariables; ++varId) {
+        if (!this->parseVariable(variables, varId)) {
+            return false;
         }
-        if (!this->nextTokenAsInt(lineStream, variables[varId].axiomLayer)) { return false; }
     }
-    if (!this->isNextLine("end_variables")) { return false; }
     return true;
 }
+
+bool SASParser::parseVariable(vector<SASVariable> &variables, int varId) {
+    if (!this->isNextLine("begin_variable")) { return false; }
+    string expectedName = "var" + boost::lexical_cast<string>(varId);
+    if (!this->isNextLine(expectedName)) { return false; }
+    if (!this->nextLineAsInt(variables[varId].axiomLayer)) { return false; }
+    int range;
+    if (!this->nextLineAsInt(range)) { return false; }
+    variables[varId].id = varId;
+    variables[varId].values.reserve(range);
+    for (int i = 0; i < range; ++i) {
+        string valueName;
+        if (!this->nextLine(valueName)) { return false; }
+        variables[varId].values.push_back(valueName);
+    }
+    if (!this->isNextLine("end_variable")) { return false; }
+}
+bool SASParser::parseMutexGroups() {
+    int nMutexGroups;
+    if (!this->nextLineAsInt(nMutexGroups)) { return false; }
+    for (unsigned int mutexGroupId = 0; mutexGroupId < nMutexGroups; ++mutexGroupId) {
+        if (!this->parseMutexGroup()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool SASParser::parseMutexGroup() {
+    if (!this->isNextLine("begin_mutex_group")) { return false; }
+    vector<string> mutexEntries;
+    if (!this->nextLinesAsList(mutexEntries)) { return false; }
+    // ignored for now
+    if (!this->isNextLine("end_mutex_group")) { return false; }
+}
+
+
 
 bool SASParser::parseInitialState(vector<SASVariable> &variables,
                                   vector<SASVariableAssignment> &init) {
@@ -170,23 +204,6 @@ bool SASParser::parseAssignment(istream &aStream, const char delimiter,
     return true;
 }
 
-bool SASParser::parseTranslationKey(vector<SASVariable> &variables) {
-    for (unsigned int varId = 0; varId < variables.size(); ++varId) {
-        if (!this->isNextLine("var" + intToStr(varId) + ":")) { return false; }
-        for (unsigned int valId = 0; valId < variables[varId].values.size(); ++valId) {
-            string valLine;
-            if (!this->nextLine(valLine)) { return false; }
-            string prefix = "  " + intToStr(valId) + ": ";
-            if (!boost::starts_with(valLine, prefix)) {
-                this->error = "Expected line starting with '" + prefix + "' but got '" + valLine + "'";
-                return false;
-            }
-            variables[varId].values[valId] = valLine.substr(prefix.length());
-        }
-    }
-    return true;
-}
-
 bool SASParser::nextToken(istream &tokenStream, string& token, const char delimiter) {
     if (!getline(tokenStream, token, delimiter)) {
         this->error = "Unexpected end of stream";
@@ -261,7 +278,7 @@ bool DeleteRelaxer::deleteRelaxation(SASTask &sasTask, RelaxedTask &task) {
             string name = sasVar->values[valId];
             if (name == "<none of those>") {
                 // try to keep names unique
-                name = "None of var" + intToStr(sasVarId);
+                name = "None of var" + boost::lexical_cast<string>(sasVarId);
             };
             Variable *var = new Variable(name, varID++);
             task.variables.push_back(var);
@@ -342,10 +359,3 @@ bool tryParseInt(const string &str, int &value) {
     }
     return true;
 }
-
-string intToStr(int value) {
-    ostringstream sstream;
-    sstream << value;
-    return sstream.str();
-}
-

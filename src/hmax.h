@@ -40,6 +40,14 @@ UIntEx hmax(const RelaxedTask &task, const State &state, const OperatorCosts &op
  * to the hmax cost of this variable and the property 'preconditionChoice' of each operator to
  * one variable with maximal hmax cost among the preconditions of this operator.
  */
-UIntEx UnitCostHmax(const RelaxedTask &task, const State &state, const OperatorCosts &operatorCosts);
+UIntEx binaryCostHmax(const RelaxedTask &task, const State &state, const OperatorCosts &operatorCosts);
+/*
+ * Calculates the h^max value of 'state' in 'task' using the cost function defined by 'operatorCosts'.
+ * The task has to be a cross-referenced relaxed task in canonical form.
+ * The calculation will also set the property 'hmax' of each variable in the task
+ * to the hmax cost of this variable and the property 'preconditionChoice' of each operator to
+ * one variable with maximal hmax cost among the preconditions of this operator.
+ */
+UIntEx arbitraryCostHmax(const RelaxedTask &task, const State &state, const OperatorCosts &operatorCosts);
 
 #endif

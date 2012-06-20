@@ -4,6 +4,7 @@
 #include <ostream>
 #include <sstream>
 #include <map>
+#include <boost/version.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <stdlib.h>
@@ -46,13 +47,16 @@ int main(int argc, char *argv[]) {
     string problemFilename = argv[1];
     string domainFilename = argv[2];
     string problemName = basename(problemFilename);
-    string domainName = path(domainFilename).parent_path().leaf().string();
 
+#if BOOST_VERSION < 104400 || BOOST_FILESYSTEM_VERSION == 2
+    string domainName = path(domainFilename).parent_path().leaf();
+#else
+    string domainName = path(domainFilename).parent_path().leaf().string();
+#endif
     // TODO use command line options to set options or at least use them to point to the options file
     OptimizationOptions options = OptimizationOptions(OPTIONS_FILE);
     path translationPath = path(options.translationsCacheDirectory) / domainName / problemName;
     path taskTranslationPath = translationPath / "output.sas";
-    path translationKeyPath = translationPath / "test.groups";
     path resultsFilePath = path(options.resultDirectory) / (domainName + "_" + problemName + ".result");
     if (argc == 4) {
         resultsFilePath = argv[3];
@@ -74,7 +78,7 @@ int main(int argc, char *argv[]) {
         // Translation from pddl to sas
         cout << "Translating problem file ... " << flush;
         // check if cached translations already exist
-        if (!exists(taskTranslationPath) || !exists(translationKeyPath)) {
+        if (!exists(taskTranslationPath)) {
             // call python translate-relaxed.py to translate file
             string command = options.translateRelaxedCommand + " " + problemFilename + " " + domainFilename + " " + translationPath.string();
             wallClockTimer.restart();
@@ -84,7 +88,7 @@ int main(int argc, char *argv[]) {
             }
             results["translation_time"] = boost::lexical_cast<string>(wallClockTimer.elapsed());
             cout << "done " << results["translation_time"] << endl;
-            if (!exists(taskTranslationPath) || !exists(translationKeyPath)) {
+            if (!exists(taskTranslationPath)) {
                 cout << "Translating the problem into SAS did not produce the expected output files." << endl;
                 return 1;
             }
@@ -97,7 +101,7 @@ int main(int argc, char *argv[]) {
         SASTask sasTask;
         SASParser parser;
         cpuTimer.restart();
-        bool parseOK = parser.parseTask(taskTranslationPath.string(), translationKeyPath.string(), sasTask);
+        bool parseOK = parser.parseTask(taskTranslationPath.string(), sasTask);
         results["parse_time"] = boost::lexical_cast<string>(cpuTimer.elapsed());
         if (!parseOK) {
             cout << endl << parser.getLastError() << endl;

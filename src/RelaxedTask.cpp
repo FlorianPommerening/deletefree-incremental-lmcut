@@ -93,6 +93,7 @@ bool RelaxedTask::removeUnnecessaryParts(vector<pair<pair<string, float>, pair<i
             }
         }
         if (!operatorNecesary[op->id]) {
+            delete op;
             itOp = this->operators.erase(itOp);
         } else {
             ++itOp;
@@ -104,6 +105,9 @@ bool RelaxedTask::removeUnnecessaryParts(vector<pair<pair<string, float>, pair<i
     foreach(Variable *var, this->variables) {
         if (variableNecesary[var->id]) {
             relevantVariables.push_back(var);
+        }
+        else {
+            delete var;
         }
     }
     std::swap(this->variables, relevantVariables);
@@ -233,6 +237,7 @@ bool RelaxedTask::filterFirstAchieversForRelevantVariable(vector<bool> &variable
 }
 
 void RelaxedTask::crossreference() {
+    this->isBinaryCostTask = true;
     this->zeroBaseCostOperators.clear();
     int varId = 0;
     foreach(Variable *var, this->variables) {
@@ -242,6 +247,9 @@ void RelaxedTask::crossreference() {
     }
     int opId = 0;
     foreach(RelaxedOperator *op, this->operators) {
+        if (op->baseCost != 0 && op->baseCost != 1) {
+            this->isBinaryCostTask = false;
+        }
         op->id = opId++;
         foreach(Variable *effect, op->effects) {
             effect->effect_of.push_back(op);
@@ -276,6 +284,8 @@ void RelaxedTask::parseTask(ifstream &taskfile) {
     if (!getline(taskfile, line) || line != "1") { throw "Number of variables in goal state expected (must be 1)"; }
     if (!getline(taskfile, line)) { throw "Goal state variable expected"; }
     this->goal = this->getVariable(line);
+
+    this->isBinaryCostTask = true;
     if (!getline(taskfile, line) || line != "Operators") { throw "'Operators' expected"; }
     if (!getline(taskfile, line)) { throw "Number of operators expected"; }
     int nOperators = atoi(line.c_str());
@@ -285,6 +295,9 @@ void RelaxedTask::parseTask(ifstream &taskfile) {
         if (!getline(taskfile, op->name)) { throw "Operator name expected"; }
         if (!getline(taskfile, line)) { throw "Operator cost expected"; }
         op->baseCost = atoi(line.c_str());
+        if (op->baseCost != 0 && op->baseCost != 1) {
+            this->isBinaryCostTask = false;
+        }
         parseVariableSet(taskfile, op->preconditions);
         parseVariableSet(taskfile, op->effects);
         this->operators.push_back(op);

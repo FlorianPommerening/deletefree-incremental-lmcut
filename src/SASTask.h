@@ -61,13 +61,18 @@ struct SASAxiom {
  */
 class SASParser {
 public:
-    bool parseTask(const std::string &taskFilename, const std::string &translationKeyFilename, SASTask &task);
+    bool parseTask(const std::string &taskFilename, SASTask &task);
     std::string getLastError() { return this->error; }
 private:
     std::string error;
     std::ifstream taskfile;
+    bool parseVersion(int &version);
     bool parseMetric(int &metric);
     bool parseVariables(std::vector<SASVariable> &variables);
+    bool parseVariable(std::vector<SASVariable> &variables, int varId);
+    /* Mutex groups are ignored for now */
+    bool parseMutexGroups();
+    bool parseMutexGroup();
     bool parseInitialState(std::vector<SASVariable> &variables,
                           std::vector<SASVariableAssignment> &init);
     bool parseGoal(std::vector<SASVariable> &variables,
@@ -83,8 +88,6 @@ private:
     bool parseAssignment(std::istream &aStream, const char delimiter,
                          std::vector<SASVariable> &variables,
                          std::vector<SASVariableAssignment> &assignments);
-    bool parseTranslationKey(std::vector<SASVariable> &variables);
-
     bool nextToken(std::istream &tokenStream, std::string& token, const char delimiter=' ');
     bool nextTokenAsInt(std::istream &tokenStream, int& value, const char delimiter=' ');
     bool isNextToken(std::istream &tokenStream, const std::string &text, const char delimiter=' ');

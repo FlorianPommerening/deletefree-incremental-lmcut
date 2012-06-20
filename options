@@ -5,7 +5,7 @@ translateRelaxedCommand = ../translate/translate-relaxed.py
 
 # The seed mainly influences what operator is branched over.
 # Warning: in some c++ libraries the seeds 0 and 1 do the same thing
-randomSeed                       = 3
+randomSeed                       = 1
 
 # search type (IDA* or branch and bound)
 idaStarSearch                    = false
@@ -36,4 +36,4 @@ autoApplyUnitLandmarks            = false
 preferOperatorsFromCurrentPlan    = false
 tryGoalOnZeroHeuristic            = false
 breakOnFirstSolution              = false
-expansionLimit                    = 1
+expansionLimit                    = 0
