@@ -74,6 +74,7 @@ bool SASParser::parseVariable(vector<SASVariable> &variables, int varId) {
         variables[varId].values.push_back(valueName);
     }
     if (!this->isNextLine("end_variable")) { return false; }
+    return true;
 }
 bool SASParser::parseMutexGroups() {
     int nMutexGroups;
